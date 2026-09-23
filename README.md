@@ -78,4 +78,7 @@ com.khoacntt.quanlydetai
 └── web           Trang dùng chung
 ```
 
-Quy tắc phân công, Git, transaction và Definition of Done nằm tại `docs/HUONG_DAN_LAM_BACKEND_NHOM.md`.
+## Tài liệu dành cho nhóm
+
+- Phạm vi và các chức năng cần code: `docs/PHAM_VI_CHUC_NANG.md`.
+- Quy tắc phân công, Git, database và Definition of Done: `docs/HUONG_DAN_LAM_BACKEND_NHOM.md`.
