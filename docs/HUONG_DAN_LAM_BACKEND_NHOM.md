@@ -61,6 +61,43 @@ Không commit mật khẩu, `.env`, `application-local.yml`, thư mục `uploads
 - Xử lý race condition trong service bằng `@Transactional`, khóa bi quan tại repository khi cần và UNIQUE constraint của database.
 - Khi UNIQUE constraint từ chối một thao tác đồng thời, service phải chuyển lỗi thành `NghiepVuException` với thông báo dễ hiểu.
 
+### Database trên máy của từng thành viên
+
+Mỗi thành viên sử dụng một MySQL Server và một database local trên máy của mình. Không cấu hình cả nhóm cùng kết nối vào database trên máy của một thành viên vì dữ liệu thử nghiệm, thao tác xóa và migration có thể ảnh hưởng lẫn nhau.
+
+Sau khi clone project, tạo một database rỗng trong MySQL Workbench:
+
+```sql
+CREATE DATABASE quan_ly_de_tai
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_0900_ai_ci;
+```
+
+Mỗi người tự cấu hình tài khoản MySQL của máy mình bằng biến môi trường:
+
+```powershell
+$env:DB_USERNAME = "ten_tai_khoan_mysql"
+$env:DB_PASSWORD = "mat_khau_mysql"
+```
+
+Sau đó chạy:
+
+```powershell
+.\mvnw.cmd spring-boot:run
+```
+
+Nếu `quan_ly_de_tai` đang rỗng, Flyway sẽ tự chạy `V1__khoi_tao_24_bang.sql` và tạo đủ 24 bảng nghiệp vụ. Không cần import thêm một file SQL riêng. Nếu database đã có sẵn đúng 24 bảng, Flyway sẽ ghi nhận baseline phiên bản 1 và không tạo lại bảng.
+
+Các quy tắc bắt buộc:
+
+- Chỉ tạo database rỗng; không tự sửa cấu trúc bảng bằng giao diện Workbench.
+- Không sửa, đổi tên hoặc xóa `V1__khoi_tao_24_bang.sql`.
+- Không gửi file dump chứa dữ liệu thử nghiệm lên repository nếu chưa được nhóm thống nhất.
+- Không commit mật khẩu MySQL, file `.env`, `application-local.yml` hoặc `application-local.properties`.
+- Dữ liệu thử nghiệm của mỗi thành viên có thể khác nhau; cấu trúc bảng phải giống nhau và được Flyway quản lý.
+- Khi cần thay đổi cấu trúc database, báo trưởng nhóm để tạo migration mới và kiểm tra trên database rỗng trước khi merge.
+- Trước khi mở Pull Request, kiểm tra ứng dụng khởi động được và Flyway không báo lỗi validation hoặc checksum.
+
 ## 5. Quy tắc transaction
 
 - Phương thức chỉ đọc dùng `@Transactional(readOnly = true)`.
