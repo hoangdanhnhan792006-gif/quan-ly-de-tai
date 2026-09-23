@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Không thể thực hiện thao tác</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<main class="container dashboard">
+    <p class="eyebrow">Thông báo nghiệp vụ</p>
+    <h1>Không thể thực hiện thao tác</h1>
+    <p th:text="${message}">Thao tác không hợp lệ.</p>
+    <a class="button" href="javascript:history.back()">Quay lại</a>
+</main>
+</body>
+</html>

@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bảng điều khiển</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<main class="container dashboard">
+    <p class="eyebrow">Bảng điều khiển</p>
+    <h1>Xin chào, <span th:text="${username}">người dùng</span></h1>
+    <p>Vai trò hiện tại: <span th:text="${authorities}">ROLE_USER</span></p>
+    <form th:action="@{/logout}" method="post">
+        <button class="button secondary" type="submit">Đăng xuất</button>
+    </form>
+</main>
+</body>
+</html>
