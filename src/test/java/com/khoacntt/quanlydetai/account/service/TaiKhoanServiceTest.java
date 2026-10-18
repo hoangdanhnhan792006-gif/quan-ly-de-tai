@@ -1,6 +1,7 @@
 package com.khoacntt.quanlydetai.account.service;
 
 import com.khoacntt.quanlydetai.account.form.DoiMatKhauForm;
+import com.khoacntt.quanlydetai.account.form.DatLaiMatKhauForm;
 import com.khoacntt.quanlydetai.account.form.SuaTaiKhoanForm;
 import com.khoacntt.quanlydetai.account.form.TaiKhoanForm;
 import com.khoacntt.quanlydetai.account.model.TaiKhoan;
@@ -106,5 +107,78 @@ class TaiKhoanServiceTest {
     @Test void xacNhanMatKhauKhongKhop() {
         var tk = tk(2,VaiTro.SINH_VIEN); when(current.batBuoc()).thenReturn(tk); when(repository.timVaKhoa(2)).thenReturn(Optional.of(tk));
         assertThatThrownBy(() -> service.doiMatKhau(mkForm("OldPass123", "khac"))).isInstanceOf(NghiepVuException.class);
+    }
+
+    DatLaiMatKhauForm datLaiForm(String password, String confirm) {
+        var f = new DatLaiMatKhauForm();
+        f.setMatKhauMoi(password); f.setXacNhanMatKhau(confirm); return f;
+    }
+
+    @Test void khongTuXoaTaiKhoan() {
+        when(current.batBuoc()).thenReturn(tk(1, VaiTro.ADMIN));
+        assertThatThrownBy(() -> service.xoa(1)).isInstanceOf(NghiepVuException.class);
+        verify(repository, never()).delete(any());
+    }
+
+    @Test void xoaTaiKhoanChuaCoHoSo() {
+        var target = tk(2, VaiTro.SINH_VIEN);
+        when(current.batBuoc()).thenReturn(tk(1, VaiTro.ADMIN));
+        when(repository.timVaKhoa(2)).thenReturn(Optional.of(target));
+        service.xoa(2);
+        verify(repository).delete(target); verify(repository).flush();
+    }
+
+    @Test void khongXoaTaiKhoanCoHoSoSinhVien() {
+        when(current.batBuoc()).thenReturn(tk(1, VaiTro.ADMIN));
+        when(repository.timVaKhoa(2)).thenReturn(Optional.of(tk(2, VaiTro.SINH_VIEN)));
+        when(sv.existsByTaiKhoanId(2)).thenReturn(true);
+        assertThatThrownBy(() -> service.xoa(2)).isInstanceOf(NghiepVuException.class).hasMessageContaining("hồ sơ");
+        verify(repository, never()).delete(any());
+    }
+
+    @Test void khongXoaTaiKhoanCoHoSoGiangVien() {
+        when(current.batBuoc()).thenReturn(tk(1, VaiTro.ADMIN));
+        when(repository.timVaKhoa(2)).thenReturn(Optional.of(tk(2, VaiTro.GIANG_VIEN)));
+        when(gv.existsByTaiKhoanId(2)).thenReturn(true);
+        assertThatThrownBy(() -> service.xoa(2)).isInstanceOf(NghiepVuException.class);
+        verify(repository, never()).delete(any());
+    }
+
+    @Test void fkChanXoaDuocBaoLoiDeHieu() {
+        when(current.batBuoc()).thenReturn(tk(1, VaiTro.ADMIN));
+        when(repository.timVaKhoa(2)).thenReturn(Optional.of(tk(2, VaiTro.CAN_BO_KHOA)));
+        doThrow(new DataIntegrityViolationException("FK RESTRICT")).when(repository).flush();
+        assertThatThrownBy(() -> service.xoa(2)).isInstanceOf(NghiepVuException.class).hasMessageContaining("khóa tài khoản");
+    }
+
+    @Test void adminDatLaiMatKhauKhongCanMatKhauCuVaKhongMoKhoaTaiKhoan() {
+        var target = tk(2, VaiTro.SINH_VIEN);
+        target.doiTrangThai(TrangThaiTaiKhoan.BI_KHOA);
+        when(current.batBuoc()).thenReturn(tk(1, VaiTro.ADMIN));
+        when(repository.timVaKhoa(2)).thenReturn(Optional.of(target));
+        service.datLaiMatKhau(2, datLaiForm("NewPass123", "NewPass123"));
+        assertThat(encoder.matches("NewPass123", target.getMatKhauBam())).isTrue();
+        assertThat(encoder.matches("OldPass123", target.getMatKhauBam())).isFalse();
+        assertThat(target.getTrangThai()).isEqualTo(TrangThaiTaiKhoan.BI_KHOA);
+        verify(repository).saveAndFlush(target);
+    }
+
+    @Test void adminKhongTuDatLaiBoQuaMatKhauCu() {
+        when(current.batBuoc()).thenReturn(tk(1, VaiTro.ADMIN));
+        assertThatThrownBy(() -> service.datLaiMatKhau(1, datLaiForm("NewPass123", "NewPass123")))
+                .isInstanceOf(NghiepVuException.class).hasMessageContaining("Đổi mật khẩu");
+        verify(repository, never()).saveAndFlush(any());
+    }
+
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.CsvSource({"NewPass123,khac", "OldPass123,OldPass123", "123,123", "ếếếếếếếếếếếếếếếếếếếếếếếếế,ếếếếếếếếếếếếếếếếếếếếếếếếế"})
+    void tuChoiMatKhauKhongHopLeKhiAdminDatLai(String password, String confirm) {
+        var target = tk(2, VaiTro.SINH_VIEN);
+        String oldHash = target.getMatKhauBam();
+        when(current.batBuoc()).thenReturn(tk(1, VaiTro.ADMIN));
+        when(repository.timVaKhoa(2)).thenReturn(Optional.of(target));
+        assertThatThrownBy(() -> service.datLaiMatKhau(2, datLaiForm(password, confirm))).isInstanceOf(NghiepVuException.class);
+        assertThat(target.getMatKhauBam()).isEqualTo(oldHash);
+        verify(repository, never()).saveAndFlush(any());
     }
 }

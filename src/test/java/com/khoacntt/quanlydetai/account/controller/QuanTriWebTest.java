@@ -4,6 +4,8 @@ import com.khoacntt.quanlydetai.account.dto.TaiKhoanDto;
 import com.khoacntt.quanlydetai.account.model.TrangThaiTaiKhoan;
 import com.khoacntt.quanlydetai.account.model.VaiTro;
 import com.khoacntt.quanlydetai.account.service.TaiKhoanService;
+import com.khoacntt.quanlydetai.account.security.TaiKhoanUserDetails;
+import com.khoacntt.quanlydetai.common.exception.NghiepVuException;
 import com.khoacntt.quanlydetai.config.SecurityConfig;
 import com.khoacntt.quanlydetai.hoso.controller.BoMonController;
 import com.khoacntt.quanlydetai.hoso.controller.GiangVienController;
@@ -94,5 +96,90 @@ class QuanTriWebTest {
     @Test @WithMockUser(roles="ADMIN") void doiVaiTroBatBuocDangNhapLai() throws Exception {
         when(userDetailsService.loadUserByUsername("user")).thenReturn(User.withUsername("user").password("hash").roles("SINH_VIEN").build());
         mvc.perform(get("/admin/tai-khoan")).andExpect(redirectedUrl("/login?sessionChanged"));verifyNoInteractions(taiKhoanService);
+    }
+
+    @Test @WithMockUser(roles="ADMIN") void xoaTaiKhoanBangPostVaBaoKetQua() throws Exception {
+        mvc.perform(post("/admin/tai-khoan/2/xoa").with(csrf()))
+                .andExpect(redirectedUrl("/admin/tai-khoan")).andExpect(flash().attributeExists("thanhCong"));
+        verify(taiKhoanService).xoa(2);
+    }
+
+    @Test @WithMockUser(roles="ADMIN") void xoaTaiKhoanCoLienKetBaoLoiTaiDanhSach() throws Exception {
+        doThrow(new NghiepVuException("Tài khoản đã có dữ liệu")).when(taiKhoanService).xoa(2);
+        mvc.perform(post("/admin/tai-khoan/2/xoa").with(csrf()))
+                .andExpect(redirectedUrl("/admin/tai-khoan"))
+                .andExpect(flash().attribute("loi", "Tài khoản đã có dữ liệu"));
+    }
+
+    @Test @WithMockUser(roles="SINH_VIEN") void sinhVienKhongDuocXoaHoacDatLaiMatKhauNguoiKhac() throws Exception {
+        mvc.perform(post("/admin/tai-khoan/2/xoa").with(csrf())).andExpect(status().isForbidden());
+        mvc.perform(post("/admin/tai-khoan/2/dat-lai-mat-khau").with(csrf())).andExpect(status().isForbidden());
+        verifyNoInteractions(taiKhoanService);
+    }
+
+    @Test @WithMockUser(roles="ADMIN") void thaoTacMoiVanBatBuocCsrf() throws Exception {
+        mvc.perform(post("/admin/tai-khoan/2/xoa")).andExpect(status().isForbidden());
+        mvc.perform(post("/admin/tai-khoan/2/dat-lai-mat-khau")).andExpect(status().isForbidden());
+        verifyNoInteractions(taiKhoanService);
+    }
+
+    void targetAccount() {
+        when(taiKhoanService.chiTiet(2)).thenReturn(new TaiKhoanDto(2,"sv01","SV 01",
+                "sv01@example.edu.vn",TrangThaiTaiKhoan.HOAT_DONG,Set.of(VaiTro.SINH_VIEN)));
+    }
+
+    @Test @WithMockUser(roles="ADMIN") void formDatLaiMatKhauRenderVaGuiDuoc() throws Exception {
+        targetAccount();
+        mvc.perform(get("/admin/tai-khoan/2/dat-lai-mat-khau")).andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("action=\"/admin/tai-khoan/2/dat-lai-mat-khau\"")));
+        mvc.perform(post("/admin/tai-khoan/2/dat-lai-mat-khau").with(csrf())
+                .param("matKhauMoi","NewPass123").param("xacNhanMatKhau","NewPass123"))
+                .andExpect(redirectedUrl("/admin/tai-khoan"));
+        verify(taiKhoanService).datLaiMatKhau(eq(2), any());
+    }
+
+    @Test @WithMockUser(roles="ADMIN") void formDatLaiMatKhauSaiKhongHienLaiMatKhau() throws Exception {
+        targetAccount();
+        doThrow(new NghiepVuException("Xác nhận không khớp")).when(taiKhoanService).datLaiMatKhau(eq(2),any());
+        mvc.perform(post("/admin/tai-khoan/2/dat-lai-mat-khau").with(csrf())
+                .param("matKhauMoi","SecretNew123").param("xacNhanMatKhau","SecretWrong123"))
+                .andExpect(status().isOk()).andExpect(model().attributeHasErrors("form"))
+                .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("SecretNew123"))))
+                .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("SecretWrong123"))));
+    }
+
+    @Test @WithMockUser(roles="ADMIN") void matKhauNganBiValidationChan() throws Exception {
+        targetAccount();
+        mvc.perform(post("/admin/tai-khoan/2/dat-lai-mat-khau").with(csrf())
+                .param("matKhauMoi","123").param("xacNhanMatKhau","123"))
+                .andExpect(status().isOk()).andExpect(model().attributeHasFieldErrors("form","matKhauMoi"));
+        verify(taiKhoanService,never()).datLaiMatKhau(anyInt(),any());
+    }
+
+    @Test void doiMatKhauKetThucPhienCuSauKhiCredentialsDaDuocXoa() throws Exception {
+        var principal = new TaiKhoanUserDetails("sv01", "old-bcrypt-hash", true,
+                List.of(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_SINH_VIEN")));
+        principal.eraseCredentials();
+        org.junit.jupiter.api.Assertions.assertNull(principal.getPassword());
+        doReturn(User.withUsername("sv01").password("new-bcrypt-hash").roles("SINH_VIEN").build())
+                .when(userDetailsService).loadUserByUsername("sv01");
+        mvc.perform(get("/ho-so").with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user(principal)))
+                .andExpect(redirectedUrl("/login?sessionChanged"));
+        verifyNoInteractions(hoSoService);
+    }
+
+    @Test void matKhauKhongDoiThiPhienVanHoatDong() throws Exception {
+        var principal = new TaiKhoanUserDetails("admin", "bcrypt-hash", true,
+                List.of(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN")));
+        principal.eraseCredentials();
+        doReturn(User.withUsername("admin").password("bcrypt-hash").roles("ADMIN").build())
+                .when(userDetailsService).loadUserByUsername("admin");
+        when(taiKhoanService.danhSach()).thenReturn(List.of(new TaiKhoanDto(1,"admin","Admin",
+                "admin@example.edu.vn",TrangThaiTaiKhoan.HOAT_DONG,Set.of(VaiTro.ADMIN)),
+                new TaiKhoanDto(2,"sv01","SV","sv01@example.edu.vn",TrangThaiTaiKhoan.HOAT_DONG,Set.of(VaiTro.SINH_VIEN))));
+        mvc.perform(get("/admin/tai-khoan").with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user(principal)))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("action=\"/admin/tai-khoan/2/xoa\"")))
+                .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("action=\"/admin/tai-khoan/1/xoa\""))));
     }
 }

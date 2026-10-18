@@ -2,6 +2,10 @@
 
 ## Kết quả đã chạy
 
+**Sửa lỗi form kế hoạch — 18/10/2026, 18:09:** Đã tái hiện chính xác lỗi `ck_danh_gia_khong_hd` khi trình duyệt gửi địa điểm hội đồng rỗng cho MON_HOC/TLCN. Service chuyển giá trị không áp dụng thành NULL; giữ nguyên CHECK và migration. Sáu ca mới kiểm tra tạo/sửa với chuỗi rỗng, dấu cách và tab đều đạt; toàn bộ 21 ca tích hợp đánh giá MySQL đạt. Lượt `verify` đạt BUILD SUCCESS, 192 ca liệt kê: 181 chạy đạt, 0 failure/error, 11 bỏ qua do không bật bộ tích hợp nhóm/tài khoản và SMTP ở lượt này. Dùng schema riêng đã dọn sau test, không ghi database chính. Log local: `.mvn-repository/kiem-thu-sua-ke-hoach.log`.
+
+**Bổ sung quản lý tài khoản — 18/10/2026, 17:50:** `verify` BUILD SUCCESS; 186 ca được liệt kê, 185 chạy đạt, 0 failure/error, 1 ca SMTP Mailpit bỏ qua vì không bật SMTP trong lượt này. Chạy đủ ba bộ tích hợp MySQL trên schema mới riêng, gồm 6 ca tài khoản: xóa kèm vai trò, rollback tài khoản/vai trò khi FK chặn, chặn tự xóa/tài khoản có hồ sơ, Method Security, đặt lại mật khẩu và thu hồi nhiều phiên cũ, thu hồi phiên của tài khoản đã xóa. Đã kiểm tra render form, CSRF, quyền admin, validation và không phản chiếu mật khẩu vào HTML khi lỗi. Schema thử của hai lượt kiểm tra tài khoản đã dọn; không ghi database chính. Log local: `.mvn-repository/test-tai-khoan-day-du.log`. Các kết quả Lab 6 bên dưới là mốc trước khi bổ sung hai chức năng này.
+
 - Java 21, Maven Wrapper, MySQL Server 8.0.46.
 - `verify`: BUILD SUCCESS, 160 test, 0 failure, 0 error, 0 skipped.
 - MySQL integration dùng hai schema thử mới riêng biệt; không sửa database chính.

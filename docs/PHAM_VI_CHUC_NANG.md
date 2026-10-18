@@ -44,6 +44,9 @@ Project không phải hệ thống đăng ký tín chỉ. Không có môn tiên 
 - Đăng nhập, đăng xuất và đổi mật khẩu.
 - Quản trị viên tạo tài khoản; người dùng không tự đăng ký.
 - Khóa hoặc mở khóa tài khoản.
+- Admin xóa tài khoản khác chưa có hồ sơ SV/GV hoặc dữ liệu liên quan; không tự xóa. Tài khoản đã sử dụng dùng khóa để giữ lịch sử.
+- Admin đặt lại mật khẩu tài khoản khác khi người dùng quên mật khẩu; nhập mật khẩu mới và xác nhận, không cần mật khẩu cũ. Người dùng đổi mật khẩu của mình tại mục Đổi mật khẩu, có kiểm tra mật khẩu hiện tại.
+- Khi xóa hoặc thay đổi mật khẩu, các phiên cũ bị kết thúc ở lần truy cập tiếp theo. Đặt lại mật khẩu không tự mở khóa tài khoản.
 - Gán một hoặc nhiều vai trò cho tài khoản.
 - Quản lý bộ môn, hồ sơ sinh viên và hồ sơ giảng viên.
 - Băm mật khẩu bằng BCrypt.

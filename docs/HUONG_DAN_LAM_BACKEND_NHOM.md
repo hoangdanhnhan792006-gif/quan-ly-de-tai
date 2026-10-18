@@ -5,6 +5,10 @@
 
 ## 1. Kiến trúc thống nhất
 
+**Bổ sung quản lý tài khoản 18/10/2026:** Admin được xóa tài khoản khác chưa có hồ sơ/dữ liệu liên quan và đặt lại mật khẩu tài khoản khác. Nghiệp vụ ở `TaiKhoanService`, form mới `DatLaiMatKhauForm`, giao diện `account/dat-lai-mat-khau.html`. Không tự xóa; muốn đổi mật khẩu chính mình phải nhập mật khẩu cũ ở chức năng cá nhân. FK RESTRICT bảo vệ dữ liệu, không sửa V1/V2. Phiên đăng nhập có dấu kiểm tra mật khẩu để bị kết thúc khi mật khẩu đã đổi; không lưu mật khẩu rõ trong phiên.
+
+Test MySQL phần tài khoản: đặt `TEST_ACCOUNT_DB_URL` theo mẫu `jdbc:mysql://127.0.0.1:3306/quan_ly_de_tai_thu_taikhoan_<ten_rieng>`, cùng `TEST_DB_USERNAME`/`TEST_DB_PASSWORD`. Phải tạo schema rỗng và cấp quyền cho tài khoản test trên đúng schema đó; không dùng database chính. Chạy `TaiKhoanMySqlTest` để kiểm tra xóa kèm vai trò, rollback khi FK chặn, phân quyền và đăng nhập/phiên cũ sau đặt lại mật khẩu. Bỏ biến môi trường thì lớp này được bỏ qua.
+
 Ứng dụng là Spring Boot monolith, tổ chức package theo tính năng. Mỗi tính năng đi theo một luồng hoàn chỉnh:
 
 ```text

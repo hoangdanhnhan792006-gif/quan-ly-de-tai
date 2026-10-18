@@ -14,6 +14,8 @@
             <p class="message success" th:if="${thanhCong}" th:text="${thanhCong}">
             </p>
             <a class="button" th:href="@{/admin/tai-khoan/tao}">Tạo tài khoản</a>
+            <p class="message error" th:if="${loi}" th:text="${loi}"></p>
+            <p>Chỉ xóa tài khoản chưa có hồ sơ và dữ liệu liên quan. Tài khoản đã sử dụng nên được khóa.</p>
             <div class="table-wrap">
                 <table>
                     <thead>
@@ -42,10 +44,17 @@
                             </td>
                             <td>
                                 <a th:href="@{/admin/tai-khoan/{id}/sua(id=${tk.id})}">Sửa</a>
+                                <a th:if="${tk.tenDangNhap != tenDangNhapHienTai}"
+                                   th:href="@{/admin/tai-khoan/{id}/dat-lai-mat-khau(id=${tk.id})}">Đặt lại mật khẩu</a>
                                 <form th:action="@{/admin/tai-khoan/{id}/trang-thai(id=${tk.id})}" method="post">
                                     <input type="hidden" name="trangThai" th:value="${tk.trangThai.name() == 'HOAT_DONG' ? 'BI_KHOA' : 'HOAT_DONG'}">
                                     <button class="button secondary" type="submit" th:text="${tk.trangThai.name() == 'HOAT_DONG' ? 'Khóa' : 'Mở khóa'}">
                                     </button>
+                                </form>
+                                <form th:if="${tk.tenDangNhap != tenDangNhapHienTai}"
+                                      th:action="@{/admin/tai-khoan/{id}/xoa(id=${tk.id})}" method="post"
+                                      onsubmit="return confirm('Xóa vĩnh viễn tài khoản này? Chỉ tài khoản chưa có dữ liệu liên quan mới xóa được.');">
+                                    <button class="button secondary" type="submit">Xóa</button>
                                 </form>
                             </td>
                         </tr>

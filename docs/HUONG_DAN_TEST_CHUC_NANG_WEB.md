@@ -1,196 +1,314 @@
-# Hướng dẫn test chức năng web
+# Hướng dẫn test website Quản lý Đề tài Sinh viên
 
-Cập nhật: 18/10/2026. Dùng cho nhóm chạy thử trên trình duyệt trước khi demo và deploy.
-Đây là danh sách việc cần kiểm tra, không phải xác nhận các ca đã chạy đạt.
+Làm theo thứ tự: **chuẩn bị → quản trị → luồng Môn học → sửa điểm → luồng hội đồng → thử lỗi và phân quyền**.
 
-## 1. Chuẩn bị
+## 1. Chuẩn bị trước khi bắt đầu
 
-### Chạy ứng dụng
+### 1.1. Chạy website
 
-Mở **PowerShell** tại thư mục project có `pom.xml` và `mvnw.cmd`:
+Mỗi thành viên dùng MySQL và mật khẩu trên máy mình. Máy mới cần tạo database rỗng `quan_ly_de_tai` và tài khoản có quyền trên database đó theo [README](../README.md) và [hướng dẫn backend](HUONG_DAN_LAM_BACKEND_NHOM.md). Flyway tạo cấu trúc khi khởi động; không import lại SQL vào database đang có dữ liệu.
+
+Mở terminal tại thư mục project có `pom.xml` và `mvnw.cmd`, kiểm tra `./mvnw.cmd -v`: Java phải là **21**. Chọn đúng cú pháp terminal bên dưới.
+
+**PowerShell:**
 
 ```powershell
-.\mvnw.cmd -v
 $env:DB_USERNAME = "doan_dev"
-$env:DB_PASSWORD = "<mat_khau_database_tren_may_ban>"
+$env:DB_PASSWORD = "<mat_khau_mysql_tren_may_ban>"
+$env:MAIL_ENABLED = "true"
 .\mvnw.cmd --settings .mvn\settings.xml spring-boot:run
 ```
 
-- Maven phải dùng Java 21. Thay mật khẩu mẫu bằng thông tin máy mình; không gửi mật khẩu lên Git.
-- Chờ khởi động thành công, mở http://localhost:8080/login. Nếu đang chạy bản cũ, Ctrl+C rồi chạy lại.
-- Tài khoản web khác tài khoản MySQL. Nếu chưa có admin, xem phần tạo quản trị viên đầu tiên trong [README](../README.md).
-- Dùng dữ liệu thử có tiền tố `THU_`. Thao tác sẽ lưu vào database đang kết nối; không xóa bảng hoặc import lại SQL để test.
-- Dùng profile trình duyệt khác nhau khi thử nhiều người cùng lúc. Hai tab cùng profile dùng chung đăng nhập.
+**CMD:**
 
-### Tài khoản và tệp thử
-
-Các tên dưới đây là gợi ý **cần tạo**, không phải tài khoản có sẵn. Admin tạo tài khoản trước, hồ sơ SV/GV sau; tất cả đang hoạt động.
-
-| Tài khoản | Vai trò / nhiệm vụ |
-|---|---|
-| Admin hiện có | Quản lý tài khoản, bộ môn, hồ sơ |
-| `thu_truongkhoa` | TRUONG_KHOA: tạo và triển khai đợt |
-| `thu_canbokhoa` | CAN_BO_KHOA: công bố đề tài, duyệt đăng ký, tổ chức đánh giá |
-| `thu_truongbomon` | GIANG_VIEN + TRUONG_BO_MON; hồ sơ GV thuộc bộ môn thử: duyệt đề tài và phân công GVHD |
-| `thu_gv1` | GIANG_VIEN: đề xuất, làm GVHD |
-| `thu_gv2` | GIANG_VIEN: GVPB, có thể kiêm ủy viên |
-| `thu_gv3`, `thu_gv4` | GIANG_VIEN: chủ tịch và thư ký hội đồng |
-| `thu_sv1`–`thu_sv6` | SINH_VIEN: nhóm A gồm SV1–3, nhóm B gồm SV4–6; SV1 và SV4 làm trưởng |
-
-Tạo bộ môn `THU_CNTT`, gán hồ sơ GV vào đó. Khi kiểm tra quyền khác bộ môn, tạo thêm một bộ môn và trưởng bộ môn tương ứng. Mỗi tài khoản dùng email riêng.
-
-Chuẩn bị **PDF báo cáo V1/V2, slide PDF hoặc PPTX, mã nguồn ZIP**; mỗi tệp tối đa 50 MiB. Dùng tệp thực, không đổi đuôi TXT thành PDF để làm tệp hợp lệ. Có thể dùng một bản đổi đuôi riêng để kiểm tra bị từ chối.
-
-### Lịch chạy thử
-
-Chuẩn bị tài khoản/tệp trước khi tạo đợt. Ví dụ bắt đầu thử lúc 14:00:
-
-| Mốc | Giờ ví dụ |
-|---|---|
-| GV đăng ký | 14:00–14:20 |
-| SV đăng ký | 14:20–14:50 |
-| Hạn nộp báo cáo | 15:10 |
-| Phản biện | 15:15 |
-| Hạn điểm PB (TLCN/KLTN) | 15:35 |
-| Hội đồng (NCKH/KLTN) | 15:40–16:00 |
-
-Điều chỉnh theo giờ thực tế và dành đủ thời gian thao tác. **GV kết thúc không muộn hơn SV bắt đầu.** Phải chờ đúng giai đoạn để thao tác; đợt đã triển khai không sửa lịch trên web. Không đổi đồng hồ máy hoặc sửa database để vượt hạn.
-
-| Loại | Hình thức đánh giá | Trường bổ sung khi tạo đợt |
-|---|---|---|
-| MON_HOC | GVPB riêng | Không có hạn điểm PB/ngày hội đồng |
-| TLCN | GVPB riêng | Hạn điểm PB |
-| NCKH | GVPB rồi hội đồng | Không có hạn điểm PB/ngày hội đồng cấp đợt; vẫn xếp lịch hội đồng cụ thể |
-| KLTN | GVPB rồi hội đồng | Hạn điểm PB và ngày hội đồng khớp lịch đánh giá |
-
-## 2. Chạy luồng chính trước
-
-Bắt đầu bằng đợt **MON_HOC**. Làm lần lượt, chỉ sang bước tiếp theo khi bước trước thành công.
-
-| Bước | Người thực hiện | Việc làm → kết quả cần thấy |
-|---|---|---|
-| 1 | Trưởng khoa | Tạo đợt, kiểm tra lịch rồi triển khai |
-| 2 | GV1, trong hạn GV | Tạo đề tài thuộc THU_CNTT, gửi duyệt → trạng thái chờ duyệt |
-| 3 | Trưởng bộ môn | Duyệt đề tài và phân công GV1 hướng dẫn → có 1 GVHD |
-| 4 | Cán bộ khoa | Công bố đề tài → SV xem được trong danh sách |
-| 5 | SV1, trong hạn SV | Tạo nhóm A, mời SV2 và SV3; hai bạn nhận lời → nhóm đủ 3 người, SV1 là trưởng |
-| 6 | SV1 | Đăng ký đề tài đã công bố → chờ duyệt và được giữ chỗ |
-| 7 | Cán bộ khoa | Chấp thuận đăng ký → nhóm đang thực hiện, khóa thay đổi thành viên và đề tài |
-| 8 | SV1, trước hạn báo cáo | Nộp đủ PDF + slide + ZIP; nộp lại bộ V2 → có 2 phiên bản, tải đúng nội dung từng bản |
-| 9 | Cán bộ khoa | Lập kế hoạch với GVPB là GV2; tới giờ PB và qua hạn báo cáo thì chốt bản cuối, mở phản biện → bản V2 dùng chấm |
-| 10 | GV2 | Nhập 8.0 và nhận xét, lưu nháp rồi nộp chính thức → PB hoàn tất |
-| 11 | Cán bộ khoa | Tổng hợp, xác nhận, công bố → điểm 8.0, đạt |
-| 12 | SV1–3 | Xem Kết quả, lọc đúng đợt → thấy điểm/nhận xét; SV ngoài nhóm không xem được |
-
-Trước bước 11 công bố, kiểm tra SV **chưa thấy điểm**. Nếu thử email, bật Mailpit trước khi chạy ứng dụng theo mục 4.
-
-### Thử thêm hội đồng
-
-Tạo đợt **KLTN** và lặp lại bước 1–8. Khoa lập hội đồng gồm **GV3 chủ tịch, GV4 thư ký, GV2 ủy viên**, chốt rồi gán vào kế hoạch; GVPB vẫn là GV2.
-
-1. GV2 nộp điểm PB **8.0**.
-2. Sau khi PB xong và tới lịch, khoa mở chấm hội đồng.
-3. GV3 nộp **7.0**, GV4 nộp **9.0**. GV2 kiêm nhiệm chỉ tính một điểm, không nhập phiếu thứ hai.
-4. **GV3/chủ tịch tổng hợp**, khoa xác nhận và công bố.
-5. Kết quả phải là **(8 + 7 + 9) / 3 = 8.0**, đạt; không tính điểm GVHD.
-
-Kiểm tra thêm TLCN và NCKH theo bảng khác biệt ở mục 1; không cần học lại luồng mới.
-
-### Thử sửa điểm
-
-1. GV2 xin sửa, ghi lý do → khoa duyệt → GV2 nộp điểm mới **9.0**.
-2. Trong lúc điều chỉnh, SV vẫn thấy kết quả đã công bố cũ kèm nhãn **Đang điều chỉnh**.
-3. Tổng hợp lại (chủ tịch nếu có hội đồng), khoa xác nhận và công bố lại.
-4. SV thấy kết quả mới, hết nhãn điều chỉnh; lịch sử điểm/kết quả cũ còn nguyên. Với MON_HOC chỉ GV2 chấm, điểm mới là **9.0**.
-
-## 3. Kiểm tra các trường hợp dễ lỗi
-
-Dùng dữ liệu phụ cho thao tác khóa, xóa, từ chối, rời nhóm; tránh làm hỏng luồng demo. Mỗi dòng có nhiều tình huống thì kiểm tra từng tình huống. **Bị từ chối đúng quy tắc là Đạt.**
-
-| Mã | Thử thao tác | Kết quả mong đợi |
-|---|---|---|
-| TK01 | Đăng nhập sai; đăng xuất rồi mở lại trang riêng | Không truy cập được |
-| TK02 | Tạo trùng username/email/mã SV/GV; thiếu trường; hồ sơ sai vai trò | Báo lỗi, không tạo dữ liệu không hợp lệ |
-| TK03 | Đổi mật khẩu; khóa/mở khóa hoặc đổi vai trò tài khoản phụ | Mật khẩu/quyền mới có hiệu lực; phiên cũ kết thúc khi bị thay đổi; tài khoản khóa không đăng nhập được |
-| TK04 | Admin tự khóa/tự bỏ ADMIN; gán TRUONG_BO_MON thiếu GIANG_VIEN | Bị chặn |
-| DT01 | Lịch bắt đầu >= kết thúc; GV/SV chồng nhau; thiếu hạn/ngày bắt buộc | Không lưu được đợt |
-| DT02 | Cán bộ khoa tạo đợt; trưởng bộ môn duyệt/phân công đề tài khác bộ môn | Bị chặn; chỉ trưởng khoa tạo đợt, trưởng bộ môn xử lý đúng bộ môn mình |
-| DT03 | GV đề xuất ngoài hạn; SV xem đề tài chưa công bố | Bị chặn |
-| DT04 | Phân công 0 hoặc 3 GVHD; công bố chưa có GVHD | Bị chặn; 1–2 GVHD hợp lệ được chấp nhận |
-| NH01 | Nhận lời mời; từ chối/thu hồi; tham gia hai nhóm cùng đợt | Chỉ nhận lời mới thành thành viên; không thuộc hai nhóm cùng đợt |
-| NH02 | Nhóm 1–2 người đăng ký; nhóm 3 hoặc 5 người đăng ký; thêm người thứ 6 | Thiếu 3 bị chặn; 3–5 hợp lệ; không vượt 5 |
-| NH03 | Đổi trưởng/rời nhóm trước duyệt; sửa thành viên sau duyệt | Trước duyệt và còn hạn được xử lý đúng; sau duyệt bị khóa |
-| DK01 | Thành viên thường đăng ký; nhóm khác chọn đề tài đang giữ chỗ | Bị chặn |
-| DK02 | Đổi sang đề tài đã bị giữ; đăng ký lại sau bị từ chối khi còn hạn | Đổi thất bại vẫn giữ đăng ký cũ; bị từ chối được chọn lại |
-| BC01 | Thiếu một tệp, tệp rỗng/sai định dạng hoặc >50 MiB | Bị chặn, không tạo bộ báo cáo thiếu |
-| BC02 | Thành viên thường nộp; trưởng nộp sau hạn | Bị chặn; chỉ trưởng được nộp trước hạn |
-| BC03 | Thành viên/GVHD/người chấm được giao tải; người ngoài dùng cùng link | Đúng quyền tải được, người ngoài bị chặn |
-| HD01 | Hội đồng 2/6 GV, trùng GV, thiếu chủ tịch/thư ký; thử 3/5 GV hợp lệ | Cấu hình sai bị chặn; cấu hình hợp lệ được chấp nhận |
-| HD02 | Gán GVHD làm GVPB/thành viên hội đồng; đổi GVHD thành người đang chấm | Cả hai chiều đều bị chặn |
-| HD03 | Dùng hội đồng nháp/khác đợt; mở PB hoặc hội đồng trước điều kiện cho phép | Bị chặn; hội đồng cần PB hoàn tất và tới giờ |
-| HD04 | Phân công cùng GV trùng lịch ở hai đề tài; trùng địa điểm hội đồng cùng đợt | Bị chặn |
-| CD01 | Điểm -1 hoặc >10, thiếu nhận xét; thử điểm 0 và 10 | Dữ liệu sai bị chặn; hai biên hợp lệ được chấp nhận |
-| CD02 | Thiếu phiếu/phiếu còn nháp mà tổng hợp; GV không được giao chấm | Bị chặn |
-| KQ01 | GVPB riêng ngoài hội đồng 3 người | Cần đủ 4 người chấm; trung bình tính mỗi GV một lần |
-| KQ02 | Tất cả điểm 3.95; bộ khác tất cả điểm 3.94 | Lần lượt 4.0 đạt và 3.9 không đạt sau làm tròn |
-| KQ03 | SV lọc đợt mình tham gia; đổi sang ID đợt/nhóm người khác | Chỉ thấy kết quả của mình; không lộ dữ liệu khác |
-| SD01 | Sửa điểm chưa được duyệt; tự duyệt yêu cầu của mình; công bố khi còn điều chỉnh dang dở | Bị chặn; kết quả đã công bố cũ giữ nguyên |
-| TB01 | Tạo thông báo nháp + tệp → công bố → thu hồi | SV chỉ xem/tải lúc công bố; chưa đăng nhập không xem được |
-| XOA01 | Xóa đợt/đề tài nháp chưa dùng và đúng quyền; xóa hồ sơ/bộ môn có liên kết | Bản nháp đủ điều kiện xóa được; dữ liệu có liên kết bị chặn |
-| XOA02 | Xóa thông báo nháp không tệp; thử bài có tệp hoặc đã công bố | Chỉ nháp không tệp xóa được; bài công bố dùng thu hồi |
-| Q01 | SV gõ URL quản trị; đổi ID nhóm/báo cáo/phiếu sang bản ghi có thật của người khác | Backend chặn, không chỉ ẩn menu |
-| Q02 | Xóa input `_csrf` bằng DevTools trên form thử rồi gửi | Bị chặn, dữ liệu không thay đổi; tải lại form sau khi thử |
-
-**Thử đồng thời bằng hai profile độc lập:**
-
-- Hai nhóm đủ 3–5 người cùng chọn một đề tài → chỉ một nhóm giữ được.
-- Một SV đồng ý lời mời hai nhóm cùng đợt → chỉ vào một nhóm.
-- Nhóm đang 4 người, hai SV cùng nhận lời → chỉ thêm một người, tổng tối đa 5.
-
-Bấm tay gần nhau chỉ kiểm tra sơ bộ; kiểm thử transaction đồng thời còn được thực hiện bằng test tự động.
-
-## 4. Kiểm tra email theo Lab 6
-
-Làm theo [Hướng dẫn email](HUONG_DAN_EMAIL.md) để chạy Mailpit và bật `MAIL_ENABLED=true` trước khi khởi động ứng dụng.
-
-- [ ] Công bố kết quả → http://localhost:8025 nhận một thư riêng cho mỗi SV trong nhóm.
-- [ ] Thư đúng tên đề tài, đợt, phiên bản; tiếng Việt hiển thị đúng.
-- [ ] Link mở trang kết quả, yêu cầu đăng nhập và chỉ xem dữ liệu đúng quyền.
-- [ ] Công bố lại sau sửa điểm → nhận thư cho phiên bản mới.
-- [ ] Dừng Mailpit, công bố kết quả thử khác → kết quả vẫn lưu; log báo lỗi gửi mail.
-
-Mailpit là hộp thư giả lập, **không gửi đến Gmail**. Ứng dụng chưa có chức năng tự gửi lại thư thất bại.
-
-## 5. Ghi kết quả và kết thúc kiểm thử
-
-Mỗi bước/ca ghi **Đạt / Lỗi / Chưa chạy / Bị chặn do thiếu điều kiện**. Với dòng nhiều tình huống, thêm hậu tố a, b… để ghi riêng.
-
-| Bước/mã ca | Người test | Mã đợt/nhóm | Kết quả thực tế | Trạng thái |
-|---|---|---|---|---|
-| Ví dụ: NH02a | … | … | … | … |
-
-Khi báo lỗi, gửi: **vai trò → các bước thao tác → mong đợi → thực tế → ảnh/log**, kèm mã dữ liệu và thời gian nếu lỗi liên quan hạn. Không gửi mật khẩu.
-
-Trước khi kết luận lỗi, kiểm tra: đúng tài khoản/hồ sơ chưa, đúng hạn chưa, bản ghi đã được duyệt/công bố chưa, ứng dụng có đang chạy bản code mới không.
-
-### Test tự động bổ trợ
-
-Tại PowerShell trong project, chạy bộ không kết nối MySQL/SMTP thật:
-
-```powershell
-Remove-Item Env:TEST_DB_URL, Env:TEST_TV4_DB_URL, Env:TEST_SMTP_PORT -ErrorAction SilentlyContinue
-.\mvnw.cmd --settings .mvn\settings.xml clean test
+```cmd
+set "DB_USERNAME=doan_dev"
+set "DB_PASSWORD=mat_khau_mysql_tren_may_ban"
+set "MAIL_ENABLED=true"
+mvnw.cmd --settings .mvn\settings.xml spring-boot:run
 ```
 
-Mong đợi `BUILD SUCCESS`; các test cần MySQL/Mailpit có thể `Skipped` do chưa bật môi trường. Xem `target/surefire-reports`. Muốn chạy tích hợp dùng **schema thử riêng**, theo [Hướng dẫn backend](HUONG_DAN_LAM_BACKEND_NHOM.md); không dùng database chính.
+Thay các giá trị mẫu trước khi chạy. Nếu mật khẩu chứa ký tự đặc biệt của CMD, nên dùng PowerShell và đặt mật khẩu trong dấu nháy đơn. Không gửi mật khẩu lên Git. File `.env` không tự được đọc khi chạy Maven.
 
-Kết quả tự động đã ghi nhận nằm trong [Biên bản kiểm thử](KIEM_THU_BAN_RUBRIC.md), không thay thế việc test giao diện bản đang chạy.
+- Chờ ứng dụng khởi động xong rồi mở http://localhost:8080/login.
+- Tài khoản web khác tài khoản MySQL `root`/`doan_dev`. Chưa có admin thì làm mục **Tạo quản trị viên đầu tiên** trong README; tạo xong phải tắt `APP_BOOTSTRAP_ADMIN_ENABLED` và chạy lại.
+- Khi đổi code hoặc biến môi trường: **Ctrl+C → chạy lại trong cùng terminal** để giữ cấu hình database. Chỉ chạy một ứng dụng trên cổng 8080.
+- Hai tab cùng profile trình duyệt dùng chung đăng nhập. Để thử nhiều vai trò đồng thời, dùng profile riêng hoặc trình duyệt khác nhau; nếu không, đăng xuất rồi đăng nhập lần lượt.
 
-### Đủ điều kiện chuyển sang deploy khi
+### 1.2. Chuẩn bị Mailpit để xem thư khi công bố
 
-- [ ] Luồng PB riêng và luồng có hội đồng chạy đến công bố; kiểm tra đủ khác biệt của bốn loại.
-- [ ] Sửa điểm, giới hạn nhóm, giữ chỗ, tệp, phân quyền và email hoạt động đúng.
-- [ ] Lỗi đã phát hiện được sửa và kiểm tra lại; ca chưa chạy được ghi rõ.
-- [ ] Nhóm lưu kết quả/ảnh demo và chạy test tự động phù hợp.
+1. Tải Mailpit Windows từ [trang phát hành](https://github.com/axllent/mailpit/releases), giải nén ngoài thư mục code. Nếu đã có `mailpit.exe` thì dùng lại.
+2. Mở terminal riêng tại thư mục chứa `mailpit.exe`, chạy:
 
-Phân công gợi ý: **TV1** tài khoản/quyền; **TV2** đợt/đề tài; **TV3** nhóm/đăng ký; **TV4** báo cáo/chấm điểm/thông báo/email. Đổi người kiểm tra chéo một luồng. Khi deploy xong, chạy lại luồng chính trên URL online theo [Hướng dẫn triển khai](TRIEN_KHAI.md).
+```powershell
+.\mailpit.exe --listen 127.0.0.1:8025 --smtp 127.0.0.1:1025
+```
+
+3. Giữ terminal Mailpit mở, vào http://localhost:8025. Chưa công bố kết quả thì hộp thư trống là bình thường.
+4. Đảm bảo terminal Spring Boot đã đặt `MAIL_ENABLED=true` **trước khi chạy ứng dụng**. Nếu ứng dụng đang chạy, Ctrl+C, đặt biến rồi chạy lại.
+
+Cấu hình local mặc định: SMTP `localhost:1025`, không cần tài khoản, mật khẩu hay TLS. Mailpit chỉ nhận thư thử, không chuyển đến Gmail. Xem thêm [hướng dẫn email](HUONG_DAN_EMAIL.md) nếu cần xử lý cấu hình.
+
+### 1.3. Chuẩn bị tài khoản, hồ sơ và tệp
+
+Đăng nhập admin, tạo bộ môn đang hoạt động, ví dụ `THU_CNTT`. Tiếp theo tạo tài khoản, rồi tạo hồ sơ SV/GV tương ứng. Các tên dưới đây là gợi ý tự tạo, không phải tài khoản có sẵn.
+
+| Tài khoản gợi ý | Vai trò cần gán | Dùng để làm gì |
+|---|---|---|
+| Admin hiện có | ADMIN | Quản lý tài khoản, bộ môn và hồ sơ |
+| `thu_truongkhoa` | TRUONG_KHOA | Tạo/triển khai đợt và xử lý nghiệp vụ khoa |
+| `thu_canbokhoa` | CAN_BO_KHOA | Công bố đề tài, duyệt đăng ký, tổ chức đánh giá, công bố điểm |
+| `thu_truongbomon` | GIANG_VIEN + TRUONG_BO_MON | Duyệt đề tài, phân công GVHD trong bộ môn mình |
+| `thu_gv1` | GIANG_VIEN | Đề xuất đề tài và làm GVHD |
+| `thu_gv2` | GIANG_VIEN | GVPB, có thể kiêm ủy viên hội đồng |
+| `thu_gv3` | GIANG_VIEN | Chủ tịch hội đồng |
+| `thu_gv4` | GIANG_VIEN | Thư ký hội đồng |
+| `thu_sv1`–`thu_sv6` | SINH_VIEN | Nhóm A: SV1–3; nhóm B: SV4–6 |
+| `thu_phu` | SINH_VIEN | Tài khoản phụ chưa có hồ sơ để thử khóa/xóa/đặt lại mật khẩu |
+
+- Tất cả GV và trưởng bộ môn phải có hồ sơ GV, gắn vào `THU_CNTT`. Trưởng bộ môn phụ trách bộ môn ghi trong hồ sơ của mình.
+- SV1–6 phải có hồ sơ SV. Chỉ tạo tài khoản đăng nhập là chưa đủ để làm nghiệp vụ.
+- Tài khoản phải đang hoạt động; tên đăng nhập, email, mã SV/GV riêng biệt. Có thể dùng email thử `thu_sv1@example.test` để xem trong Mailpit.
+- ADMIN không tự có quyền khoa/GV/SV. Dùng các tài khoản riêng ở bảng để tránh nhầm quyền.
+- Chuẩn bị báo cáo PDF V1 và V2 có nội dung khác nhau, slide PDF/PPTX, mã nguồn ZIP có tệp bên trong và một PDF thông báo. Mỗi tệp tối đa **50 MiB**; không dùng tệp chỉ đổi đuôi để làm tài liệu hợp lệ.
+- Dùng tiền tố `THU_` cho dữ liệu thử. Việc test trên web sẽ lưu dữ liệu vào database ứng dụng đang kết nối.
+
+## 2. Test quản trị và đăng nhập
+
+Dùng tài khoản phụ cho thao tác đổi quyền, khóa, xóa hoặc đặt lại mật khẩu; giữ các tài khoản chính để chạy luồng đề tài.
+
+| Chức năng | Cách thao tác | Điều cần kiểm tra |
+|---|---|---|
+| Đăng nhập/đăng xuất | Đăng nhập đúng, đăng xuất, mở lại trang riêng; thử mật khẩu sai | Đúng thì vào dashboard; sai hoặc đã đăng xuất thì không truy cập được trang riêng |
+| Tạo và sửa tài khoản | Admin → Quản lý tài khoản → Tạo tài khoản; sau đó Sửa | Lưu được thông tin hợp lệ; tên đăng nhập/email trùng hoặc thiếu trường bị từ chối |
+| Bộ môn và hồ sơ | Admin tạo/sửa bộ môn, hồ sơ SV/GV; ngừng rồi bật lại bộ môn phụ | Hồ sơ gắn đúng tài khoản/vai trò; không trùng mã; bộ môn ngừng hoạt động không nhận gán GV mới |
+| Khóa/mở khóa | Tài khoản phụ đang đăng nhập ở trình duyệt khác; admin bấm Khóa; người đó tải lại trang | Phiên cũ kết thúc; tài khoản khóa không đăng nhập được; mở khóa thì đăng nhập được |
+| Đổi vai trò | Admin sửa vai trò tài khoản phụ; người đó tải lại rồi đăng nhập lại | Phiên cũ kết thúc, quyền mới có hiệu lực; không được bỏ vai trò SV/GV khi hồ sơ còn tồn tại |
+| Đổi mật khẩu cá nhân | Người dùng → Đổi mật khẩu → nhập mật khẩu cũ, mật khẩu mới, xác nhận | Phải đúng mật khẩu cũ; đổi xong đăng nhập bằng mật khẩu mới, mật khẩu cũ không dùng được |
+| Admin đặt lại mật khẩu | Admin → Quản lý tài khoản → Đặt lại mật khẩu của tài khoản phụ → nhập mới và xác nhận | Không cần mật khẩu cũ; mật khẩu mới đăng nhập được; các phiên cũ bị đăng xuất khi tải lại; không tự mở khóa tài khoản |
+| Xóa tài khoản | Tạo tài khoản phụ chưa có hồ sơ/dữ liệu → Xóa → xác nhận | Tài khoản biến mất và không đăng nhập được; hủy hộp xác nhận thì không xóa |
+| Chặn xóa tài khoản đã dùng | Thử xóa tài khoản có hồ sơ hoặc đã tạo đợt/thông báo | Có thông báo từ chối, dữ liệu giữ nguyên; dùng Khóa nếu muốn ngừng sử dụng |
+
+Admin không được tự khóa, tự xóa hoặc tự bỏ quyền ADMIN. Muốn đổi mật khẩu của chính admin, dùng **Đổi mật khẩu** và nhập mật khẩu hiện tại.
+
+Khi thử đổi/đặt lại mật khẩu, kiểm tra thêm: xác nhận không khớp, mật khẩu dưới 8 ký tự, quá 72 byte UTF-8 hoặc trùng mật khẩu hiện tại phải bị từ chối. Mật khẩu đúng vẫn phải dùng được sau các lần thử sai.
+
+## 3. Test luồng Môn học từ đầu đến cuối
+
+### Bước 1 — Trưởng khoa tạo và triển khai đợt
+
+Đăng nhập `thu_truongkhoa` → **Đợt đăng ký** → tạo đợt loại **MON_HOC**. Đặt mã/tên dễ nhận biết, ví dụ `THU_MH_01`.
+
+Chuẩn bị tài khoản và tệp xong mới đặt lịch. Nếu bắt đầu test lúc 14:00, có thể dùng lịch sau; **đổi theo giờ thực tế trên máy**, không nhập nguyên các giờ đã trôi qua.
+
+| Mốc | Ví dụ | Làm gì trong thời gian này |
+|---|---|---|
+| GV đăng ký | 14:00–14:20 | GV đề xuất, trưởng bộ môn duyệt/phân công, khoa công bố |
+| SV đăng ký | 14:20–14:50 | SV tạo nhóm, nhận lời mời, đăng ký và khoa chấp thuận |
+| Hạn nộp báo cáo | 15:10 | Nhóm trưởng nộp cả V1 và V2 trước giờ này |
+| Lịch phản biện | 15:15 | Nhập sau ở màn hình lập kế hoạch đánh giá |
+
+**GV kết thúc không muộn hơn SV bắt đầu.** Cho đủ thời gian thao tác; đợt đã triển khai không sửa lịch trên web. MON_HOC để trống hạn điểm PB và ngày hội đồng. Kiểm tra thông tin rồi **Triển khai**.
+
+### Bước 2 — GV đề xuất đề tài
+
+Đăng nhập `thu_gv1` → **Đề tài của tôi** → đề xuất đề tài:
+
+1. Chọn đúng đợt đang mở và bộ môn.
+2. Nhập mã, tên, nội dung và các thông tin bắt buộc.
+3. Lưu nháp, thử sửa, rồi **Gửi duyệt**.
+
+Đề tài phải chuyển sang chờ duyệt. Làm bước này trong hạn GV đăng ký.
+
+### Bước 3 — Trưởng bộ môn duyệt, phân công; khoa công bố
+
+1. Đăng nhập `thu_truongbomon` → danh sách duyệt đề tài → mở đề tài vừa gửi → chấp thuận.
+2. Phân công `thu_gv1` làm GVHD. Lần đầu dùng một người cho đơn giản; hệ thống cho phép 1–2 GVHD. Người đề xuất không tự được gán hướng dẫn.
+3. Đăng nhập `thu_canbokhoa` hoặc trưởng khoa → công bố đề tài.
+4. Đăng nhập SV để kiểm tra thấy đề tài đã công bố, đúng đợt/bộ môn/GVHD. Chưa tới giai đoạn SV thì chờ tới giờ mới tạo nhóm và đăng ký.
+
+### Bước 4 — SV tạo nhóm và nhận lời mời
+
+Trong thời gian SV đăng ký:
+
+1. Đăng nhập SV1 → **Nhóm và đăng ký** → tạo nhóm A. SV1 trở thành nhóm trưởng.
+2. SV1 mời SV2 và SV3.
+3. Đăng nhập SV2, vào phần lời mời và đồng ý; làm tương tự với SV3.
+4. Quay lại SV1, kiểm tra nhóm đủ **3 SV và đúng một trưởng**. Lời mời chưa được đồng ý chưa tính là thành viên.
+
+Nhóm đang lập có thể ít hơn 3 người; khi đăng ký/chấp thuận phải đủ **3–5 người**.
+
+### Bước 5 — Nhóm trưởng đăng ký, khoa chấp thuận
+
+1. SV1 → chi tiết nhóm → **Chọn / Đổi đề tài** → chọn đề tài đã công bố.
+2. Kiểm tra đăng ký ở trạng thái chờ duyệt, đề tài đã được giữ chỗ.
+3. Khoa → **Duyệt đăng ký** → mở đúng nhóm và đề tài → chấp thuận.
+4. Kiểm tra nhóm đang thực hiện; thay đổi thành viên, nhóm trưởng và đề tài bị khóa.
+
+**Duyệt đề tài ở bước 3 khác với chấp thuận nhóm đăng ký ở bước này.** Phải hoàn tất cả hai mới tới phần thực hiện/nộp bài.
+
+### Bước 6 — Nhóm trưởng nộp báo cáo
+
+Đăng nhập SV1 → **Báo cáo** → mở nhóm/đề tài:
+
+1. Nộp đủ **báo cáo PDF + slide PDF/PPTX + mã nguồn ZIP**, trước hạn báo cáo.
+2. Nộp thêm một bộ đầy đủ với PDF V2 có nội dung khác V1.
+3. Tải lại cả hai phiên bản để kiểm tra đúng tệp. Mỗi lần nộp là một bộ đủ ba mục; không chỉ gửi riêng PDF mới.
+
+Thành viên thường được xem/tải đúng quyền nhưng không được nộp thay nhóm trưởng.
+
+### Bước 7 — Khoa lập kế hoạch phản biện
+
+Khoa → **Đánh giá → Lập kế hoạch đánh giá**:
+
+1. Chọn đúng nhóm/đề tài đã được chấp thuận.
+2. Chọn GVPB là `thu_gv2`, **khác GVHD**.
+3. Nhập lịch phản biện từ hạn báo cáo trở đi và địa điểm phản biện.
+4. Với MON_HOC/TLCN, **để trống toàn bộ phần Hội đồng**: hội đồng, giờ bắt đầu/kết thúc và địa điểm.
+5. Bấm **Lưu kế hoạch**, kiểm tra lại thông tin trên trang chi tiết.
+
+Có thể lập kế hoạch trước giờ phản biện. Sau khi lưu, nếu chưa tới giờ thì chờ; không cần tạo lại đợt. Chỉ sửa kế hoạch trước khi bắt đầu chấm.
+
+### Bước 8 — Chờ đủ điều kiện rồi mở phản biện
+
+Chờ **qua hạn nộp báo cáo và tới giờ phản biện**. Khoa mở chi tiết đánh giá → **Chốt báo cáo cuối và mở phản biện**.
+
+Kiểm tra bản dùng chấm là **V2**, trạng thái phản biện chuyển sang đang chấm. Không mở được thì kiểm tra giờ/hạn và nhóm đã có bộ báo cáo hợp lệ chưa. Không đổi đồng hồ máy hoặc sửa SQL để vượt hạn.
+
+### Bước 9 — GVPB nhập và nộp điểm
+
+Đăng nhập `thu_gv2` → **Đánh giá** → mở đề tài được giao:
+
+1. Xem báo cáo, nhập thử **8.0** và nhận xét.
+2. Bấm **Lưu nháp**, kiểm tra dữ liệu được giữ nhưng chưa hoàn tất chấm.
+3. Bấm **Nộp chính thức**, kiểm tra phản biện hoàn tất.
+
+Điểm chính thức không sửa trực tiếp; muốn sửa phải gửi yêu cầu như mục 4.
+
+### Bước 10 — Khoa tổng hợp, xác nhận và công bố
+
+1. Khoa mở chi tiết đánh giá → phần **Tổng hợp kết quả** → nhập nhận xét → **Tạo phiên bản kết quả**.
+2. Kiểm tra điểm **8.0, Đạt** vì đợt MON_HOC này chỉ có một GVPB chấm.
+3. Bấm **Xác nhận**, rồi **Công bố cho sinh viên**. Đây là hai thao tác riêng.
+4. Trước khi công bố, đăng nhập SV kiểm tra chưa thấy điểm; sau công bố, SV1–3 phải thấy đúng điểm và nhận xét ở **Kết quả**, lọc theo đợt.
+5. SV ngoài nhóm không được thấy kết quả của nhóm A.
+
+### Bước 11 — Xem email trong Mailpit
+
+Mở http://localhost:8025 sau khi công bố:
+
+- Mỗi SV trong nhóm phải có một thư riêng gửi tới email đã khai báo trong tài khoản.
+- Mở thư, kiểm tra tên đề tài, đợt, phiên bản kết quả và tiếng Việt.
+- Bấm link xem kết quả: cần đăng nhập đúng tài khoản để xem dữ liệu của mình.
+- Nếu chưa có thư, kiểm tra Mailpit còn chạy, Spring Boot đã bật `MAIL_ENABLED=true` từ lúc khởi động, và thao tác vừa làm đã là **Công bố**, không chỉ **Xác nhận**.
+
+Không bấm công bố lại cùng phiên bản để gửi lại thư. Ứng dụng chưa hỗ trợ tự gửi lại thư thất bại.
+
+## 4. Test sửa điểm sau khi công bố
+
+Dùng kết quả 8.0 của luồng vừa làm:
+
+1. **GV2:** mở chi tiết đánh giá → nhập lý do xin sửa → **Gửi yêu cầu sửa**.
+2. **SV1:** mở Kết quả → vẫn thấy **8.0** và nhãn **Đang điều chỉnh**.
+3. **Khoa:** mở yêu cầu, nhập nhận xét và bấm **Chấp thuận sửa**.
+4. **GV2:** nhập **9.0** cùng nhận xét mới → **Nộp chính thức**.
+5. **SV1:** kiểm tra vẫn thấy bản đã công bố cũ; nhập điểm mới chưa làm kết quả công khai đổi ngay.
+6. **Khoa:** tổng hợp lại → **Tạo phiên bản kết quả → Xác nhận → Công bố cho sinh viên**.
+7. **SV1:** kiểm tra điểm mới **9.0**, hết nhãn điều chỉnh; Mailpit có thư phiên bản mới.
+8. **Khoa:** kiểm tra lịch sử còn phiếu/kết quả cũ, không bị ghi đè.
+
+Nếu đề tài có hội đồng, **chủ tịch** tổng hợp lại ở bước 6; khoa vẫn xác nhận và công bố. Thử thêm một yêu cầu bị khoa từ chối: phải có nhận xét, GV không được nhập phiếu điều chỉnh theo yêu cầu bị từ chối.
+
+## 5. Test luồng có hội đồng và hai loại còn lại
+
+### 5.1. Chọn loại đợt
+
+| Loại | Đánh giá | Hạn điểm PB cấp đợt | Ngày hội đồng cấp đợt |
+|---|---|---|---|
+| MON_HOC | GVPB riêng | Để trống | Để trống |
+| TLCN | GVPB riêng | Bắt buộc | Để trống |
+| NCKH | PB rồi hội đồng | Để trống | Để trống; vẫn phải xếp giờ hội đồng trong kế hoạch |
+| KLTN | PB rồi hội đồng | Bắt buộc | Bắt buộc, khớp ngày hội đồng trong kế hoạch |
+
+Với TLCN, chạy như mục 3 và bảo đảm GVPB nộp trước hạn điểm PB. Với NCKH/KLTN, làm thêm các bước hội đồng dưới đây. Mỗi loại dùng một đợt riêng; một SV được tham gia nhóm ở các đợt khác nhau.
+
+### 5.2. Tạo hội đồng và lập kế hoạch KLTN
+
+1. Trưởng khoa tạo đợt KLTN: lịch GV/SV không chồng nhau, hạn báo cáo trước lịch PB, PB trước hạn điểm PB và trước giờ hội đồng. Dành đủ thời gian GVPB nhập điểm.
+2. Thực hiện lại mục 3, bước 2–6: đề xuất → duyệt/phân công → công bố → nhóm → đăng ký/chấp thuận → nộp báo cáo.
+3. Khoa → **Hội đồng** → tạo hội đồng cùng đợt: **GV3 chủ tịch, GV4 thư ký, GV2 ủy viên**. Không đưa GV1/GVHD vào.
+4. Kiểm tra đủ ba người khác nhau rồi **Chốt**. Hội đồng còn nháp không dùng cho kế hoạch.
+5. Khoa lập kế hoạch: chọn GVPB **GV2**, hội đồng vừa chốt, giờ/địa điểm PB và hội đồng. Hội đồng sau PB; ngày hội đồng KLTN phải khớp ngày đã khai báo ở đợt.
+
+### 5.3. Chấm và công bố
+
+1. Chờ đủ điều kiện như mục 3, bước 8; khoa chốt báo cáo và mở PB.
+2. GV2 nhập **8.0**, nhận xét và nộp chính thức trước hạn điểm PB.
+3. Chờ tới giờ hội đồng; sau khi PB hoàn tất, khoa mở chi tiết đánh giá → **Mở chấm hội đồng**.
+4. GV3 nộp **7.0**, GV4 nộp **9.0** và nhận xét. GV2 đã có điểm PB, không cần phiếu thứ hai vì kiêm ủy viên.
+5. **GV3/chủ tịch** mở chi tiết → nhập nhận xét tổng hợp → **Tạo phiên bản kết quả**.
+6. **Khoa** xác nhận và công bố. SV xem kết quả, Mailpit nhận thư.
+7. Kiểm tra điểm cuối **(8 + 7 + 9) / 3 = 8.0**; mỗi GV chỉ tính một điểm, GVHD không có điểm chấm.
+8. Khoa thử hoàn thành hội đồng khi mọi đề tài được giao đã chấm xong. Nếu còn đề tài chưa xong phải bị chặn.
+
+Thử thêm GVPB ngoài hội đồng: dùng một GV khác không phải GVHD làm GVPB, ba thành viên hội đồng chấm riêng → cần đủ **bốn người chấm**. Kiểm tra tương tự với hội đồng hợp lệ tối đa năm GV.
+
+## 6. Test thông báo và xóa có điều kiện
+
+### Thông báo
+
+1. Khoa/admin → **Thông báo → Soạn thông báo** → chọn đơn vị, nhập tiêu đề/nội dung → lưu nháp.
+2. Thêm tệp đính kèm; SV chưa được xem bài hoặc tệp nháp.
+3. Công bố bài → SV/GV đã đăng nhập xem và tải được; người chưa đăng nhập không xem được.
+4. Thu hồi → SV không còn xem/tải. Sửa nội dung khi đã thu hồi rồi công bố lại để kiểm tra vòng cập nhật.
+5. Thử thiếu trường, tệp rỗng/sai định dạng/quá 50 MiB hoặc thêm quá 10 tệp → bị từ chối. Admin quản lý được bài; cán bộ khoa khác người đăng không được tự sửa/thu hồi bài đó.
+
+### Xóa dữ liệu
+
+Dùng bản ghi phụ để thử; không xóa dữ liệu cần chạy demo.
+
+| Loại dữ liệu | Thử xóa hợp lệ | Trường hợp phải bị chặn |
+|---|---|---|
+| Tài khoản | Admin xóa tài khoản khác chưa có hồ sơ/dữ liệu | Tự xóa hoặc đã có liên kết; không tự xóa kèm hồ sơ |
+| Bộ môn, hồ sơ SV/GV | Admin xóa bản ghi chưa được sử dụng | Có dữ liệu tham chiếu; hồ sơ GV giữ vai trò trưởng bộ môn cần bỏ vai trò trước |
+| Đợt | Trưởng khoa xóa đợt nháp chưa có dữ liệu liên quan | Đợt đã triển khai hoặc đã có liên kết |
+| Đề tài | GV xóa đề tài nháp của mình trong hạn được sửa | Đề tài của người khác, ngoài hạn hoặc không còn nháp |
+| Thông báo | Người có quyền xóa bài nháp chưa có tệp | Bài có tệp/đã công bố; bài công bố dùng Thu hồi |
+
+## 7. Test lỗi, quyền và thao tác đồng thời
+
+Làm trên nhóm/đợt phụ. Một thao tác bị từ chối đúng quy tắc là hệ thống xử lý đúng; không phải lúc nào hiện thông báo từ chối cũng là lỗi.
+
+| Phần | Cách thử | Điều cần thấy |
+|---|---|---|
+| Đợt | Nhập lịch đầu >= cuối, GV/SV chồng nhau; thiếu hoặc nhập thêm hạn/ngày không áp dụng | Báo lỗi; cán bộ khoa không tạo được đợt thay trưởng khoa |
+| Đề tài | SV xem đề tài chưa công bố; trưởng bộ môn khác bộ môn thử duyệt/phân công | Không được xem/xử lý trái quyền |
+| GVHD | Thử 0 hoặc 3 GVHD; công bố khi chưa phân công | Bị chặn; danh sách 1–2 GV hợp lệ được chấp nhận |
+| Nhóm | Đăng ký khi chỉ 1–2 SV; thêm người thứ 6; vào hai nhóm cùng đợt | Bị chặn; nhóm 3–5 người đăng ký được |
+| Lời mời | Từ chối/thu hồi; gửi trùng lời mời; mời SV đã có nhóm cùng đợt | Không tự thêm thành viên; không nhận lời mời đã thu hồi |
+| Sửa nhóm | Đổi trưởng, rời nhóm, sửa thành viên trước duyệt khi còn hạn; thử lại sau chấp thuận | Trước đủ điều kiện được làm, sau duyệt bị khóa |
+| Đăng ký | Thành viên thường chọn đề tài; đổi sang đề tài đã được giữ | Bị chặn; đổi thất bại phải giữ nguyên đăng ký cũ |
+| Từ chối đăng ký | Khoa từ chối có lý do; nhóm chọn đề tài khác khi còn hạn | Được đăng ký lại; đề tài bị từ chối giữ chỗ được giải phóng |
+| Báo cáo | Thiếu tệp, tệp giả/rỗng, quá dung lượng; thành viên thường nộp hoặc trưởng nộp quá hạn | Bị từ chối, không tạo phiên bản thiếu tài liệu |
+| Tải tệp | Lấy link thật bằng người có quyền, mở bằng SV/GV ngoài phân công hoặc khi đã đăng xuất | Không tải được trái quyền; thành viên nhóm/GVHD/người chấm được giao/khoa tải đúng quyền |
+| Hội đồng | Thử 2 hoặc 6 người, trùng GV, thiếu chủ tịch/thư ký, hội đồng nháp hoặc khác đợt | Bị chặn |
+| Cấm GVHD chấm | Gán GVHD làm GVPB/thành viên hội đồng; hoặc đổi GVHD thành người đã được giao chấm | Bị chặn cả hai chiều |
+| Lịch đánh giá | Mở PB sớm, mở hội đồng khi PB chưa xong/chưa tới giờ; phân công cùng GV trùng lịch | Bị chặn; trùng địa điểm hội đồng trong cùng đợt cũng bị chặn |
+| Điểm | Nhập -1, >10, quá hai chữ số thập phân, thiếu nhận xét; thử hai biên 0 và 10 | Dữ liệu sai bị chặn, hai biên hợp lệ được chấp nhận |
+| Tổng hợp | Thiếu phiếu chính thức hoặc người không phải chủ tịch tổng hợp đề tài có hội đồng | Bị chặn |
+| Làm tròn/đạt | Trên đề tài phụ, tất cả người chấm nhập 3.95; đề tài khác tất cả nhập 3.94 | Lần lượt 4.0 đạt và 3.9 không đạt; xét ngưỡng sau làm tròn một chữ số |
+| Sửa điểm | Chưa được duyệt mà sửa, gửi yêu cầu trùng, tự duyệt yêu cầu của mình, công bố khi còn điều chỉnh dang dở | Bị chặn; bản đã công bố cũ được giữ |
+| Xem kết quả | SV đổi bộ lọc đợt, thử ID đợt/nhóm của người khác | Chỉ xem được đề tài mình tham gia và kết quả đã công bố |
+| URL trực tiếp | SV/GV mở `/admin/tai-khoan`; thử thay ID trong link nhóm/báo cáo/đánh giá bằng ID thật của người khác | Backend chặn dù tự gõ URL, không chỉ ẩn menu |
+| CSRF | Trên form thử, dùng DevTools xóa input ẩn `_csrf` rồi gửi | Bị chặn, dữ liệu không đổi; tải lại trang để lấy form mới |
+| Email lỗi | Dừng Mailpit, công bố kết quả của đề tài phụ khác | Kết quả vẫn được công bố, log báo gửi thất bại; thư không tự được gửi lại khi mở Mailpit |
+
+**Thử gần đồng thời bằng hai profile độc lập:**
+
+1. Hai nhóm đủ 3–5 người cùng chọn một đề tài còn trống → chỉ một nhóm giữ được.
+2. Một SV đồng ý lời mời từ hai nhóm cùng đợt → chỉ thuộc một nhóm.
+3. Nhóm đang bốn người, hai SV khác cùng nhận lời → chỉ thêm một người, tổng tối đa năm.
+
+Bấm tay chỉ kiểm tra sơ bộ. Nếu cần kiểm thử transaction tự động, xem hướng dẫn backend; không chạy script test vào database chính.
+
+Khi gặp vấn đề, kiểm tra đúng vai trò/hồ sơ, đúng hạn và đúng trạng thái trước. Nếu vẫn lỗi, gửi người phụ trách **vai trò đang dùng, mã đợt/nhóm/đề tài, các bước thao tác, thời gian, ảnh lỗi và phần đầu log có ERROR/Caused by**; không gửi mật khẩu. Sau khi deploy, chạy lại luồng chính bằng URL online.

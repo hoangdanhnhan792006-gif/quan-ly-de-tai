@@ -141,7 +141,8 @@ public class DanhGiaService {
             phanCongs.save(new PhanCongCham(dg, rules.giangVien(id), id.equals(f.getPhanBienId()), hdIds.contains(id),
                     rules.actor()));
         dg.xepLich(hd, pb, f.getDiaDiemPhanBien().trim(), start, end,
-                f.getDiaDiemHoiDong() == null ? null : f.getDiaDiemHoiDong().trim());
+                // Môn học/TLCN không có hội đồng: CHECK yêu cầu NULL, không phải chuỗi rỗng từ form.
+                coHd ? f.getDiaDiemHoiDong().trim() : null);
         phanCongs.flush();
         danhGias.flush();
     }

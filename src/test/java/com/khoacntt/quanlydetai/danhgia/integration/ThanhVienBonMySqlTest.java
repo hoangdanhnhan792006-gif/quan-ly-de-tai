@@ -516,6 +516,35 @@ class ThanhVienBonMySqlTest {
                         Integer.class, pc));
     }
 
+    static java.util.stream.Stream<org.junit.jupiter.params.provider.Arguments> diaDiemHoiDongBoTrong() {
+        return java.util.stream.Stream.of("MON_HOC", "TLCN").flatMap(type ->
+                java.util.stream.Stream.of("", "   ", "\t").map(blank ->
+                        org.junit.jupiter.params.provider.Arguments.of(type, blank)));
+    }
+
+    @ParameterizedTest
+    @org.junit.jupiter.params.provider.MethodSource("diaDiemHoiDongBoTrong")
+    void luuVaSuaKeHoachKhongHoiDongTuFormTrinhDuyet(String type, String blank) throws Exception {
+        project(type);
+        // Trình duyệt gửi cả các input bỏ trống, khác test cũ vốn không gửi tham số này.
+        mvc.perform(post("/khoa/danh-gia/tao").with(user(khoa.login()).roles(khoa.role())).with(csrf())
+                .param("dangKyId", String.valueOf(registration)).param("phanBienId", String.valueOf(examiner.profile()))
+                .param("lichPhanBienLuc", "2030-04-01T09:00").param("diaDiemPhanBien", "P1")
+                .param("hoiDongId", "").param("hoiDongBatDau", "").param("hoiDongKetThuc", "")
+                .param("diaDiemHoiDong", blank))
+                .andExpect(status().is3xxRedirection()).andExpect(flash().attributeExists("thanhCong"));
+        int dg = jdbc.queryForObject("SELECT id FROM danh_gia WHERE dang_ky_id=?", Integer.class, registration);
+        assertNull(jdbc.queryForObject("SELECT dia_diem_hoi_dong FROM danh_gia WHERE id=?", String.class, dg));
+        mvc.perform(post("/khoa/danh-gia/" + dg + "/sua").with(user(khoa.login()).roles(khoa.role())).with(csrf())
+                .param("dangKyId", String.valueOf(registration)).param("phanBienId", String.valueOf(examiner.profile()))
+                .param("lichPhanBienLuc", "2030-04-01T09:10").param("diaDiemPhanBien", "P3")
+                .param("hoiDongId", "").param("hoiDongBatDau", "").param("hoiDongKetThuc", "")
+                .param("diaDiemHoiDong", blank))
+                .andExpect(redirectedUrl("/danh-gia/" + dg)).andExpect(flash().attributeExists("thanhCong"));
+        assertNull(jdbc.queryForObject("SELECT dia_diem_hoi_dong FROM danh_gia WHERE id=?", String.class, dg));
+        assertEquals("P3", jdbc.queryForObject("SELECT dia_diem_phan_bien FROM danh_gia WHERE id=?", String.class, dg));
+    }
+
     @Test
     void postFormVaUploadQuaMvc() throws Exception {
         project("MON_HOC");

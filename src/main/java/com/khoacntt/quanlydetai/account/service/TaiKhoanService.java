@@ -2,6 +2,7 @@ package com.khoacntt.quanlydetai.account.service;
 
 import com.khoacntt.quanlydetai.account.dto.TaiKhoanDto;
 import com.khoacntt.quanlydetai.account.form.DoiMatKhauForm;
+import com.khoacntt.quanlydetai.account.form.DatLaiMatKhauForm;
 import com.khoacntt.quanlydetai.account.form.SuaTaiKhoanForm;
 import com.khoacntt.quanlydetai.account.form.TaiKhoanForm;
 import com.khoacntt.quanlydetai.account.model.TaiKhoan;
@@ -113,6 +114,43 @@ public class TaiKhoanService {
         }
         TaiKhoan tk = timVaKhoa(id);
         tk.doiTrangThai(trangThai);
+        luu(tk);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @Transactional
+    public void xoa(Integer id) {
+        if (Objects.equals(nguoiDungHienTai.batBuoc().getId(), id)) {
+            throw new NghiepVuException("Bạn không được tự xóa tài khoản đang sử dụng");
+        }
+        TaiKhoan tk = timVaKhoa(id);
+        if (sinhVienRepository.existsByTaiKhoanId(id) || giangVienRepository.existsByTaiKhoanId(id)) {
+            throw new NghiepVuException("Tài khoản đã có hồ sơ SV/GV. Chỉ xóa hồ sơ chưa sử dụng trước, hoặc khóa tài khoản.");
+        }
+        try {
+            // JPA xóa collection vai trò cùng tài khoản; FK RESTRICT giữ các dữ liệu nghiệp vụ khác.
+            taiKhoanRepository.delete(tk);
+            taiKhoanRepository.flush();
+        } catch (DataIntegrityViolationException ex) {
+            throw new NghiepVuException("Tài khoản đã có dữ liệu liên quan, không thể xóa. Hãy khóa tài khoản.");
+        }
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @Transactional
+    public void datLaiMatKhau(Integer id, @Valid DatLaiMatKhauForm form) {
+        if (Objects.equals(nguoiDungHienTai.batBuoc().getId(), id)) {
+            throw new NghiepVuException("Để đổi mật khẩu của mình, hãy dùng mục Đổi mật khẩu và nhập mật khẩu hiện tại.");
+        }
+        TaiKhoan tk = timVaKhoa(id);
+        kiemTraMatKhau(form.getMatKhauMoi());
+        if (!Objects.equals(form.getMatKhauMoi(), form.getXacNhanMatKhau())) {
+            throw new NghiepVuException("Xác nhận mật khẩu mới không khớp");
+        }
+        if (passwordEncoder.matches(form.getMatKhauMoi(), tk.getMatKhauBam())) {
+            throw new NghiepVuException("Mật khẩu mới phải khác mật khẩu hiện tại");
+        }
+        tk.doiMatKhau(passwordEncoder.encode(form.getMatKhauMoi()));
         luu(tk);
     }
 

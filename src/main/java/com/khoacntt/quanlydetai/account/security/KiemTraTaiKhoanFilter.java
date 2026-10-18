@@ -11,7 +11,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.HashSet;
 
-/** Kiểm tra tài khoản mỗi request để khóa tài khoản/đổi vai trò có hiệu lực với phiên đang mở. */
+/** Kiểm tra tài khoản mỗi request để khóa/xóa/đổi quyền/đổi mật khẩu có hiệu lực với phiên cũ. */
 public class KiemTraTaiKhoanFilter extends OncePerRequestFilter {
     private final UserDetailsService userDetailsService;
 
@@ -26,7 +26,10 @@ public class KiemTraTaiKhoanFilter extends OncePerRequestFilter {
         if (auth != null && auth.isAuthenticated() && !(auth instanceof AnonymousAuthenticationToken)) {
             try {
                 UserDetails user = userDetailsService.loadUserByUsername(auth.getName());
-                if (!user.isEnabled() || !new HashSet<>(user.getAuthorities()).equals(new HashSet<>(auth.getAuthorities()))) {
+                boolean matKhauThayDoi = auth.getPrincipal() instanceof TaiKhoanUserDetails taiKhoan
+                        && taiKhoan.matKhauDaThayDoi(user.getPassword());
+                if (!user.isEnabled() || matKhauThayDoi
+                        || !new HashSet<>(user.getAuthorities()).equals(new HashSet<>(auth.getAuthorities()))) {
                     ketThucPhien(request, response, auth);
                     return;
                 }

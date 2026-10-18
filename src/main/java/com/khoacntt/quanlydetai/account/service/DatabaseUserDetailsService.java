@@ -3,9 +3,9 @@ package com.khoacntt.quanlydetai.account.service;
 import com.khoacntt.quanlydetai.account.model.TaiKhoan;
 import com.khoacntt.quanlydetai.account.model.TrangThaiTaiKhoan;
 import com.khoacntt.quanlydetai.account.repository.TaiKhoanRepository;
+import com.khoacntt.quanlydetai.account.security.TaiKhoanUserDetails;
 
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -37,10 +37,7 @@ public class DatabaseUserDetailsService implements UserDetailsService {
                 .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
                 .toList();
 
-        return User.withUsername(account.getTenDangNhap())
-                .password(account.getMatKhauBam())
-                .authorities(authorities)
-                .disabled(account.getTrangThai() != TrangThaiTaiKhoan.HOAT_DONG)
-                .build();
+        return new TaiKhoanUserDetails(account.getTenDangNhap(), account.getMatKhauBam(),
+                account.getTrangThai() == TrangThaiTaiKhoan.HOAT_DONG, authorities);
     }
 }
