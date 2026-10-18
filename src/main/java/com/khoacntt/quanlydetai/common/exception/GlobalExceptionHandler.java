@@ -14,6 +14,13 @@ public class GlobalExceptionHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
+    @ExceptionHandler(org.springframework.web.multipart.MaxUploadSizeExceededException.class)
+    @ResponseStatus(HttpStatus.PAYLOAD_TOO_LARGE)
+    String xuLyTepQuaLon(Model model) {
+        model.addAttribute("message", "Mỗi tệp tối đa 50 MB; tổng một lần nộp tối đa 150 MB.");
+        return "error/business";
+    }
+
     @ExceptionHandler(KhongTimThayException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     String xuLyKhongTimThay(KhongTimThayException exception, Model model) {

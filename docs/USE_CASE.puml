@@ -1,0 +1,72 @@
+@startuml
+left to right direction
+actor "Sinh viên" as SV
+actor "Nhóm trưởng" as NT
+actor "Giảng viên" as GV
+actor "GVHD" as HD
+actor "GVPB" as PB
+actor "Thành viên hội đồng" as TV
+actor "Chủ tịch" as CT
+actor "Thư ký" as TK
+actor "Trưởng bộ môn" as TBM
+actor "Cán bộ khoa" as K
+actor "Trưởng khoa" as TR
+actor "Quản trị viên" as AD
+NT --|> SV
+HD --|> GV
+PB --|> GV
+TV --|> GV
+CT --|> TV
+TK --|> TV
+TBM --|> GV
+TR --|> K
+rectangle "Hệ thống quản lý đề tài" {
+usecase "Tạo nhóm / nhận lời mời" as U1
+usecase "Mời SV / đổi nhóm trưởng" as U2
+usecase "Đăng ký / đổi / hủy đề tài" as U3
+usecase "Nộp bộ báo cáo theo phiên bản" as U4
+usecase "Xem kết quả theo đợt của mình" as U5
+usecase "Đề xuất / sửa / xóa đề tài nháp" as U6
+usecase "Duyệt đề tài thuộc bộ môn" as U7
+usecase "Phân công 1–2 GVHD" as U8
+usecase "Xem báo cáo được phân quyền" as U9
+usecase "Chấm / xin sửa điểm" as U10
+usecase "Tổng hợp điểm hội đồng" as U11
+usecase "Công bố đề tài / duyệt đăng ký" as U12
+usecase "Lập hội đồng / phân công chấm" as U13
+usecase "Duyệt sửa / xác nhận kết quả" as U14
+usecase "Công bố kết quả" as U15
+usecase "Tạo và quản lý đợt" as U16
+usecase "Quản lý tài khoản / hồ sơ / bộ môn" as U17
+usecase "Đăng thông báo" as U18
+usecase "Gửi email đến từng SV" as U19
+}
+SV --> U1
+NT --> U2
+NT --> U3
+NT --> U4
+SV --> U5
+GV --> U6
+TBM --> U7
+TBM --> U8
+HD --> U9
+PB --> U9
+TV --> U9
+PB --> U10
+TV --> U10
+CT --> U11
+K --> U12
+K --> U13
+K --> U14
+K --> U15
+TR --> U16
+AD --> U17
+AD --> U18
+K --> U18
+U15 ..> U19 : <<include>>
+note bottom
+Tất cả actor đăng nhập, xem thông báo và quản lý hồ sơ cá nhân.
+GVHD không chấm đề tài mình hướng dẫn.
+Quyền PB/hội đồng/nhóm trưởng kiểm tra theo bản ghi.
+end note
+@enduml

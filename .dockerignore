@@ -1,0 +1,11 @@
+.git
+.mvn-repository
+target
+.env
+.env.*
+!.env.example
+uploads
+logs
+*.log
+**/application-local.*
+docs

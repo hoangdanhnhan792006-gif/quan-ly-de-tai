@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1"><title>Quản lý đề tài sinh viên</title>
+<link rel="stylesheet" th:href="@{/css/app.css}"></head><body><nav th:replace="~{fragments/dieu-huong :: menu}"></nav>
+<main class="workspace"><p class="message success" th:if="${thanhCong}" th:text="${thanhCong}"></p><p class="message error" th:if="${loi}" th:text="${loi}"></p>
+
+<h1>Kế hoạch phản biện và hội đồng</h1><a th:href="@{/danh-gia}">← Đánh giá</a>
+<form class="panel" th:object="${form}" th:action="${id==null}?@{/khoa/danh-gia/tao}:@{/khoa/danh-gia/{id}/sua(id=${id})}" method="post">
+<div class="message error" th:if="${#fields.hasAnyErrors()}"><p th:each="e : ${#fields.allErrors()}" th:text="${e}"></p></div>
+<label for="dangKyId">Nhóm / Đề tài đã chấp thuận</label><select th:field="*{dangKyId}" required><option value="">Chọn đăng ký</option>
+<option th:each="d : ${dangKys}" th:value="${d.dangKyId}" th:text="${d.maNhom+' — '+d.tenDeTai}"></option></select>
+<label for="phanBienId">Giảng viên phản biện (khác GVHD)</label><select th:field="*{phanBienId}" required><option value="">Chọn GV</option>
+<option th:each="g : ${giangViens}" th:value="${g.id}" th:text="${g.maGv+' — '+g.hoTen}"></option></select>
+<label for="lichPhanBienLuc">Lịch phản biện — giờ Việt Nam, từ hạn báo cáo trở đi</label><input type="datetime-local" th:field="*{lichPhanBienLuc}" required>
+<label for="diaDiemPhanBien">Địa điểm phản biện</label><input th:field="*{diaDiemPhanBien}" maxlength="255" required>
+<h2>Hội đồng (chỉ NCKH/KLTN)</h2><p>Môn học/TLCN để trống các mục dưới. KLTN chọn đúng ngày hội đồng của đợt.</p>
+<label for="hoiDongId">Hội đồng đã chốt, cùng đợt</label><select th:field="*{hoiDongId}"><option value="">Không có hội đồng</option>
+<option th:each="h : ${hoiDongs}" th:value="${h.id}" th:text="${h.tenDot+' — '+h.tenHoiDong+' ('+h.trangThai.nhan+')'}"></option></select>
+<label for="hoiDongBatDau">Giờ bắt đầu hội đồng</label><input type="datetime-local" th:field="*{hoiDongBatDau}">
+<label for="hoiDongKetThuc">Giờ kết thúc hội đồng</label><input type="datetime-local" th:field="*{hoiDongKetThuc}">
+<label for="diaDiemHoiDong">Địa điểm hội đồng</label><input th:field="*{diaDiemHoiDong}" maxlength="255">
+<button class="button">Lưu kế hoạch</button></form>
+</main></body></html>

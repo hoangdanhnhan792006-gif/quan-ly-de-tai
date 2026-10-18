@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Thông tin đợt đăng ký · Quản lý đề tài</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<nav th:replace="~{fragments/dieu-huong :: menu}"></nav>
+<main class="workspace">
+    <h1>Thông tin đợt đăng ký</h1>
+    <p class="message success" th:if="${thanhCong}" th:text="${thanhCong}"></p>
+    <p class="message error" th:if="${loi}" th:text="${loi}"></p>
+
+    <a th:href="@{/khoa/dot-dang-ky}">← Danh sách đợt</a>
+    <p>Nhập giờ Việt Nam. Giai đoạn SV chỉ bắt đầu khi thời gian GV đề xuất đã kết thúc. Chỉ sửa đợt khi còn nháp.</p>
+    <form class="panel" th:action="${id != null} ? @{/khoa/dot-dang-ky/{id}/sua(id=${id})} : @{/khoa/dot-dang-ky/tao}"
+          th:object="${form}" method="post">
+        <div class="message error" th:if="${#fields.hasAnyErrors()}">
+            <ul><li th:each="e : ${#fields.allErrors()}" th:text="${e}"></li></ul>
+        </div>
+        <label for="maDot">Mã đợt</label><input id="maDot" th:field="*{maDot}" maxlength="30" required>
+        <label for="tenDot">Tên đợt</label><input id="tenDot" th:field="*{tenDot}" maxlength="200" required>
+        <label for="loai">Loại đề tài</label>
+        <select id="loai" th:field="*{loai}" required>
+            <option value="">Chọn loại</option>
+            <option th:each="l : ${cacLoai}" th:value="${l}" th:text="${l.nhan}"></option>
+        </select>
+        <label for="gvBatDau">GV bắt đầu đăng ký</label>
+        <input id="gvBatDau" type="datetime-local" th:field="*{gvBatDau}" required>
+        <label for="gvKetThuc">GV kết thúc đăng ký</label>
+        <input id="gvKetThuc" type="datetime-local" th:field="*{gvKetThuc}" required>
+        <label for="svBatDau">SV bắt đầu đăng ký</label>
+        <input id="svBatDau" type="datetime-local" th:field="*{svBatDau}" required>
+        <label for="svKetThuc">SV kết thúc đăng ký</label>
+        <input id="svKetThuc" type="datetime-local" th:field="*{svKetThuc}" required>
+        <label for="hanNopBaoCao">Hạn nộp báo cáo</label>
+        <input id="hanNopBaoCao" type="datetime-local" th:field="*{hanNopBaoCao}" required>
+        <label for="hanNopDiemPb">Hạn nộp điểm phản biện (chỉ TLCN/KLTN)</label>
+        <input id="hanNopDiemPb" type="datetime-local" th:field="*{hanNopDiemPb}">
+        <label for="ngayBaoCaoHd">Ngày báo cáo hội đồng (chỉ KLTN)</label>
+        <input id="ngayBaoCaoHd" type="date" th:field="*{ngayBaoCaoHd}">
+        <button class="button" type="submit">Lưu đợt nháp</button>
+    </form>
+
+</main>
+</body>
+</html>

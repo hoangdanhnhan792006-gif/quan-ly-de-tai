@@ -1,4 +1,16 @@
 spring:
+  mail:
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:1025}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail.smtp.auth: ${MAIL_AUTH:false}
+      mail.smtp.starttls.enable: ${MAIL_STARTTLS:false}
+      mail.smtp.starttls.required: ${MAIL_STARTTLS:false}
+      mail.smtp.connectiontimeout: 5000
+      mail.smtp.timeout: 5000
+      mail.smtp.writetimeout: 5000
   application:
     name: quan-ly-de-tai
 
@@ -10,6 +22,7 @@ spring:
     hikari:
       maximum-pool-size: 10
       minimum-idle: 2
+      connection-init-sql: "SET time_zone = '+00:00'"
 
   jpa:
     open-in-view: false
@@ -17,6 +30,8 @@ spring:
       ddl-auto: validate
     properties:
       hibernate:
+        type:
+          java_time_use_direct_jdbc: true
         jdbc:
           time_zone: UTC
         format_sql: true
@@ -34,7 +49,7 @@ spring:
   servlet:
     multipart:
       max-file-size: 50MB
-      max-request-size: 150MB
+      max-request-size: 155MB
 
 server:
   error:
@@ -46,6 +61,12 @@ logging:
     org.hibernate.SQL: warn
 
 app:
+  public-url: ${APP_PUBLIC_URL:http://localhost:8080}
+  mail:
+    enabled: ${MAIL_ENABLED:false}
+    from: ${MAIL_FROM:no-reply@example.invalid}
+  storage:
+    root: ${UPLOAD_DIR:uploads}
   bootstrap-admin:
     enabled: ${APP_BOOTSTRAP_ADMIN_ENABLED:false}
     username: ${APP_BOOTSTRAP_ADMIN_USERNAME:}

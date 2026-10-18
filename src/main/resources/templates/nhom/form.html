@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nhóm và đăng ký · Quản lý đề tài</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<body><nav th:replace="~{fragments/dieu-huong :: menu}"></nav><main class="workspace">
+<p class="message success" th:if="${thanhCong}" th:text="${thanhCong}"></p>
+<p class="message error" th:if="${loi}" th:text="${loi}"></p>
+
+<h1>Tạo nhóm sinh viên</h1><a th:href="@{/sinh-vien/nhom}">← Nhóm của tôi</a>
+<p th:if="${#lists.isEmpty(cacDot)}">Hiện không có đợt mở đăng ký sinh viên.</p>
+<form th:action="@{/sinh-vien/nhom/tao}" th:object="${form}" method="post" class="panel">
+<div class="message error" th:if="${#fields.hasAnyErrors()}"><p th:each="e : ${#fields.allErrors()}" th:text="${e}"></p></div>
+<label for="dotId">Đợt đăng ký</label><select th:field="*{dotId}" required><option value="">Chọn đợt</option>
+<option th:each="d : ${cacDot}" th:value="${d.id}" th:text="${d.tenDot}"></option></select>
+<label for="maNhom">Mã nhóm (duy nhất trong đợt)</label><input th:field="*{maNhom}" required maxlength="30" pattern="[A-Za-z0-9_-]{1,30}">
+<label for="tenNhom">Tên nhóm</label><input th:field="*{tenNhom}" maxlength="150">
+<button type="submit" th:disabled="${#lists.isEmpty(cacDot)}">Tạo nhóm</button>
+</form>
+</main></body></html>

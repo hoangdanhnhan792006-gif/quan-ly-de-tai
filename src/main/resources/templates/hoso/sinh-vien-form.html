@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Hồ sơ sinh viên · Quản lý đề tài</title>
+        <link rel="stylesheet" th:href="@{/css/app.css}">
+    </head>
+    <body>
+        <nav th:replace="~{fragments/dieu-huong :: menu}">
+        </nav>
+        <main class="workspace">
+            <h1>Hồ sơ sinh viên</h1>
+            <p class="message success" th:if="${thanhCong}" th:text="${thanhCong}">
+            </p>
+            <a th:href="@{/admin/sinh-vien}">← Danh sách</a>
+            <p>Tạo tài khoản với vai trò tương ứng trước khi thêm hồ sơ. Tài khoản gắn với hồ sơ không được thay đổi sau khi tạo.</p>
+            <form class="panel" th:action="${id != null} ? @{/admin/sinh-vien/{id}/sua(id=${id})} : @{/admin/sinh-vien/tao}" th:object="${form}" method="post">
+                <div class="message error" th:if="${#fields.hasAnyErrors()}">
+                    <ul>
+                        <li th:each="e : ${#fields.allErrors()}" th:text="${e}">
+                        </li>
+                    </ul>
+                </div>
+                <label for="taiKhoanId">Tài khoản</label>
+                <select id="taiKhoanId" th:field="*{taiKhoanId}" required>
+                    <option value="">Chọn tài khoản</option>
+                    <option th:each="t : ${taiKhoans}" th:value="${t.id}" th:text="${t.tenDangNhap + ' — ' + t.hoTen}">
+                    </option>
+                </select>
+                <label for="maSv">Mã sinh viên</label>
+                <input id="maSv" type="text" th:field="*{maSv}" required maxlength="20">
+                <label for="lop">Lớp hành chính</label>
+                <input id="lop" type="text" th:field="*{lop}" maxlength="30">
+                <label for="khoaHoc">Khóa học</label>
+                <input id="khoaHoc" type="text" th:field="*{khoaHoc}" maxlength="30">
+                <button class="button" type="submit">Lưu</button>
+            </form>
+        </main>
+    </body>
+</html>

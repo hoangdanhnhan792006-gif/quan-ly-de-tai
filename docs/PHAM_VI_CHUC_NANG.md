@@ -32,7 +32,8 @@ Project không phải hệ thống đăng ký tín chỉ. Không có môn tiên 
 - **GVPB:** nhập điểm và nhận xét phản biện.
 - **Thành viên hội đồng:** nhập điểm và nhận xét hội đồng.
 - **Chủ tịch hội đồng:** theo dõi và tổng hợp đánh giá của hội đồng.
-- **Cán bộ khoa:** duyệt đề tài, duyệt đăng ký, phân công, tổ chức hội đồng và công bố kết quả.
+- **Trưởng bộ môn:** duyệt nội dung, phân công 1–2 GVHD cho đề tài thuộc bộ môn trong hồ sơ giảng viên của mình.
+- **Cán bộ khoa:** công bố đề tài, duyệt đăng ký, phân công phản biện/chấm, tổ chức hội đồng và công bố kết quả.
 - **Trưởng khoa:** có quyền của cán bộ khoa và được tạo đợt đăng ký.
 - **Quản trị viên:** tạo, khóa và quản lý tài khoản; đăng thông báo.
 
@@ -54,14 +55,14 @@ Project không phải hệ thống đăng ký tín chỉ. Không có môn tiên 
 - Thông tin gồm tên, loại, thời gian GV đăng ký và thời gian SV đăng ký.
 - TLCN/KLTN phải có hạn nộp điểm phản biện.
 - KLTN phải có ngày báo cáo hội đồng.
-- Hai khoảng đăng ký của GV và SV được phép chồng nhau.
+- Hai giai đoạn không chồng nhau: gv_ket_thuc <= sv_bat_dau.
 - Hệ thống tự kiểm tra đợt đang mở trước khi cho thực hiện nghiệp vụ.
 
 ### 4.3. Đề tài và giảng viên hướng dẫn
 
 - Giảng viên đề xuất đề tài trong thời gian được phép.
 - Đề tài thuộc đúng một bộ môn.
-- Cán bộ khoa hoặc trưởng khoa duyệt, từ chối và công bố đề tài.
+- Trưởng bộ môn duyệt/từ chối và phân công GVHD trong bộ môn của mình; khoa công bố đề tài.
 - Sinh viên chỉ được xem và chọn đề tài đã công bố.
 - Mỗi đề tài có từ một đến hai GVHD.
 - Người đề xuất không mặc nhiên trở thành GVHD.
@@ -71,7 +72,7 @@ Project không phải hệ thống đăng ký tín chỉ. Không có môn tiên 
 
 - Sinh viên tạo nhóm và mặc nhiên trở thành nhóm trưởng.
 - Nhóm trưởng gửi lời mời; sinh viên được mời phải chấp nhận.
-- Nhóm có tối đa ba thành viên và đúng một nhóm trưởng.
+- Nhóm có tối đa năm thành viên và đúng một nhóm trưởng. Nhóm đang lập được ít hơn ba; khi đăng ký và chấp thuận phải đủ 3–5 SV.
 - Một sinh viên chỉ thuộc một nhóm trong cùng một đợt.
 - Được thay đổi thành viên hoặc nhóm trưởng trước khi đăng ký được chấp thuận.
 - Sau khi đăng ký được chấp thuận, thành viên và nhóm trưởng bị khóa thay đổi.
@@ -114,7 +115,8 @@ Project không phải hệ thống đăng ký tín chỉ. Không có môn tiên 
 - Kết quả đạt khi điểm cuối từ 4,0 trở lên.
 - Chỉ tổng hợp khi đã có đủ phiếu chấm bắt buộc.
 - Khoa xác nhận và công bố kết quả.
-- Sinh viên chỉ xem kết quả của đề tài mà mình tham gia.
+- Sinh viên tra cứu theo đợt và chỉ xem kết quả của đề tài mình tham gia.
+- Sau khi công bố được commit, gửi email HTML nền cho từng SV; demo bằng Mailpit theo Lab 6.
 - Kết quả đã công bố được lưu theo phiên bản, không sửa đè.
 
 ### 4.9. Sửa điểm
@@ -133,6 +135,13 @@ Project không phải hệ thống đăng ký tín chỉ. Không có môn tiên 
 - Chỉ người đã đăng nhập được xem.
 - Hỗ trợ trạng thái nháp, đã công bố và thu hồi.
 
+### 4.11. Xóa có điều kiện
+
+- Admin xóa bộ môn/hồ sơ SV/GV chưa được sử dụng. FK RESTRICT chặn xóa khi có tham chiếu, kể cả truy cập đồng thời.
+- GV chỉ xóa đề tài nháp của mình trong thời gian được sửa. Trưởng khoa chỉ xóa đợt nháp chưa có dữ liệu liên quan.
+- Người có quyền xóa thông báo nháp chưa có tệp đính kèm. Thông báo đã công bố dùng thu hồi.
+- Giữ nguyên dữ liệu học thuật đã sử dụng; dùng khóa/ngừng hoạt động/hủy khi phù hợp.
+
 ## 5. Database
 
 Hệ thống sử dụng 24 bảng nghiệp vụ, chia theo các nhóm:
@@ -145,18 +154,18 @@ Hệ thống sử dụng 24 bảng nghiệp vụ, chia theo các nhóm:
 - Điểm và kết quả: `phieu_cham`, `yeu_cau_sua_diem`, `ket_qua`, `chi_tiet_ket_qua`.
 - Thông báo: `thong_bao`, `thong_bao_tep`.
 
-File cấu trúc chuẩn là `src/main/resources/db/migration/V1__khoi_tao_24_bang.sql`. Không sửa trực tiếp V1 sau khi đã chia sẻ project. Mọi thay đổi schema phải tạo migration Flyway mới.
+File cấu trúc chuẩn là `src/main/resources/db/migration/V1__khoi_tao_24_bang.sql`. Không sửa trực tiếp V1 sau khi đã chia sẻ project. Mọi thay đổi schema phải tạo migration Flyway mới. V2 bổ sung TRUONG_BO_MON; không có bảng email, vẫn 24 bảng nghiệp vụ.
 
 ## 6. Phạm vi không thực hiện
 
 - Đăng ký môn học, tín chỉ, môn tiên quyết và thời khóa biểu.
 - Sinh viên tự đề xuất đề tài.
 - Một đề tài cho nhiều nhóm.
-- Nhóm có hơn ba sinh viên.
+- Nhóm có hơn năm sinh viên.
 - Chấm điểm theo rubric nhiều tiêu chí.
 - Bảo vệ lại hoặc đánh giá lại.
 - Import Excel hàng loạt.
-- Email, thông báo realtime và ứng dụng di động.
+- Thông báo realtime, hàng đợi email bền vững và ứng dụng di động.
 - Frontend React/Vue, JWT, microservices, Kafka hoặc Redis.
 
 ## 7. Tiêu chí hoàn thành chức năng

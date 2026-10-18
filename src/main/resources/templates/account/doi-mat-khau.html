@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Đổi mật khẩu · Quản lý đề tài</title>
+        <link rel="stylesheet" th:href="@{/css/app.css}">
+    </head>
+    <body>
+        <nav th:replace="~{fragments/dieu-huong :: menu}">
+        </nav>
+        <main class="workspace">
+            <h1>Đổi mật khẩu</h1>
+            <p class="message success" th:if="${thanhCong}" th:text="${thanhCong}">
+            </p>
+            <p>Sau khi đổi mật khẩu thành công, bạn cần đăng nhập lại.</p>
+            <form class="panel" th:action="@{/ho-so/doi-mat-khau}" th:object="${form}" method="post">
+                <div class="message error" th:if="${#fields.hasAnyErrors()}">
+                    <ul>
+                        <li th:each="e : ${#fields.allErrors()}" th:text="${e}">
+                        </li>
+                    </ul>
+                </div>
+                <label for="matKhauCu">Mật khẩu hiện tại</label>
+                <input id="matKhauCu" type="password" name="matKhauCu" required autocomplete="current-password">
+                <label for="matKhauMoi">Mật khẩu mới</label>
+                <input id="matKhauMoi" type="password" name="matKhauMoi" required minlength="8" maxlength="72" autocomplete="new-password">
+                <label for="xacNhanMatKhau">Nhập lại mật khẩu mới</label>
+                <input id="xacNhanMatKhau" type="password" name="xacNhanMatKhau" required autocomplete="new-password">
+                <button class="button" type="submit">Lưu</button>
+            </form>
+        </main>
+    </body>
+</html>

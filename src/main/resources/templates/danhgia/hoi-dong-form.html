@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1"><title>Quản lý đề tài sinh viên</title>
+<link rel="stylesheet" th:href="@{/css/app.css}"></head><body><nav th:replace="~{fragments/dieu-huong :: menu}"></nav>
+<main class="workspace"><p class="message success" th:if="${thanhCong}" th:text="${thanhCong}"></p><p class="message error" th:if="${loi}" th:text="${loi}"></p>
+
+<h1 th:text="${id==null?'Tạo hội đồng':'Sửa hội đồng nháp'}"></h1><a th:href="@{/khoa/hoi-dong}">← Hội đồng</a>
+<form class="panel" th:object="${form}" th:action="${id==null}?@{/khoa/hoi-dong/tao}:@{/khoa/hoi-dong/{id}/sua(id=${id})}" method="post">
+<div class="message error" th:if="${#fields.hasAnyErrors()}"><p th:each="e : ${#fields.allErrors()}" th:text="${e}"></p></div>
+<label for="dotId">Đợt NCKH/KLTN</label><select th:field="*{dotId}" required><option value="">Chọn đợt</option><option th:each="d : ${cacDot}" th:value="${d.id}" th:text="${d.tenDot+' — '+d.loai.nhan}"></option></select>
+<label for="maHoiDong">Mã hội đồng</label><input th:field="*{maHoiDong}" maxlength="30" required th:readonly="${id!=null}">
+<label for="tenHoiDong">Tên hội đồng</label><input th:field="*{tenHoiDong}" maxlength="200" required>
+<label for="chuTichId">Chủ tịch</label><select th:field="*{chuTichId}" required><option value="">Chọn GV</option><option th:each="g : ${giangViens}" th:value="${g.id}" th:text="${g.maGv+' — '+g.hoTen}"></option></select>
+<label for="thuKyId">Thư ký</label><select th:field="*{thuKyId}" required><option value="">Chọn GV</option><option th:each="g : ${giangViens}" th:value="${g.id}" th:text="${g.maGv+' — '+g.hoTen}"></option></select>
+<p>Chọn 1–3 ủy viên khác chủ tịch và thư ký (tổng cộng 3–5 GV).</p>
+<label class="check" th:each="g : ${giangViens}"><input type="checkbox" th:field="*{uyVienIds}" th:value="${g.id}"><span th:text="${g.maGv+' — '+g.hoTen}"></span></label>
+<button class="button">Lưu hội đồng nháp</button></form>
+</main></body></html>

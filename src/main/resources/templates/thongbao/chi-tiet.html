@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1"><title>Quản lý đề tài sinh viên</title>
+<link rel="stylesheet" th:href="@{/css/app.css}"></head><body><nav th:replace="~{fragments/dieu-huong :: menu}"></nav>
+<main class="workspace"><p class="message success" th:if="${thanhCong}" th:text="${thanhCong}"></p><p class="message error" th:if="${loi}" th:text="${loi}"></p>
+
+<a th:href="@{/thong-bao}">← Thông báo</a><h1 th:text="${thongBao.tieuDe}"></h1>
+<p><span th:text="${thongBao.donViBanHanh.nhan}"></span> · <span th:text="${thongBao.nguoiDang}"></span> · <span th:text="${thongBao.trangThai.nhan}"></span></p>
+<p class="multiline" th:text="${thongBao.noiDung}"></p>
+<ul><li th:each="t : ${thongBao.teps}"><a th:href="@{/thong-bao/tep/{id}(id=${t.id})}" th:text="${t.ten}"></a> (<span th:text="${t.kichThuoc}"></span> byte)</li></ul>
+<th:block th:if="${thongBao.coTheSua}">
+<form th:if="${thongBao.trangThai.name()=='NHAP' and #lists.isEmpty(thongBao.teps)}" th:action="@{/thong-bao/{id}/xoa(id=${thongBao.id})}" method="post" onsubmit="return confirm('Xóa thông báo nháp?')"><button>Xóa nháp</button></form>
+<div th:if="${thongBao.trangThai.name()!='DA_CONG_BO'}">
+<a th:href="@{/thong-bao/{id}/sua(id=${thongBao.id})}">Sửa nội dung</a>
+<form class="panel" th:action="@{/thong-bao/{id}/tep(id=${thongBao.id})}" method="post" enctype="multipart/form-data">
+<label for="tep">Thêm tệp PDF/DOCX/PPTX/ZIP, tối đa 50 MB (tối đa 10 tệp)</label><input id="tep" name="tep" type="file" accept=".pdf,.docx,.pptx,.zip" required><button class="button">Thêm tệp</button></form>
+<form th:action="@{/thong-bao/{id}/cong-bo(id=${thongBao.id})}" method="post"><button class="button">Công bố thông báo</button></form>
+</div>
+<form th:if="${thongBao.trangThai.name()=='DA_CONG_BO'}" th:action="@{/thong-bao/{id}/thu-hoi(id=${thongBao.id})}" method="post"><button class="button secondary">Thu hồi thông báo</button></form>
+</th:block>
+</main></body></html>

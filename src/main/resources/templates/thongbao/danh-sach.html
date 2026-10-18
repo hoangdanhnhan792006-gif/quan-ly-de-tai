@@ -1,0 +1,11 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1"><title>Quản lý đề tài sinh viên</title>
+<link rel="stylesheet" th:href="@{/css/app.css}"></head><body><nav th:replace="~{fragments/dieu-huong :: menu}"></nav>
+<main class="workspace"><p class="message success" th:if="${thanhCong}" th:text="${thanhCong}"></p><p class="message error" th:if="${loi}" th:text="${loi}"></p>
+
+<h1>Thông báo</h1>
+<div class="actions" th:if="${laCanBoKhoa or laQuanTriVien}"><a class="button" th:href="@{/thong-bao/tao}">Soạn thông báo</a><a th:href="@{/thong-bao/quan-ly}">Thông báo tôi quản lý</a><a th:href="@{/thong-bao}">Đã công bố</a></div>
+<section class="panel" th:each="t : ${danhSach}"><h2><a th:href="@{/thong-bao/{id}(id=${t.id})}" th:text="${t.tieuDe}"></a></h2><p><span th:text="${t.donViBanHanh.nhan}"></span> · <span th:text="${t.trangThai.nhan}"></span></p></section>
+<p th:if="${#lists.isEmpty(danhSach)}">Chưa có thông báo.</p>
+</main></body></html>

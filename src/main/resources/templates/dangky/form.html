@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nhóm và đăng ký · Quản lý đề tài</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<body><nav th:replace="~{fragments/dieu-huong :: menu}"></nav><main class="workspace">
+<p class="message success" th:if="${thanhCong}" th:text="${thanhCong}"></p>
+<p class="message error" th:if="${loi}" th:text="${loi}"></p>
+
+<h1>Chọn đề tài cho nhóm</h1><a th:href="@{/sinh-vien/nhom/{id}(id=${nhom.id})}">← Chi tiết nhóm</a>
+<p><strong th:text="${nhom.maNhom}"></strong> · <span th:text="${nhom.tenDot}"></span></p>
+<p>Gửi đăng ký thành công sẽ giữ chỗ trong lúc chờ khoa duyệt. Nếu đổi sang đề tài đã hết chỗ, đăng ký cũ được giữ nguyên.</p>
+<form th:action="@{/sinh-vien/dang-ky/{id}(id=${nhom.id})}" method="post" th:object="${form}" class="panel">
+<div class="message error" th:if="${#fields.hasAnyErrors()}"><p th:each="e : ${#fields.allErrors()}" th:text="${e}"></p></div>
+<label for="deTaiId">Đề tài đã công bố</label><select th:field="*{deTaiId}" required>
+<option value="">Chọn đề tài</option><option th:each="d : ${deTais}" th:value="${d.id}" th:disabled="${d.daGiuCho}"
+th:text="${d.maDeTai + ' — ' + d.tenDeTai + (d.daGiuCho ? ' (Đã có nhóm giữ chỗ)' : '')}"></option></select>
+<button th:disabled="${#lists.isEmpty(deTais)}">Gửi đăng ký / Đổi đề tài</button></form>
+<div class="table-wrap"><table><thead><tr><th>Đề tài</th><th>Tình trạng</th></tr></thead><tbody>
+<tr th:each="d : ${deTais}"><td><a th:href="@{/de-tai/{id}(id=${d.id})}" th:text="${d.tenDeTai}"></a></td>
+<td th:text="${d.daGiuCho ? 'Nhóm khác đang giữ chỗ' : 'Có thể chọn'}"></td></tr>
+<tr th:if="${#lists.isEmpty(deTais)}"><td colspan="2">Chưa có đề tài công bố trong đợt này.</td></tr></tbody></table></div>
+</main></body></html>

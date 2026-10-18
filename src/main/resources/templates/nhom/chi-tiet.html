@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nhóm và đăng ký · Quản lý đề tài</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<body><nav th:replace="~{fragments/dieu-huong :: menu}"></nav><main class="workspace">
+<p class="message success" th:if="${thanhCong}" th:text="${thanhCong}"></p>
+<p class="message error" th:if="${loi}" th:text="${loi}"></p>
+
+<a th:href="@{/sinh-vien/nhom}">← Nhóm của tôi</a>
+<h1 th:text="${nhom.maNhom + ' — ' + (nhom.tenNhom ?: '')}"></h1>
+<p><span th:text="${nhom.tenDot}"></span> · <strong th:text="${nhom.trangThai.nhan}"></strong></p>
+<p th:unless="${nhom.coTheSua}">Nhóm không được thay đổi khi đã chấp thuận đăng ký hoặc khi đợt không còn mở cho sinh viên.</p>
+<section class="panel"><h2>Thành viên</h2>
+<table><thead><tr><th>Mã SV</th><th>Họ tên</th><th>Vai trò</th><th>Thao tác</th></tr></thead><tbody>
+<tr th:each="t : ${nhom.thanhViens}"><td th:text="${t.maSv}"></td><td th:text="${t.hoTen}"></td>
+<td th:text="${t.truongNhom ? 'Nhóm trưởng' : 'Thành viên'}"></td>
+<td><div class="actions" th:if="${nhom.truongNhom and nhom.coTheSua and !t.truongNhom}">
+<form th:action="@{/sinh-vien/nhom/{id}/doi-truong(id=${nhom.id})}" method="post"><input type="hidden" name="sinhVienId" th:value="${t.id}"><button class="secondary">Chuyển nhóm trưởng</button></form>
+<form th:action="@{/sinh-vien/nhom/{id}/xoa-thanh-vien(id=${nhom.id})}" method="post"><input type="hidden" name="sinhVienId" th:value="${t.id}"><button class="secondary">Đưa ra khỏi nhóm</button></form>
+</div></td></tr></tbody></table>
+<form th:if="${!nhom.truongNhom and nhom.coTheSua}" th:action="@{/sinh-vien/nhom/{id}/roi(id=${nhom.id})}" method="post"><button class="secondary">Rời nhóm</button></form>
+</section>
+<section class="panel"><h2>Đăng ký đề tài</h2>
+<div th:if="${nhom.dangKy != null}">
+<p><a th:href="@{/de-tai/{id}(id=${nhom.dangKy.deTaiId})}" th:text="${nhom.dangKy.tenDeTai}"></a></p>
+<p>Trạng thái: <strong th:text="${nhom.dangKy.trangThai.nhan}"></strong></p>
+<p th:if="${nhom.dangKy.lyDo != null}" th:text="${nhom.dangKy.lyDo}"></p>
+</div><p th:if="${nhom.dangKy == null}">Nhóm chưa đăng ký đề tài.</p>
+<div class="actions" th:if="${nhom.truongNhom and nhom.coTheSua}">
+<a class="button" th:href="@{/sinh-vien/dang-ky/{id}(id=${nhom.id})}">Chọn / Đổi đề tài</a>
+<form th:if="${nhom.dangKy != null and nhom.dangKy.trangThai.name() == 'CHO_DUYET'}" th:action="@{/sinh-vien/dang-ky/{id}/huy(id=${nhom.id})}" method="post"><button class="secondary">Hủy đăng ký</button></form>
+</div></section>
+<th:block th:if="${nhom.truongNhom and nhom.coTheSua}">
+<section class="panel"><h2>Mời sinh viên</h2>
+<form th:action="@{/sinh-vien/nhom/{id}/moi(id=${nhom.id})}" method="post" th:object="${moiForm}">
+<div class="message error" th:if="${#fields.hasAnyErrors()}"><p th:each="e : ${#fields.allErrors()}" th:text="${e}"></p></div>
+<label for="maSv">Mã sinh viên</label><input th:field="*{maSv}" required maxlength="20">
+<label for="loiNhan">Lời nhắn</label><textarea th:field="*{loiNhan}" maxlength="500"></textarea>
+<button th:disabled="${#lists.size(nhom.thanhViens) >= 5}">Gửi lời mời</button></form></section>
+<section class="panel"><h2>Đổi tên nhóm</h2><form th:action="@{/sinh-vien/nhom/{id}/doi-ten(id=${nhom.id})}" method="post" th:object="${tenForm}">
+<div class="message error" th:if="${#fields.hasAnyErrors()}"><p th:each="e : ${#fields.allErrors()}" th:text="${e}"></p></div>
+<label for="tenNhom">Tên nhóm</label><input th:field="*{tenNhom}" maxlength="150"><button>Lưu tên</button></form></section>
+<section class="panel"><h2>Giải thể nhóm</h2><p>Thành viên được rời nhóm; đăng ký đang giữ chỗ sẽ được hủy.</p>
+<form th:action="@{/sinh-vien/nhom/{id}/giai-the(id=${nhom.id})}" method="post">
+<label><input type="checkbox" required> Tôi xác nhận giải thể nhóm</label><button class="secondary">Giải thể nhóm</button></form></section>
+</th:block>
+<section class="panel" th:if="${nhom.truongNhom}"><h2>Lời mời đã gửi</h2>
+<table><thead><tr><th>Mã SV</th><th>Trạng thái / Lý do</th><th>Thao tác</th></tr></thead><tbody>
+<tr th:each="l : ${nhom.loiMois}"><td th:text="${l.nguoiNhan}"></td><td><span th:text="${l.trangThai.nhan}"></span><br><span th:text="${l.lyDo}"></span></td>
+<td><form th:if="${nhom.coTheSua and l.coThePhanHoi}" th:action="@{/sinh-vien/nhom/loi-moi/{id}/thu-hoi(id=${l.id})}" method="post"><button class="secondary">Thu hồi</button></form></td></tr>
+<tr th:if="${#lists.isEmpty(nhom.loiMois)}"><td colspan="3">Chưa có lời mời.</td></tr></tbody></table></section>
+</main></body></html>

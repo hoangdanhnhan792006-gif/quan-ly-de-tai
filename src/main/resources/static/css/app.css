@@ -120,3 +120,27 @@ input:focus {
     color: #17613f;
     background: #edf9f3;
 }
+
+/* Màn hình quản trị và hồ sơ */
+.topbar { display: flex; flex-wrap: wrap; align-items: center; gap: 18px; padding: 16px 24px; background: #fff; border-bottom: 1px solid #dfe7f3; }
+.topbar a { color: #2457c5; text-decoration: none; font-weight: 600; }
+.topbar form { margin-left: auto; }
+.topbar .button { margin: 0; padding: 8px 14px; }
+.workspace { max-width: 1150px; margin: 36px auto; padding: 0 24px 40px; }
+.workspace h1 { font-size: 2rem; }
+.panel { padding: 24px; margin-top: 20px; background: #fff; border: 1px solid #dfe7f3; border-radius: 12px; }
+form.panel { max-width: 680px; }
+select { width: 100%; padding: 12px; border: 1px solid #bdc9da; border-radius: 9px; font: inherit; background: #fff; }
+.check { display: flex; align-items: center; gap: 10px; }
+.check input { width: auto; }
+fieldset { border: 1px solid #bdc9da; border-radius: 9px; }
+.table-wrap { overflow-x: auto; margin-top: 20px; }
+table { width: 100%; border-collapse: collapse; background: #fff; }
+th, td { padding: 14px; text-align: left; border-bottom: 1px solid #dfe7f3; vertical-align: top; }
+th { background: #eaf0fb; }
+td .button { margin: 6px 0 0; padding: 6px 12px; }
+dt { font-weight: 700; margin-top: 12px; }
+dd { margin: 4px 0 0; }
+textarea { width: 100%; padding: 12px; border: 1px solid #bdc9da; border-radius: 9px; font: inherit; resize: vertical; }
+.multiline { white-space: pre-wrap; overflow-wrap: anywhere; }
+.actions { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; }

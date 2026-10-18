@@ -1,0 +1,31 @@
+spring:
+  mail:
+    port: ${MAIL_PORT:587}
+    properties:
+      mail.smtp.auth: ${MAIL_AUTH:true}
+      mail.smtp.starttls.enable: ${MAIL_STARTTLS:true}
+      mail.smtp.starttls.required: ${MAIL_STARTTLS:true}
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 4
+      minimum-idle: 1
+  thymeleaf:
+    cache: true
+  flyway:
+    baseline-on-migrate: false
+server:
+  port: ${PORT:8080}
+  forward-headers-strategy: framework
+  servlet:
+    session:
+      cookie:
+        secure: true
+        http-only: true
+        same-site: lax
+app:
+  public-url: ${APP_PUBLIC_URL}
+  storage:
+    root: ${UPLOAD_DIR}

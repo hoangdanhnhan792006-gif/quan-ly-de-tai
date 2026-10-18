@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Quản lý sinh viên · Quản lý đề tài</title>
+        <link rel="stylesheet" th:href="@{/css/app.css}">
+    </head>
+    <body>
+        <nav th:replace="~{fragments/dieu-huong :: menu}">
+        </nav>
+        <main class="workspace">
+            <p class="message error" th:if="${loi}" th:text="${loi}"></p><h1>Quản lý sinh viên</h1>
+            <p class="message success" th:if="${thanhCong}" th:text="${thanhCong}">
+            </p>
+            <a class="button" th:href="@{/admin/sinh-vien/tao}">Thêm hồ sơ</a>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Mã</th>
+                            <th>Họ tên</th>
+                            <th>Tài khoản</th>
+                            <th>Lớp</th>
+                            <th>Khóa học</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="s : ${danhSach}">
+                            <td th:text="${s.maSv}">
+                            </td>
+                            <td th:text="${s.hoTen}">
+                            </td>
+                            <td th:text="${s.tenDangNhap}">
+                            </td>
+                            <td th:text="${s.lop}">
+                            </td>
+                            <td th:text="${s.khoaHoc}">
+                            </td>
+                            <td>
+                                <a th:href="@{/admin/sinh-vien/{id}/sua(id=${s.id})}">Sửa</a>
+<form th:action="@{/admin/sinh-vien/{id}/xoa(id=${s.id})}" method="post" onsubmit="return confirm('Xóa bản ghi chưa được sử dụng?')"><button type="submit" class="button secondary">Xóa</button></form>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(danhSach)}">
+                            <td colspan="6">Chưa có hồ sơ.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </body>
+</html>

@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1"><title>Quản lý đề tài sinh viên</title>
+<link rel="stylesheet" th:href="@{/css/app.css}"></head><body><nav th:replace="~{fragments/dieu-huong :: menu}"></nav>
+<main class="workspace"><p class="message success" th:if="${thanhCong}" th:text="${thanhCong}"></p><p class="message error" th:if="${loi}" th:text="${loi}"></p>
+
+<a th:href="@{/danh-gia}">← Đánh giá</a><h1 th:text="${danhGia.tenDeTai}"></h1>
+<p><strong th:text="${danhGia.maNhom}"></strong> · <span th:text="${danhGia.tenDot}"></span></p>
+<a th:href="@{/bao-cao/dang-ky/{id}(id=${danhGia.dangKyId})}">Xem các phiên bản báo cáo</a>
+<p th:text="${danhGia.phienBanBaoCao==null?'Chưa chốt báo cáo':'Bản báo cáo dùng để chấm: phiên bản '+danhGia.phienBanBaoCao}"></p>
+<section class="panel"><h2>Kế hoạch</h2>
+<p>Phản biện: <strong th:text="${danhGia.phanBien.nhan}"></strong> · <span th:text="${#temporals.format(danhGia.lichPhanBien,'dd/MM/yyyy HH:mm')}"></span> · <span th:text="${danhGia.noiPhanBien}"></span></p>
+<p>Hội đồng: <strong th:text="${danhGia.hoiDong.nhan}"></strong> · <span th:text="${danhGia.tenHoiDong}"></span></p>
+<p th:if="${danhGia.batDauHoiDong!=null}"><span th:text="${#temporals.format(danhGia.batDauHoiDong,'dd/MM/yyyy HH:mm')}"></span> đến <span th:text="${#temporals.format(danhGia.ketThucHoiDong,'dd/MM/yyyy HH:mm')}"></span> · <span th:text="${danhGia.noiHoiDong}"></span></p>
+<div class="actions" th:if="${danhGia.laKhoa}">
+<a th:if="${danhGia.phanBien.name()=='CHUA_BAT_DAU'}" th:href="@{/khoa/danh-gia/{id}/sua(id=${danhGia.id})}">Sửa kế hoạch</a>
+<form th:if="${danhGia.phanBien.name()=='CHUA_BAT_DAU'}" th:action="@{/khoa/danh-gia/{id}/phan-bien(id=${danhGia.id})}" method="post"><button class="button">Chốt báo cáo cuối và mở phản biện</button></form>
+<form th:if="${danhGia.phanBien.name()=='HOAN_TAT' and danhGia.hoiDong.name()=='CHUA_BAT_DAU'}" th:action="@{/khoa/danh-gia/{id}/hoi-dong(id=${danhGia.id})}" method="post"><button class="button">Mở chấm hội đồng</button></form>
+</div></section>
+<section class="panel" th:each="p : ${danhGia.phanCongs}">
+<h2 th:text="${p.giangVien}"></h2><p><span th:if="${p.phanBien}">Giảng viên phản biện </span><span th:if="${p.hoiDong}">· Thành viên hội đồng</span></p>
+<p th:if="${p.phanBien and p.hoiDong}">Giảng viên kiêm nhiệm: dùng một điểm, không tính hai lần.</p>
+<table><thead><tr><th>Phiên bản</th><th>Điểm</th><th>Nhận xét</th><th>Trạng thái</th></tr></thead><tbody>
+<tr th:each="f : ${p.phieus}"><td th:text="${f.phienBan}"></td><td th:text="${f.diem}"></td><td class="multiline" th:text="${f.nhanXet}"></td><td th:text="${f.trangThai.nhan}"></td></tr>
+<tr th:if="${#lists.isEmpty(p.phieus)}"><td colspan="4">Chưa nhập điểm.</td></tr></tbody></table>
+<form th:if="${p.duocCham}" th:action="@{/giang-vien/cham-diem/{id}(id=${p.id})}" method="post">
+<label th:for="${'diem'+p.id}">Điểm 0–10</label><input th:id="${'diem'+p.id}" name="diem" type="number" min="0" max="10" step="0.01" th:value="${#lists.isEmpty(p.phieus)?null:p.phieus[0].diem}">
+<label th:for="${'nhanXet'+p.id}">Nhận xét (bắt buộc khi nộp)</label><textarea th:id="${'nhanXet'+p.id}" name="nhanXet" maxlength="10000" th:text="${#lists.isEmpty(p.phieus)?null:p.phieus[0].nhanXet}"></textarea>
+<button class="button secondary" name="nop" value="false">Lưu nháp</button><button class="button" name="nop" value="true">Nộp chính thức</button></form>
+<form th:if="${p.duocXinSua}" th:action="@{/giang-vien/cham-diem/{id}/xin-sua(id=${p.id})}" method="post">
+<label th:for="${'lyDo'+p.id}">Lý do xin sửa điểm</label><textarea th:id="${'lyDo'+p.id}" name="lyDo" maxlength="5000" required></textarea><button class="button">Gửi yêu cầu sửa</button></form>
+<div th:each="y : ${p.yeuCaus}">
+<p><strong th:text="${y.trangThai.nhan}"></strong> — <span class="multiline" th:text="${y.lyDo}"></span></p><p th:text="${y.nhanXetDuyet}"></p>
+<form th:if="${danhGia.laKhoa and y.trangThai.name()=='CHO_DUYET'}" th:action="@{/khoa/sua-diem/{id}/duyet(id=${y.id})}" method="post">
+<label th:for="${'duyet'+y.id}">Nhận xét duyệt</label><textarea th:id="${'duyet'+y.id}" name="nhanXet" maxlength="5000"></textarea>
+<button class="button" name="chapThuan" value="true">Chấp thuận sửa</button><button class="button secondary" name="chapThuan" value="false">Từ chối</button></form>
+<form th:if="${p.cuaToi and (y.trangThai.name()=='CHO_DUYET' or y.trangThai.name()=='CHAP_THUAN')}" th:action="@{/giang-vien/cham-diem/yeu-cau/{id}/huy(id=${y.id})}" method="post"><button class="button secondary">Hủy yêu cầu sửa</button></form>
+</div></section>
+<section class="panel" th:if="${danhGia.laChuTich or (danhGia.laKhoa and danhGia.hoiDong.name()=='KHONG_AP_DUNG')}">
+<h2>Tổng hợp kết quả</h2><p>Cần đủ phiếu chính thức. Điểm cuối là trung bình của mỗi giảng viên một lần, làm tròn một chữ số.</p>
+<form th:action="@{/danh-gia/{id}/tong-hop(id=${danhGia.id})}" method="post"><label for="tongHop">Nhận xét tổng hợp</label><textarea id="tongHop" name="nhanXet" maxlength="10000" required></textarea><button class="button">Tạo phiên bản kết quả</button></form></section>
+<section class="panel" th:each="k : ${danhGia.ketQuas}">
+<h2 th:text="${'Kết quả phiên bản '+k.phienBan}"></h2><p><strong th:text="${k.diemCuoi}"></strong> / 10 · <span th:text="${k.dat?'Đạt':'Không đạt'}"></span> · <span th:text="${k.trangThai.nhan}"></span></p>
+<p th:if="${k.dangDieuChinh and k.trangThai.name()=='DA_CONG_BO'}">Đang điều chỉnh — đây là kết quả đã công bố trước đó.</p>
+<p class="multiline" th:text="${k.nhanXet}"></p>
+<table><thead><tr><th>GV</th><th>Phiên bản phiếu nguồn</th><th>Điểm</th></tr></thead><tbody><tr th:each="d : ${k.diems}"><td th:text="${d.giangVien}"></td><td th:text="${d.phienBanPhieu}"></td><td th:text="${d.diem}"></td></tr></tbody></table>
+<div class="actions">
+<form th:if="${danhGia.laKhoa and k.trangThai.name()=='CHO_XAC_NHAN'}" th:action="@{/khoa/ket-qua/{id}/xac-nhan(id=${k.id})}" method="post"><button class="button">Xác nhận</button></form>
+<form th:if="${danhGia.laKhoa and k.trangThai.name()=='DA_XAC_NHAN'}" th:action="@{/khoa/ket-qua/{id}/cong-bo(id=${k.id})}" method="post"><button class="button">Công bố cho sinh viên</button></form>
+<form th:if="${(danhGia.laKhoa or danhGia.laChuTich) and (k.trangThai.name()=='CHO_XAC_NHAN' or k.trangThai.name()=='DA_XAC_NHAN')}" th:action="@{/danh-gia/ket-qua/{id}/huy(id=${k.id})}" method="post"><button class="button secondary">Hủy bản chưa công bố</button></form>
+</div></section>
+</main></body></html>

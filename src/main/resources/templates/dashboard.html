@@ -7,10 +7,12 @@
     <link rel="stylesheet" th:href="@{/css/app.css}">
 </head>
 <body>
+<nav th:replace="~{fragments/dieu-huong :: menu}"></nav>
 <main class="container dashboard">
     <p class="eyebrow">Bảng điều khiển</p>
     <h1>Xin chào, <span th:text="${username}">người dùng</span></h1>
     <p>Vai trò hiện tại: <span th:text="${authorities}">ROLE_USER</span></p>
+    <p>Chọn chức năng trên thanh điều hướng để bắt đầu.</p>
     <form th:action="@{/logout}" method="post">
         <button class="button secondary" type="submit">Đăng xuất</button>
     </form>

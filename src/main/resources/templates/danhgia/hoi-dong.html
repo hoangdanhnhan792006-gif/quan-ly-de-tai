@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1"><title>Quản lý đề tài sinh viên</title>
+<link rel="stylesheet" th:href="@{/css/app.css}"></head><body><nav th:replace="~{fragments/dieu-huong :: menu}"></nav>
+<main class="workspace"><p class="message success" th:if="${thanhCong}" th:text="${thanhCong}"></p><p class="message error" th:if="${loi}" th:text="${loi}"></p>
+
+<h1>Hội đồng đánh giá</h1><a class="button" th:href="@{/khoa/hoi-dong/tao}">Tạo hội đồng</a>
+<section class="panel" th:each="h : ${danhSach}">
+<h2 th:text="${h.maHoiDong + ' — ' + h.tenHoiDong}"></h2><p><span th:text="${h.tenDot}"></span> · <strong th:text="${h.trangThai.nhan}"></strong></p>
+<ul><li th:each="t : ${h.thanhViens}" th:text="${t.maGv+' — '+t.hoTen+' ('+t.vaiTro.nhan+')'}"></li></ul>
+<div class="actions" th:if="${h.trangThai.name()=='NHAP'}"><a th:href="@{/khoa/hoi-dong/{id}/sua(id=${h.id})}">Sửa thành phần</a>
+<form th:action="@{/khoa/hoi-dong/{id}/chot(id=${h.id})}" method="post"><button class="button">Chốt hội đồng</button></form></div>
+<form th:if="${h.trangThai.name()=='DA_CHOT'}" th:action="@{/khoa/hoi-dong/{id}/hoan-thanh(id=${h.id})}" method="post"><button class="button secondary">Xác nhận hoàn thành hội đồng</button></form>
+</section><p th:if="${#lists.isEmpty(danhSach)}">Chưa có hội đồng.</p>
+</main></body></html>

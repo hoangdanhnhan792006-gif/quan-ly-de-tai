@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Hồ sơ của tôi · Quản lý đề tài</title>
+        <link rel="stylesheet" th:href="@{/css/app.css}">
+    </head>
+    <body>
+        <nav th:replace="~{fragments/dieu-huong :: menu}">
+        </nav>
+        <main class="workspace">
+            <h1>Hồ sơ của tôi</h1>
+            <p class="message success" th:if="${thanhCong}" th:text="${thanhCong}">
+            </p>
+            <section class="panel">
+                <dl>
+                    <dt>Tên đăng nhập</dt>
+                    <dd th:text="${hoSo.taiKhoan.tenDangNhap}">
+                    </dd>
+                    <dt>Họ tên</dt>
+                    <dd th:text="${hoSo.taiKhoan.hoTen}">
+                    </dd>
+                    <dt>Email</dt>
+                    <dd th:text="${hoSo.taiKhoan.email}">
+                    </dd>
+                    <dt>Vai trò</dt>
+                    <dd th:text="${hoSo.taiKhoan.vaiTros}">
+                    </dd>
+                </dl>
+                <p>Liên hệ quản trị viên nếu thông tin hồ sơ cần điều chỉnh.</p>
+            </section>
+            <section class="panel" th:if="${hoSo.sinhVien != null}">
+                <h2>Thông tin sinh viên</h2>
+                <dl>
+                    <dt>Mã sinh viên</dt>
+                    <dd th:text="${hoSo.sinhVien.maSv}">
+                    </dd>
+                    <dt>Lớp</dt>
+                    <dd th:text="${hoSo.sinhVien.lop}">
+                    </dd>
+                    <dt>Khóa học</dt>
+                    <dd th:text="${hoSo.sinhVien.khoaHoc}">
+                    </dd>
+                </dl>
+            </section>
+            <section class="panel" th:if="${hoSo.giangVien != null}">
+                <h2>Thông tin giảng viên</h2>
+                <dl>
+                    <dt>Mã giảng viên</dt>
+                    <dd th:text="${hoSo.giangVien.maGv}">
+                    </dd>
+                    <dt>Bộ môn</dt>
+                    <dd th:text="${hoSo.giangVien.tenBoMon}">
+                    </dd>
+                    <dt>Học vị</dt>
+                    <dd th:text="${hoSo.giangVien.hocVi}">
+                    </dd>
+                </dl>
+            </section>
+        </main>
+    </body>
+</html>

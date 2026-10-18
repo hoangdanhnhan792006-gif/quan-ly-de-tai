@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Không có quyền truy cập · Quản lý đề tài</title>
+        <link rel="stylesheet" th:href="@{/css/app.css}">
+    </head>
+    <body>
+        <nav th:replace="~{fragments/dieu-huong :: menu}">
+        </nav>
+        <main class="workspace">
+            <h1>Không có quyền truy cập</h1>
+            <p class="message success" th:if="${thanhCong}" th:text="${thanhCong}">
+            </p>
+            <p>Tài khoản của bạn không được phép thực hiện thao tác này.</p>
+            <a th:href="@{/dashboard}">Về bảng điều khiển</a>
+        </main>
+    </body>
+</html>

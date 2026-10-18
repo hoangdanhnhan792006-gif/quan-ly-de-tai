@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Quản lý bộ môn · Quản lý đề tài</title>
+        <link rel="stylesheet" th:href="@{/css/app.css}">
+    </head>
+    <body>
+        <nav th:replace="~{fragments/dieu-huong :: menu}">
+        </nav>
+        <main class="workspace">
+            <p class="message error" th:if="${loi}" th:text="${loi}"></p><h1>Quản lý bộ môn</h1>
+            <p class="message success" th:if="${thanhCong}" th:text="${thanhCong}">
+            </p>
+            <a class="button" th:href="@{/admin/bo-mon/tao}">Thêm bộ môn</a>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Mã</th>
+                            <th>Tên bộ môn</th>
+                            <th>Trạng thái</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="b : ${danhSach}">
+                            <td th:text="${b.maBoMon}">
+                            </td>
+                            <td th:text="${b.tenBoMon}">
+                            </td>
+                            <td th:text="${b.dangHoatDong ? 'Hoạt động' : 'Ngừng hoạt động'}">
+                            </td>
+                            <td>
+                                <a th:href="@{/admin/bo-mon/{id}/sua(id=${b.id})}">Sửa</a>
+<form th:action="@{/admin/bo-mon/{id}/xoa(id=${b.id})}" method="post" onsubmit="return confirm('Xóa bản ghi chưa được sử dụng?')"><button type="submit" class="button secondary">Xóa</button></form>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(danhSach)}">
+                            <td colspan="4">Chưa có bộ môn.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </body>
+</html>

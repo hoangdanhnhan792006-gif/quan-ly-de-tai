@@ -10,6 +10,9 @@ target/
 
 # Cấu hình và tệp do máy cá nhân sinh ra
 .env
+.env.*
+!.env.example
+*.log
 application-local.yml
 application-local.properties
 uploads/

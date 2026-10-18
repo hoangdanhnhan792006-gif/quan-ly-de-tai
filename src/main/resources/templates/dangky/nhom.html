@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nhóm và đăng ký · Quản lý đề tài</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<body><nav th:replace="~{fragments/dieu-huong :: menu}"></nav><main class="workspace">
+<p class="message success" th:if="${thanhCong}" th:text="${thanhCong}"></p>
+<p class="message error" th:if="${loi}" th:text="${loi}"></p>
+
+<a th:href="@{/khoa/dang-ky}">← Duyệt đăng ký</a>
+<h1 th:text="${nhom.maNhom + ' — ' + (nhom.tenNhom ?: '')}"></h1>
+<p><span th:text="${nhom.tenDot}"></span> · <strong th:text="${nhom.trangThai.nhan}"></strong></p>
+<table><thead><tr><th>Mã SV</th><th>Họ tên</th><th>Vai trò</th></tr></thead><tbody>
+<tr th:each="t : ${nhom.thanhViens}"><td th:text="${t.maSv}"></td><td th:text="${t.hoTen}"></td><td th:text="${t.truongNhom ? 'Nhóm trưởng' : 'Thành viên'}"></td></tr>
+</tbody></table>
+<section th:if="${nhom.dangKy != null}" class="panel"><h2>Đăng ký hiện hành</h2>
+<a th:href="@{/de-tai/{id}(id=${nhom.dangKy.deTaiId})}" th:text="${nhom.dangKy.tenDeTai}"></a>
+<p th:text="${nhom.dangKy.trangThai.nhan}"></p><p th:text="${nhom.dangKy.lyDo}"></p></section>
+</main></body></html>

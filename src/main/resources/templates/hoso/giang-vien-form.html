@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Hồ sơ giảng viên · Quản lý đề tài</title>
+        <link rel="stylesheet" th:href="@{/css/app.css}">
+    </head>
+    <body>
+        <nav th:replace="~{fragments/dieu-huong :: menu}">
+        </nav>
+        <main class="workspace">
+            <h1>Hồ sơ giảng viên</h1>
+            <p class="message success" th:if="${thanhCong}" th:text="${thanhCong}">
+            </p>
+            <a th:href="@{/admin/giang-vien}">← Danh sách</a>
+            <p>Tạo tài khoản với vai trò tương ứng trước khi thêm hồ sơ. Tài khoản gắn với hồ sơ không được thay đổi sau khi tạo.</p>
+            <form class="panel" th:action="${id != null} ? @{/admin/giang-vien/{id}/sua(id=${id})} : @{/admin/giang-vien/tao}" th:object="${form}" method="post">
+                <div class="message error" th:if="${#fields.hasAnyErrors()}">
+                    <ul>
+                        <li th:each="e : ${#fields.allErrors()}" th:text="${e}">
+                        </li>
+                    </ul>
+                </div>
+                <label for="taiKhoanId">Tài khoản</label>
+                <select id="taiKhoanId" th:field="*{taiKhoanId}" required>
+                    <option value="">Chọn tài khoản</option>
+                    <option th:each="t : ${taiKhoans}" th:value="${t.id}" th:text="${t.tenDangNhap + ' — ' + t.hoTen}">
+                    </option>
+                </select>
+                <label for="maGv">Mã giảng viên</label>
+                <input id="maGv" type="text" th:field="*{maGv}" required maxlength="20">
+                <label for="boMonId">Bộ môn</label>
+                <select id="boMonId" th:field="*{boMonId}" required>
+                    <option value="">Chọn bộ môn</option>
+                    <option th:each="b : ${boMons}" th:value="${b.id}" th:text="${b.tenBoMon + (b.dangHoatDong ? '' : ' (ngừng hoạt động)')}">
+                    </option>
+                </select>
+                <label for="hocVi">Học vị</label>
+                <input id="hocVi" type="text" th:field="*{hocVi}" maxlength="50">
+                <button class="button" type="submit">Lưu</button>
+            </form>
+        </main>
+    </body>
+</html>
