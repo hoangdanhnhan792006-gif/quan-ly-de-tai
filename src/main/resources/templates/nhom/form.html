@@ -14,7 +14,8 @@
 <label for="dotId">Đợt đăng ký</label><select th:field="*{dotId}" required><option value="">Chọn đợt</option>
 <option th:each="d : ${cacDot}" th:value="${d.id}" th:text="${d.tenDot}"></option></select>
 <label for="maNhom">Mã nhóm (duy nhất trong đợt)</label><input th:field="*{maNhom}" required maxlength="30" pattern="[A-Za-z0-9_-]{1,30}">
-<label for="tenNhom">Tên nhóm</label><input th:field="*{tenNhom}" maxlength="150">
+<label for="tenNhom">Tên nhóm *</label><input th:field="*{tenNhom}" maxlength="150" required>
+<p class="field-error" th:errors="*{tenNhom}"></p>
 <button type="submit" th:disabled="${#lists.isEmpty(cacDot)}">Tạo nhóm</button>
 </form>
-</main></body></html>
+</main><script th:src="@{/js/form.js}" defer></script></body></html>

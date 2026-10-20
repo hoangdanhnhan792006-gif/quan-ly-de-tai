@@ -1,7 +1,6 @@
 package com.khoacntt.quanlydetai.account.service;
 
 import com.khoacntt.quanlydetai.account.form.DoiMatKhauForm;
-import com.khoacntt.quanlydetai.account.form.DatLaiMatKhauForm;
 import com.khoacntt.quanlydetai.account.form.SuaTaiKhoanForm;
 import com.khoacntt.quanlydetai.account.form.TaiKhoanForm;
 import com.khoacntt.quanlydetai.account.model.TaiKhoan;
@@ -41,7 +40,7 @@ class TaiKhoanServiceTest {
         f.setHoTen("Sinh viên"); f.setEmail("SV01@EXAMPLE.EDU.VN"); f.setVaiTros(Set.of(VaiTro.SINH_VIEN)); return f;
     }
     SuaTaiKhoanForm suaForm(Set<VaiTro> roles) {
-        var f = new SuaTaiKhoanForm(); f.setHoTen("Họ tên mới"); f.setEmail("moi@example.edu.vn"); f.setVaiTros(roles); return f;
+        var f = new SuaTaiKhoanForm(); f.setTenDangNhap("user2"); f.setTrangThai(TrangThaiTaiKhoan.HOAT_DONG); f.setHoTen("Họ tên mới"); f.setEmail("moi@example.edu.vn"); f.setVaiTros(roles); return f;
     }
     DoiMatKhauForm mkForm(String old, String confirm) {
         var f = new DoiMatKhauForm(); f.setMatKhauCu(old); f.setMatKhauMoi("NewPass123"); f.setXacNhanMatKhau(confirm); return f;
@@ -109,8 +108,8 @@ class TaiKhoanServiceTest {
         assertThatThrownBy(() -> service.doiMatKhau(mkForm("OldPass123", "khac"))).isInstanceOf(NghiepVuException.class);
     }
 
-    DatLaiMatKhauForm datLaiForm(String password, String confirm) {
-        var f = new DatLaiMatKhauForm();
+    SuaTaiKhoanForm datLaiForm(String password, String confirm) {
+        var f = suaForm(Set.of(VaiTro.SINH_VIEN));
         f.setMatKhauMoi(password); f.setXacNhanMatKhau(confirm); return f;
     }
 
@@ -156,7 +155,8 @@ class TaiKhoanServiceTest {
         target.doiTrangThai(TrangThaiTaiKhoan.BI_KHOA);
         when(current.batBuoc()).thenReturn(tk(1, VaiTro.ADMIN));
         when(repository.timVaKhoa(2)).thenReturn(Optional.of(target));
-        service.datLaiMatKhau(2, datLaiForm("NewPass123", "NewPass123"));
+        var form = datLaiForm("NewPass123", "NewPass123"); form.setTrangThai(TrangThaiTaiKhoan.BI_KHOA);
+        service.sua(2, form);
         assertThat(encoder.matches("NewPass123", target.getMatKhauBam())).isTrue();
         assertThat(encoder.matches("OldPass123", target.getMatKhauBam())).isFalse();
         assertThat(target.getTrangThai()).isEqualTo(TrangThaiTaiKhoan.BI_KHOA);
@@ -165,7 +165,9 @@ class TaiKhoanServiceTest {
 
     @Test void adminKhongTuDatLaiBoQuaMatKhauCu() {
         when(current.batBuoc()).thenReturn(tk(1, VaiTro.ADMIN));
-        assertThatThrownBy(() -> service.datLaiMatKhau(1, datLaiForm("NewPass123", "NewPass123")))
+        when(repository.timVaKhoa(1)).thenReturn(Optional.of(tk(1, VaiTro.ADMIN)));
+        var form = datLaiForm("NewPass123", "NewPass123"); form.setVaiTros(Set.of(VaiTro.ADMIN));
+        assertThatThrownBy(() -> service.sua(1, form))
                 .isInstanceOf(NghiepVuException.class).hasMessageContaining("Đổi mật khẩu");
         verify(repository, never()).saveAndFlush(any());
     }
@@ -177,7 +179,7 @@ class TaiKhoanServiceTest {
         String oldHash = target.getMatKhauBam();
         when(current.batBuoc()).thenReturn(tk(1, VaiTro.ADMIN));
         when(repository.timVaKhoa(2)).thenReturn(Optional.of(target));
-        assertThatThrownBy(() -> service.datLaiMatKhau(2, datLaiForm(password, confirm))).isInstanceOf(NghiepVuException.class);
+        assertThatThrownBy(() -> service.sua(2, datLaiForm(password, confirm))).isInstanceOf(NghiepVuException.class);
         assertThat(target.getMatKhauBam()).isEqualTo(oldHash);
         verify(repository, never()).saveAndFlush(any());
     }

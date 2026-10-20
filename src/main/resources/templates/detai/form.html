@@ -29,11 +29,14 @@
         <label for="maDeTai">Mã đề tài</label><input id="maDeTai" th:field="*{maDeTai}" maxlength="30" required>
         <label for="tenDeTai">Tên đề tài</label><input id="tenDeTai" th:field="*{tenDeTai}" maxlength="255" required>
         <label for="noiDung">Nội dung</label><textarea id="noiDung" th:field="*{noiDung}" rows="7" maxlength="10000" required></textarea>
-        <label for="yeuCau">Yêu cầu thực hiện</label><textarea id="yeuCau" th:field="*{yeuCau}" rows="4" maxlength="10000"></textarea>
-        <label for="sanPhamDuKien">Sản phẩm dự kiến</label><textarea id="sanPhamDuKien" th:field="*{sanPhamDuKien}" rows="4" maxlength="10000"></textarea>
+        <label for="yeuCau">Yêu cầu thực hiện *</label><textarea id="yeuCau" th:field="*{yeuCau}" rows="4" maxlength="10000" required></textarea>
+<p class="field-error" th:errors="*{yeuCau}"></p>
+        <label for="sanPhamDuKien">Sản phẩm dự kiến *</label><textarea id="sanPhamDuKien" th:field="*{sanPhamDuKien}" rows="4" maxlength="10000" required></textarea>
+<p class="field-error" th:errors="*{sanPhamDuKien}"></p>
         <button class="button" type="submit">Lưu đề tài</button>
     </form>
 
 </main>
+    <script th:src="@{/js/form.js}" defer></script>
 </body>
 </html>

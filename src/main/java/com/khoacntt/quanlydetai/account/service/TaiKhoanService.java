@@ -2,7 +2,6 @@ package com.khoacntt.quanlydetai.account.service;
 
 import com.khoacntt.quanlydetai.account.dto.TaiKhoanDto;
 import com.khoacntt.quanlydetai.account.form.DoiMatKhauForm;
-import com.khoacntt.quanlydetai.account.form.DatLaiMatKhauForm;
 import com.khoacntt.quanlydetai.account.form.SuaTaiKhoanForm;
 import com.khoacntt.quanlydetai.account.form.TaiKhoanForm;
 import com.khoacntt.quanlydetai.account.model.TaiKhoan;
@@ -86,8 +85,17 @@ public class TaiKhoanService {
     public void sua(Integer id, @Valid SuaTaiKhoanForm form) {
         TaiKhoan tk = timVaKhoa(id);
         kiemTraVaiTro(form.getVaiTros());
-        if (Objects.equals(nguoiDungHienTai.batBuoc().getId(), id) && !form.getVaiTros().contains(VaiTro.ADMIN)) {
+        boolean chinhMinh = Objects.equals(nguoiDungHienTai.batBuoc().getId(), id);
+        if (chinhMinh && !form.getVaiTros().contains(VaiTro.ADMIN)) {
             throw new NghiepVuException("Bạn không được tự bỏ quyền quản trị của mình");
+        }
+        if (form.getTrangThai() == null) throw new NghiepVuException("Chọn trạng thái tài khoản");
+        if (chinhMinh && form.getTrangThai() == TrangThaiTaiKhoan.BI_KHOA) {
+            throw new NghiepVuException("Bạn không được tự khóa tài khoản đang sử dụng");
+        }
+        String ten = TaiKhoan.chuanHoaTenDangNhap(form.getTenDangNhap());
+        if (taiKhoanRepository.existsByTenDangNhapAndIdNot(ten, id)) {
+            throw new NghiepVuException("Tên đăng nhập đã được sử dụng");
         }
         if (sinhVienRepository.existsByTaiKhoanId(id) && !form.getVaiTros().contains(VaiTro.SINH_VIEN)) {
             throw new NghiepVuException("Tài khoản đã có hồ sơ sinh viên, cần giữ vai trò SINH_VIEN");
@@ -99,7 +107,27 @@ public class TaiKhoanService {
         if (taiKhoanRepository.existsByEmailAndIdNot(email, id)) {
             throw new NghiepVuException("Email đã được sử dụng");
         }
+        // Để trống cả hai ô thì giữ mật khẩu. Dấu cách không được coi là mật khẩu mới hợp lệ.
+        boolean doiMatKhau = (form.getMatKhauMoi() != null && !form.getMatKhauMoi().isEmpty())
+                || (form.getXacNhanMatKhau() != null && !form.getXacNhanMatKhau().isEmpty());
+        String matKhauBamMoi = null;
+        if (doiMatKhau) {
+            if (chinhMinh) {
+                throw new NghiepVuException("Để đổi mật khẩu của mình, hãy dùng mục Đổi mật khẩu và nhập mật khẩu hiện tại.");
+            }
+            kiemTraMatKhau(form.getMatKhauMoi());
+            if (!Objects.equals(form.getMatKhauMoi(), form.getXacNhanMatKhau())) {
+                throw new NghiepVuException("Xác nhận mật khẩu mới không khớp");
+            }
+            if (passwordEncoder.matches(form.getMatKhauMoi(), tk.getMatKhauBam())) {
+                throw new NghiepVuException("Mật khẩu mới phải khác mật khẩu hiện tại");
+            }
+            matKhauBamMoi = passwordEncoder.encode(form.getMatKhauMoi());
+        }
+        tk.doiTenDangNhap(ten);
         tk.capNhatThongTin(form.getHoTen(), email, form.getVaiTros());
+        tk.doiTrangThai(form.getTrangThai());
+        if (matKhauBamMoi != null) tk.doiMatKhau(matKhauBamMoi);
         luu(tk);
     }
 
@@ -134,24 +162,6 @@ public class TaiKhoanService {
         } catch (DataIntegrityViolationException ex) {
             throw new NghiepVuException("Tài khoản đã có dữ liệu liên quan, không thể xóa. Hãy khóa tài khoản.");
         }
-    }
-
-    @PreAuthorize("hasRole('ADMIN')")
-    @Transactional
-    public void datLaiMatKhau(Integer id, @Valid DatLaiMatKhauForm form) {
-        if (Objects.equals(nguoiDungHienTai.batBuoc().getId(), id)) {
-            throw new NghiepVuException("Để đổi mật khẩu của mình, hãy dùng mục Đổi mật khẩu và nhập mật khẩu hiện tại.");
-        }
-        TaiKhoan tk = timVaKhoa(id);
-        kiemTraMatKhau(form.getMatKhauMoi());
-        if (!Objects.equals(form.getMatKhauMoi(), form.getXacNhanMatKhau())) {
-            throw new NghiepVuException("Xác nhận mật khẩu mới không khớp");
-        }
-        if (passwordEncoder.matches(form.getMatKhauMoi(), tk.getMatKhauBam())) {
-            throw new NghiepVuException("Mật khẩu mới phải khác mật khẩu hiện tại");
-        }
-        tk.doiMatKhau(passwordEncoder.encode(form.getMatKhauMoi()));
-        luu(tk);
     }
 
     @PreAuthorize("isAuthenticated()")

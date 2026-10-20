@@ -45,7 +45,7 @@ Tên file tính từ `src/main/resources/templates/`. Trong mỗi hàng, các fi
 |---|---|---|---|
 | Dùng chung | `home.html`, `login.html`, `dashboard.html` | `/`, `/login`, `/dashboard` | Trang chủ, đăng nhập, dashboard; chỉ hiển thị thống kê khi backend có dữ liệu |
 | Menu | `fragments/dieu-huong.html` | Nhúng vào các trang | Menu theo quyền, hồ sơ, đổi mật khẩu, đăng xuất |
-| Tài khoản — admin | `account/danh-sach.html`, `tao.html`, `sua.html`, `dat-lai-mat-khau.html` | `/admin/tai-khoan` | Tạo/sửa, nhiều vai trò, khóa/mở khóa, xóa có điều kiện, đặt lại mật khẩu |
+| Tài khoản — admin | `account/danh-sach.html`, `tao.html`, `sua.html` | `/admin/tai-khoan` | Tạo/sửa, nhiều vai trò, khóa/mở khóa, xóa; tên đăng nhập/trạng thái/mật khẩu mới nằm trong trang Sửa |
 | Mật khẩu cá nhân | `account/doi-mat-khau.html` | `/ho-so/doi-mat-khau` | Mật khẩu hiện tại, mới, xác nhận |
 | Bộ môn — admin | `hoso/bo-mon-danh-sach.html`, `bo-mon-form.html` | `/admin/bo-mon` | Tạo/sửa, hoạt động/ngừng, xóa có điều kiện |
 | Hồ sơ SV — admin | `hoso/sinh-vien-danh-sach.html`, `sinh-vien-form.html` | `/admin/sinh-vien` | Chọn tài khoản, mã SV, lớp, khóa học, sửa/xóa |
@@ -85,7 +85,9 @@ Ví dụ báo cáo: đọc `baocao/controller/BaoCaoController.java` để biế
 - Nút chỉ mở modal/menu dùng `type="button"`; nút gửi dùng `type="submit"`. Không lồng form trong form.
 - Upload giữ `multipart/form-data`. Báo cáo có input **`pdf`, `slide`, `source`**, mỗi lần nộp đủ ba tệp. Khi có lỗi cần cho chọn lại tệp vì trình duyệt không tự điền tệp cũ.
 - Giữ thông báo `thanhCong`, `loi` và khối lỗi `#fields`. Lỗi nhập liệu thường trả lại form; thành công thường chuyển trang.
-- Mật khẩu là `type="password"`, không điền lại vào HTML, lưu localStorage hoặc ghi console.
+- Mật khẩu mặc định là `type="password"`; `static/js/form.js` thêm nút con mắt hiện/ẩn từng ô. Giữ script và class `password-field/password-toggle` khi sửa CSS; `/js/**` được mở cho trang đăng nhập. Không điền lại mật khẩu vào HTML, lưu localStorage hoặc ghi console.
+- Trang Sửa có `tenDangNhap`, `trangThai`, `matKhauMoi`, `xacNhanMatKhau`; để trống hai ô mật khẩu thì giữ mật khẩu hiện tại. Giữ `data-optional="true"` trên ô mật khẩu mới. Trạng thái và vai trò luôn gửi cùng form. Không thêm lại màn hình đặt lại riêng.
+- Hồ sơ SV bắt buộc `lop`, `khoaHoc`; tạo/đổi tên nhóm bắt buộc `tenNhom`; đề tài bắt buộc `yeuCau`, `sanPhamDuKien`. Giữ `required`, dấu * và lỗi `th:errors` dưới các trường mới. Các trường chỉ có dấu cách bị chặn ở backend.
 - Hiển thị nội dung người dùng bằng `th:text`; không đổi nhận xét/thông báo thành `th:utext` hoặc `innerHTML` khi chưa có xử lý an toàn.
 - Input ngày giờ dùng `datetime-local`, nhập giờ Việt Nam. Backend đã chuyển UTC khi lưu và đổi lại khi hiển thị; frontend không tự cộng thêm 7 giờ.
 - Giữ mã enum/ID trong `option value`, chỉ sửa nhãn hiển thị. Checkbox nhiều vai trò/thành viên giữ tên trường dạng tập hợp.
@@ -124,7 +126,7 @@ Quyền bản ghi dùng các cờ đang có, ví dụ `nhom.truongNhom`, `nhom.c
 | Điểm | Phân biệt nháp/chính thức; GVHD không chấm; GVPB kiêm hội đồng chỉ tính một điểm |
 | Kết quả | Tổng hợp → xác nhận → công bố là ba thao tác; SV chưa thấy bản chưa công bố |
 | Sửa điểm | Giữ bản công bố cũ và nhãn Đang điều chỉnh; không tự thay bằng điểm chưa công bố |
-| Tài khoản | Có nút đặt lại mật khẩu/xóa mới; không tự xóa/đặt lại mật khẩu của mình qua chức năng admin; có dữ liệu thì dùng Khóa |
+| Tài khoản | Mật khẩu mới tích hợp vào Sửa cùng tên đăng nhập và trạng thái; không tự xóa hoặc bỏ qua mật khẩu cũ của mình; tài khoản có dữ liệu dùng Khóa |
 | Thông báo | Nháp/công bố/thu hồi, bài và tệp đúng quyền |
 
 Điểm cuối, đạt/không đạt, quyền và trạng thái lấy từ backend; không tự tính lại bằng JavaScript.
@@ -157,9 +159,8 @@ Bảng dưới lấy từ Form Java hiện có. Không phải tất cả trườ
 
 | Module / Form | Trường dữ liệu | File tham chiếu |
 |---|---|---|
-| `account/DatLaiMatKhauForm` | `matKhauMoi`, `xacNhanMatKhau` | [DatLaiMatKhauForm.java](../src/main/java/com/khoacntt/quanlydetai/account/form/DatLaiMatKhauForm.java) |
 | `account/DoiMatKhauForm` | `matKhauCu`, `matKhauMoi`, `xacNhanMatKhau` | [DoiMatKhauForm.java](../src/main/java/com/khoacntt/quanlydetai/account/form/DoiMatKhauForm.java) |
-| `account/SuaTaiKhoanForm` | `hoTen`, `email`, `vaiTros` | [SuaTaiKhoanForm.java](../src/main/java/com/khoacntt/quanlydetai/account/form/SuaTaiKhoanForm.java) |
+| `account/SuaTaiKhoanForm` | `tenDangNhap`, `trangThai`, `matKhauMoi`, `xacNhanMatKhau`, `hoTen`, `email`, `vaiTros` | [SuaTaiKhoanForm.java](../src/main/java/com/khoacntt/quanlydetai/account/form/SuaTaiKhoanForm.java) |
 | `account/TaiKhoanForm` | `tenDangNhap`, `matKhau`, `hoTen`, `email`, `vaiTros` | [TaiKhoanForm.java](../src/main/java/com/khoacntt/quanlydetai/account/form/TaiKhoanForm.java) |
 | `baocao/NopBaoCaoForm` | `ghiChu`, `pdf`, `slide`, `source` | [NopBaoCaoForm.java](../src/main/java/com/khoacntt/quanlydetai/baocao/form/NopBaoCaoForm.java) |
 | `dangky/DangKyForm` | `deTaiId` | [DangKyForm.java](../src/main/java/com/khoacntt/quanlydetai/dangky/form/DangKyForm.java) |

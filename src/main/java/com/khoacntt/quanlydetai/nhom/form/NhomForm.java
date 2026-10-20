@@ -11,7 +11,8 @@ public class NhomForm {
     private String maNhom;
     public String getMaNhom() { return maNhom; }
     public void setMaNhom(String maNhom) { this.maNhom = maNhom; }
-    @Size(max = 150)
+    @NotBlank(message = "Nhập tên nhóm")
+    @Size(max = 150, message = "Tên nhóm tối đa 150 ký tự")
     private String tenNhom;
     public String getTenNhom() { return tenNhom; }
     public void setTenNhom(String tenNhom) { this.tenNhom = tenNhom; }

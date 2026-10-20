@@ -11,10 +11,12 @@ public class SinhVienForm {
     @Pattern(regexp = "[A-Za-z0-9_-]{1,20}", message = "Mã sinh viên gồm tối đa 20 chữ, số hoặc dấu gạch")
     private String maSv;
 
-    @Size(max = 30)
+    @NotBlank(message = "Nhập lớp hành chính")
+    @Size(max = 30, message = "Lớp hành chính tối đa 30 ký tự")
     private String lop;
 
-    @Size(max = 30)
+    @NotBlank(message = "Nhập khóa học")
+    @Size(max = 30, message = "Khóa học tối đa 30 ký tự")
     private String khoaHoc;
 
     public Integer getTaiKhoanId() {

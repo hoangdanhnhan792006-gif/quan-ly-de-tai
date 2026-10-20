@@ -40,7 +40,8 @@
 <button th:disabled="${#lists.size(nhom.thanhViens) >= 5}">Gửi lời mời</button></form></section>
 <section class="panel"><h2>Đổi tên nhóm</h2><form th:action="@{/sinh-vien/nhom/{id}/doi-ten(id=${nhom.id})}" method="post" th:object="${tenForm}">
 <div class="message error" th:if="${#fields.hasAnyErrors()}"><p th:each="e : ${#fields.allErrors()}" th:text="${e}"></p></div>
-<label for="tenNhom">Tên nhóm</label><input th:field="*{tenNhom}" maxlength="150"><button>Lưu tên</button></form></section>
+<label for="tenNhom">Tên nhóm *</label><input th:field="*{tenNhom}" maxlength="150" required>
+<p class="field-error" th:errors="*{tenNhom}"></p><button>Lưu tên</button></form></section>
 <section class="panel"><h2>Giải thể nhóm</h2><p>Thành viên được rời nhóm; đăng ký đang giữ chỗ sẽ được hủy.</p>
 <form th:action="@{/sinh-vien/nhom/{id}/giai-the(id=${nhom.id})}" method="post">
 <label><input type="checkbox" required> Tôi xác nhận giải thể nhóm</label><button class="secondary">Giải thể nhóm</button></form></section>
@@ -50,4 +51,4 @@
 <tr th:each="l : ${nhom.loiMois}"><td th:text="${l.nguoiNhan}"></td><td><span th:text="${l.trangThai.nhan}"></span><br><span th:text="${l.lyDo}"></span></td>
 <td><form th:if="${nhom.coTheSua and l.coThePhanHoi}" th:action="@{/sinh-vien/nhom/loi-moi/{id}/thu-hoi(id=${l.id})}" method="post"><button class="secondary">Thu hồi</button></form></td></tr>
 <tr th:if="${#lists.isEmpty(nhom.loiMois)}"><td colspan="3">Chưa có lời mời.</td></tr></tbody></table></section>
-</main></body></html>
+</main><script th:src="@{/js/form.js}" defer></script></body></html>

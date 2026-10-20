@@ -235,8 +235,9 @@ code {
     box-shadow: var(--shadow-lg);
 }
 
-.auth-card button,
-.auth-card .button {
+/* Chỉ nút submit là con trực tiếp của form; không đụng nút con mắt .password-toggle */
+.auth-card form > button,
+.auth-card form > .button {
     width: 100%;
     justify-self: stretch;
 }
@@ -367,8 +368,9 @@ form > label:not(.check):not(:first-child) {
     margin-top: var(--space-2);
 }
 
-/* Ô nhập cao 40px; loại trừ input ẩn, checkbox, radio và file */
-input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+/* Ô nhập cao 40px; loại trừ input ẩn, checkbox, radio và file.
+   :where() có độ ưu tiên 0 để class như .password-field > input ghi đè được. */
+input:where(:not([type="hidden"], [type="checkbox"], [type="radio"], [type="file"])),
 select {
     width: 100%;
     min-height: var(--control-height);
@@ -394,12 +396,57 @@ textarea {
     resize: vertical;
 }
 
-input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):focus,
+input:where(:not([type="hidden"], [type="checkbox"], [type="radio"])):focus,
 select:focus,
 textarea:focus {
     border-color: var(--color-primary);
     outline: 3px solid var(--color-primary-soft);
     outline-offset: 0;
+}
+
+/* Hiện/ẩn mật khẩu (từ develop): static/js/form.js bọc mỗi ô password trong .password-field
+   và thêm nút .password-toggle type="button". Giữ hai class này theo HUONG_DAN_LAM_FRONTEND. */
+.password-field {
+    position: relative;
+}
+
+.password-field > input {
+    padding-right: 52px;
+}
+
+.password-toggle {
+    position: absolute;
+    top: 50%;
+    right: 4px;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 34px;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--color-primary);
+    transform: translateY(-50%);
+}
+
+.password-toggle:hover {
+    background: var(--color-primary-soft);
+    color: var(--color-primary-hover);
+}
+
+.password-toggle:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 1px;
+}
+
+/* Lỗi từng trường (th:errors) ngay dưới ô nhập; Thymeleaf chỉ render thẻ này khi trường có lỗi */
+.field-error {
+    margin-top: calc(-1 * var(--space-1));
+    color: var(--color-danger);
+    font-size: var(--text-sm);
 }
 
 /* Gợi ý sớm khi người dùng đã nhập rồi rời ô; lỗi thật vẫn do backend trả về */

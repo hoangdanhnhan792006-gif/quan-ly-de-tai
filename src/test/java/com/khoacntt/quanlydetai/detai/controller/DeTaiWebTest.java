@@ -116,8 +116,16 @@ class DeTaiWebTest {
     void taoDeTaiHopLeChuyenVeChiTiet() throws Exception {
         when(deTaiService.tao(any())).thenReturn(10);
         mvc.perform(post("/de-tai/tao").with(csrf()).param("dotId", "1").param("boMonId", "1")
-                .param("maDeTai", "DT01").param("tenDeTai", "Đề tài").param("noiDung", "Nội dung"))
+                .param("maDeTai", "DT01").param("tenDeTai", "Đề tài").param("noiDung", "Nội dung").param("yeuCau", "Yêu cầu").param("sanPhamDuKien", "Website"))
                 .andExpect(redirectedUrl("/de-tai/10"));
+    }
+
+    @Test @WithMockUser(roles="GIANG_VIEN") void deTaiThieuYeuCauSanPhamKhongDuocTao() throws Exception {
+        mvc.perform(post("/de-tai/tao").with(csrf()).param("dotId","1").param("boMonId","1")
+                .param("maDeTai","DT01").param("tenDeTai","Tên đề tài").param("noiDung","Nội dung")
+                .param("yeuCau","   ").param("sanPhamDuKien",""))
+                .andExpect(status().isOk()).andExpect(model().attributeHasFieldErrors("form","yeuCau","sanPhamDuKien"));
+        verify(deTaiService,never()).tao(any());
     }
 
     @Test @WithMockUser(roles = "GIANG_VIEN")

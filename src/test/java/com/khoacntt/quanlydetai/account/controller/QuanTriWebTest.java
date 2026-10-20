@@ -113,13 +113,13 @@ class QuanTriWebTest {
 
     @Test @WithMockUser(roles="SINH_VIEN") void sinhVienKhongDuocXoaHoacDatLaiMatKhauNguoiKhac() throws Exception {
         mvc.perform(post("/admin/tai-khoan/2/xoa").with(csrf())).andExpect(status().isForbidden());
-        mvc.perform(post("/admin/tai-khoan/2/dat-lai-mat-khau").with(csrf())).andExpect(status().isForbidden());
+        mvc.perform(post("/admin/tai-khoan/2/sua").with(csrf())).andExpect(status().isForbidden());
         verifyNoInteractions(taiKhoanService);
     }
 
     @Test @WithMockUser(roles="ADMIN") void thaoTacMoiVanBatBuocCsrf() throws Exception {
         mvc.perform(post("/admin/tai-khoan/2/xoa")).andExpect(status().isForbidden());
-        mvc.perform(post("/admin/tai-khoan/2/dat-lai-mat-khau")).andExpect(status().isForbidden());
+        mvc.perform(post("/admin/tai-khoan/2/sua")).andExpect(status().isForbidden());
         verifyNoInteractions(taiKhoanService);
     }
 
@@ -130,19 +130,23 @@ class QuanTriWebTest {
 
     @Test @WithMockUser(roles="ADMIN") void formDatLaiMatKhauRenderVaGuiDuoc() throws Exception {
         targetAccount();
-        mvc.perform(get("/admin/tai-khoan/2/dat-lai-mat-khau")).andExpect(status().isOk())
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("action=\"/admin/tai-khoan/2/dat-lai-mat-khau\"")));
-        mvc.perform(post("/admin/tai-khoan/2/dat-lai-mat-khau").with(csrf())
-                .param("matKhauMoi","NewPass123").param("xacNhanMatKhau","NewPass123"))
+        mvc.perform(get("/admin/tai-khoan/2/sua")).andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("action=\"/admin/tai-khoan/2/sua\"")));
+        mvc.perform(post("/admin/tai-khoan/2/sua").with(csrf())
+                .param("matKhauMoi","NewPass123").param("xacNhanMatKhau","NewPass123")
+                .param("tenDangNhap","sv01").param("hoTen","SV 01").param("email","sv01@example.edu.vn")
+                .param("vaiTros","SINH_VIEN").param("trangThai","HOAT_DONG"))
                 .andExpect(redirectedUrl("/admin/tai-khoan"));
-        verify(taiKhoanService).datLaiMatKhau(eq(2), any());
+        verify(taiKhoanService).sua(eq(2), any());
     }
 
     @Test @WithMockUser(roles="ADMIN") void formDatLaiMatKhauSaiKhongHienLaiMatKhau() throws Exception {
         targetAccount();
-        doThrow(new NghiepVuException("Xác nhận không khớp")).when(taiKhoanService).datLaiMatKhau(eq(2),any());
-        mvc.perform(post("/admin/tai-khoan/2/dat-lai-mat-khau").with(csrf())
-                .param("matKhauMoi","SecretNew123").param("xacNhanMatKhau","SecretWrong123"))
+        doThrow(new NghiepVuException("Xác nhận không khớp")).when(taiKhoanService).sua(eq(2),any());
+        mvc.perform(post("/admin/tai-khoan/2/sua").with(csrf())
+                .param("matKhauMoi","SecretNew123").param("xacNhanMatKhau","SecretWrong123")
+                .param("tenDangNhap","sv01").param("hoTen","SV 01").param("email","sv01@example.edu.vn")
+                .param("vaiTros","SINH_VIEN").param("trangThai","HOAT_DONG"))
                 .andExpect(status().isOk()).andExpect(model().attributeHasErrors("form"))
                 .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("SecretNew123"))))
                 .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("SecretWrong123"))));
@@ -150,10 +154,41 @@ class QuanTriWebTest {
 
     @Test @WithMockUser(roles="ADMIN") void matKhauNganBiValidationChan() throws Exception {
         targetAccount();
-        mvc.perform(post("/admin/tai-khoan/2/dat-lai-mat-khau").with(csrf())
+        mvc.perform(post("/admin/tai-khoan/2/sua").with(csrf())
                 .param("matKhauMoi","123").param("xacNhanMatKhau","123"))
                 .andExpect(status().isOk()).andExpect(model().attributeHasFieldErrors("form","matKhauMoi"));
-        verify(taiKhoanService,never()).datLaiMatKhau(anyInt(),any());
+        verify(taiKhoanService,never()).sua(anyInt(),any());
+    }
+
+    @Test @WithMockUser(roles="ADMIN") void suaKhongNhapMatKhauVanLuuDuoc() throws Exception {
+        targetAccount();
+        mvc.perform(post("/admin/tai-khoan/2/sua").with(csrf()).param("tenDangNhap","sv_moi")
+                .param("hoTen","Sinh viên").param("email","sv_moi@example.test").param("vaiTros","SINH_VIEN")
+                .param("trangThai","HOAT_DONG").param("matKhauMoi","").param("xacNhanMatKhau",""))
+                .andExpect(redirectedUrl("/admin/tai-khoan"));
+        verify(taiKhoanService).sua(eq(2), any());
+    }
+
+    @Test @WithMockUser(username="admin",roles="ADMIN") void suaTaiKhoanChinhMinhKhongHienOBoQuaMatKhauCu() throws Exception {
+        when(taiKhoanService.chiTiet(1)).thenReturn(new TaiKhoanDto(1,"admin","Admin","admin@example.test",TrangThaiTaiKhoan.HOAT_DONG,Set.of(VaiTro.ADMIN)));
+        mvc.perform(get("/admin/tai-khoan/1/sua")).andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("name=\"matKhauMoi\""))))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("/ho-so/doi-mat-khau")));
+    }
+
+    @Test @WithMockUser(roles="ADMIN") void hoSoSinhVienThieuLopKhoaHocHienLoiGanTruong() throws Exception {
+        mvc.perform(post("/admin/sinh-vien/tao").with(csrf()).param("taiKhoanId","2")
+                .param("maSv","SV01").param("lop","   ").param("khoaHoc",""))
+                .andExpect(status().isOk()).andExpect(model().attributeHasFieldErrors("form","lop","khoaHoc"))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Nhập lớp hành chính")));
+        verify(hoSoService,never()).taoSinhVien(any());
+    }
+
+    @Test void trangDangNhapTaiDuocScriptHienMatKhauKhiChuaDangNhap() throws Exception {
+        mvc.perform(get("/login")).andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("/js/form.js")));
+        mvc.perform(get("/js/form.js")).andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("password-toggle")));
     }
 
     @Test void doiMatKhauKetThucPhienCuSauKhiCredentialsDaDuocXoa() throws Exception {

@@ -11,9 +11,7 @@
             <p class="message success" th:if="${thanhCong}" th:text="${thanhCong}">
             </p>
             <a th:href="@{/admin/tai-khoan}">← Danh sách</a>
-            <p>Tên đăng nhập: <strong th:text="${taiKhoan.tenDangNhap}">
-                </strong>
-            </p>
+            <p>Đổi tên đăng nhập, mật khẩu hoặc quyền sẽ yêu cầu người dùng đăng nhập lại.</p>
             <form class="panel" th:action="@{/admin/tai-khoan/{id}/sua(id=${taiKhoan.id})}" th:object="${form}" method="post">
                 <div class="message error" th:if="${#fields.hasAnyErrors()}">
                     <ul>
@@ -21,20 +19,41 @@
                         </li>
                     </ul>
                 </div>
-                <label for="hoTen">Họ tên</label>
+                <label for="tenDangNhap">Tên đăng nhập *</label>
+                <input id="tenDangNhap" type="text" th:field="*{tenDangNhap}" required minlength="3" maxlength="50" pattern="[A-Za-z0-9_.\-]{3,50}" autocomplete="off">
+                <p class="field-error" th:errors="*{tenDangNhap}"></p>
+                <label for="hoTen">Họ tên *</label>
                 <input id="hoTen" type="text" th:field="*{hoTen}" required maxlength="150">
-                <label for="email">Email</label>
+                <p class="field-error" th:errors="*{hoTen}"></p>
+                <label for="email">Email *</label>
                 <input id="email" type="email" th:field="*{email}" required maxlength="254">
                 <fieldset>
-                    <legend>Vai trò</legend>
+                    <legend>Vai trò *</legend>
                     <label class="check" th:each="v : ${cacVaiTro}">
                         <input type="checkbox" th:field="*{vaiTros}" th:value="${v}">
                         <span th:text="${v}">
                         </span>
                     </label>
                 </fieldset>
-                <button class="button" type="submit">Lưu</button>
+                <p class="field-error" th:errors="*{vaiTros}"></p>
+                <label for="trangThai">Trạng thái *</label>
+                <select id="trangThai" th:field="*{trangThai}" required>
+                    <option th:each="t : ${cacTrangThai}" th:value="${t}" th:text="${t.name() == 'HOAT_DONG' ? 'Hoạt động' : 'Bị khóa'}"></option>
+                </select>
+                <p class="field-error" th:errors="*{trangThai}"></p>
+                <fieldset th:if="${taiKhoan.tenDangNhap != tenDangNhapHienTai}">
+                    <legend>Đổi mật khẩu cho tài khoản này (không bắt buộc)</legend>
+                    <p>Để trống cả hai ô để giữ mật khẩu hiện tại. Nếu đổi: tối thiểu 8 ký tự, tối đa 72 byte UTF-8.</p>
+                    <label for="matKhauMoi">Mật khẩu mới</label>
+                    <input id="matKhauMoi" data-optional="true" name="matKhauMoi" type="password" minlength="8" maxlength="72" autocomplete="new-password">
+                    <p class="field-error" th:errors="*{matKhauMoi}"></p>
+                    <label for="xacNhanMatKhau">Nhập lại mật khẩu mới</label>
+                    <input id="xacNhanMatKhau" name="xacNhanMatKhau" type="password" minlength="8" maxlength="72" autocomplete="new-password">
+                </fieldset>
+                <p th:if="${taiKhoan.tenDangNhap == tenDangNhapHienTai}">Để đổi mật khẩu của mình, vào <a th:href="@{/ho-so/doi-mat-khau}">Đổi mật khẩu</a> và nhập mật khẩu hiện tại.</p>
+                <button class="button" type="submit">Lưu thay đổi</button>
             </form>
         </main>
+        <script th:src="@{/js/form.js}" defer></script>
     </body>
 </html>

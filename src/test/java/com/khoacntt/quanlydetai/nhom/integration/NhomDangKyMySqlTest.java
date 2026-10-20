@@ -92,7 +92,7 @@ class NhomDangKyMySqlTest {
     }
     int group(Student s) {
         return as(s, () -> {
-            var f = new NhomForm(); f.setDotId(dotId); f.setMaNhom("N" + s.id());
+            var f = new NhomForm(); f.setDotId(dotId); f.setMaNhom("N" + s.id()); f.setTenNhom("Nhóm thử " + s.id());
             return nhomService.tao(f);
         });
     }
