@@ -1,13 +1,20 @@
 <!doctype html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1"><title>Quản lý đề tài sinh viên</title>
-<link rel="stylesheet" th:href="@{/css/app.css}"></head><body><nav th:replace="~{fragments/dieu-huong :: menu}"></nav>
-<main class="workspace"><p class="message success" th:if="${thanhCong}" th:text="${thanhCong}"></p><p class="message error" th:if="${loi}" th:text="${loi}"></p>
-
-<h1>Soạn thông báo</h1><a th:href="@{/thong-bao/quan-ly}">← Quản lý thông báo</a>
-<form class="panel" th:object="${form}" th:action="${id==null}?@{/thong-bao/tao}:@{/thong-bao/{id}/sua(id=${id})}" method="post">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(~{::title})}">
+    <title>Soạn thông báo · Quản lý đề tài</title>
+</head>
+<body><nav th:replace="~{fragments/dieu-huong :: menu}"></nav>
+<main class="workspace">
+<a class="back-link" th:href="@{/thong-bao/quan-ly}">← Quản lý thông báo</a>
+<h1 th:text="${id==null} ? 'Soạn thông báo' : 'Sửa thông báo'">Soạn thông báo</h1>
+<p class="message success" th:if="${thanhCong}" th:text="${thanhCong}"></p><p class="message error" th:if="${loi}" th:text="${loi}"></p>
+<form class="panel stack" th:object="${form}" th:action="${id==null}?@{/thong-bao/tao}:@{/thong-bao/{id}/sua(id=${id})}" method="post">
 <div class="message error" th:if="${#fields.hasAnyErrors()}"><p th:each="e : ${#fields.allErrors()}" th:text="${e}"></p></div>
-<label for="tieuDe">Tiêu đề</label><input th:field="*{tieuDe}" maxlength="255" required>
-<label for="donViBanHanh">Đơn vị ban hành</label><select th:field="*{donViBanHanh}" required><option th:each="d : ${donVis}" th:value="${d}" th:text="${d.nhan}"></option></select>
-<label for="noiDung">Nội dung</label><textarea th:field="*{noiDung}" maxlength="15000" required rows="12"></textarea><button class="button">Lưu thông báo</button></form>
+<p class="message info">Lưu nháp trước; tệp đính kèm thêm ở trang chi tiết. Người dùng chỉ thấy thông báo sau khi công bố.</p>
+<div class="form-grid">
+<div class="field"><label for="tieuDe">Tiêu đề<span class="req">*</span></label><input th:field="*{tieuDe}" maxlength="255" required></div>
+<div class="field"><label for="donViBanHanh">Đơn vị ban hành<span class="req">*</span></label><select th:field="*{donViBanHanh}" required><option th:each="d : ${donVis}" th:value="${d}" th:text="${d.nhan}"></option></select></div>
+</div>
+<div class="field"><label for="noiDung">Nội dung<span class="req">*</span></label><textarea th:field="*{noiDung}" maxlength="15000" required rows="12"></textarea></div>
+<div class="actions"><button class="button">Lưu thông báo</button><a class="button secondary" th:href="${id==null} ? @{/thong-bao/quan-ly} : @{/thong-bao/{id}(id=${id})}">Hủy</a></div></form>
 </main></body></html>

@@ -1,36 +1,45 @@
 <!doctype html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Nhóm và đăng ký · Quản lý đề tài</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<head th:replace="~{fragments/layout :: head(~{::title})}">
+    <title>Nhóm của tôi · Quản lý đề tài</title>
+</head>
 <body><nav th:replace="~{fragments/dieu-huong :: menu}"></nav><main class="workspace">
+<header class="page-header">
+    <div>
+        <h1>Nhóm của tôi</h1>
+        <p>Mỗi đợt bạn chỉ tham gia một nhóm. Nhóm có tối đa 5 sinh viên và cần đủ 3 người trước khi đăng ký đề tài; lời mời cần được người nhận đồng ý.</p>
+    </div>
+    <a class="button" th:href="@{/sinh-vien/nhom/tao}">Tạo nhóm</a>
+</header>
 <p class="message success" th:if="${thanhCong}" th:text="${thanhCong}"></p>
 <p class="message error" th:if="${loi}" th:text="${loi}"></p>
 
-<h1>Nhóm của tôi</h1>
-<a class="button" th:href="@{/sinh-vien/nhom/tao}">Tạo nhóm</a>
-<p>Mỗi đợt bạn chỉ tham gia một nhóm. Nhóm có tối đa 5 sinh viên và cần đủ 3 người trước khi đăng ký đề tài; lời mời cần được người nhận đồng ý.</p>
-<div class="table-wrap"><table>
-<thead><tr><th>Nhóm</th><th>Đợt</th><th>Thành viên</th><th>Trạng thái</th></tr></thead>
-<tbody><tr th:each="n : ${danhSach}">
-<td><a th:href="@{/sinh-vien/nhom/{id}(id=${n.id})}" th:text="${n.maNhom + ' — ' + (n.tenNhom ?: '')}"></a></td>
-<td th:text="${n.tenDot}"></td><td th:text="${#lists.size(n.thanhViens)}"></td><td th:text="${n.trangThai.nhan}"></td>
-</tr><tr th:if="${#lists.isEmpty(danhSach)}"><td colspan="4">Bạn chưa tham gia nhóm nào.</td></tr></tbody></table></div>
 <h2>Lời mời nhận được</h2>
 <div class="table-wrap"><table>
 <thead><tr><th>Nhóm / Đợt</th><th>Người mời</th><th>Lời nhắn</th><th>Trạng thái / Lý do</th><th>Phản hồi</th></tr></thead>
 <tbody><tr th:each="l : ${loiMois}">
-<td><span th:text="${l.maNhom}"></span><br><span th:text="${l.tenDot}"></span></td>
-<td th:text="${l.nguoiMoi}"></td><td th:text="${l.loiNhan}"></td>
-<td><span th:text="${l.trangThai.nhan}"></span><br><span th:text="${l.lyDo}"></span><span th:if="${l.trangThai.name() == 'CHO_PHAN_HOI' and !l.coThePhanHoi}"> (Đợt/nhóm đã đóng)</span></td>
+<td><strong class="mono" th:text="${l.maNhom}"></strong><br><span class="muted" th:text="${l.tenDot}"></span></td>
+<td th:text="${l.nguoiMoi}"></td><td class="multiline" th:text="${l.loiNhan}"></td>
+<td><span th:replace="~{fragments/nhan :: badge-trang-thai(${l.trangThai})}"></span><br><span class="muted" th:text="${l.lyDo}"></span><span class="muted" th:if="${l.trangThai.name() == 'CHO_PHAN_HOI' and !l.coThePhanHoi}"> (Đợt/nhóm đã đóng)</span></td>
 <td><form th:if="${l.coThePhanHoi}" th:action="@{/sinh-vien/nhom/loi-moi/{id}/phan-hoi(id=${l.id})}" method="post">
 <button name="chapNhan" value="true">Đồng ý</button><button class="secondary" name="chapNhan" value="false">Từ chối</button>
-</form></td></tr><tr th:if="${#lists.isEmpty(loiMois)}"><td colspan="5">Chưa có lời mời.</td></tr></tbody></table></div>
+</form></td></tr><tr th:if="${#lists.isEmpty(loiMois)}"><td class="empty" colspan="5">Chưa có lời mời.</td></tr></tbody></table></div>
+
+<h2>Nhóm</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Nhóm</th><th>Đợt</th><th>Thành viên</th><th>Trạng thái</th></tr></thead>
+<tbody><tr th:each="n : ${danhSach}">
+<td><a class="row-title" th:href="@{/sinh-vien/nhom/{id}(id=${n.id})}" th:text="${n.maNhom + ' — ' + (n.tenNhom ?: '')}"></a></td>
+<td th:text="${n.tenDot}"></td><td class="nowrap"><span th:text="${#lists.size(n.thanhViens)}"></span> / 5</td>
+<td><span th:replace="~{fragments/nhan :: badge-trang-thai(${n.trangThai})}"></span></td>
+</tr><tr th:if="${#lists.isEmpty(danhSach)}"><td class="empty" colspan="4">Bạn chưa tham gia nhóm nào.</td></tr></tbody></table></div>
+
 <h2>Đợt đang mở cho sinh viên</h2>
 <div class="table-wrap"><table><thead><tr><th>Đợt</th><th>Loại</th><th>Mở đăng ký</th><th>Đóng đăng ký</th><th>Hạn báo cáo</th></tr></thead>
 <tbody><tr th:each="d : ${cacDot}"><td th:text="${d.tenDot}"></td><td th:text="${d.loai.nhan}"></td>
-<td th:text="${#temporals.format(d.svBatDau, 'dd/MM/yyyy HH:mm')}"></td>
-<td th:text="${#temporals.format(d.svKetThuc, 'dd/MM/yyyy HH:mm')}"></td>
-<td th:text="${#temporals.format(d.hanNopBaoCao, 'dd/MM/yyyy HH:mm')}"></td></tr>
-<tr th:if="${#lists.isEmpty(cacDot)}"><td colspan="5">Hiện không có đợt mở đăng ký.</td></tr></tbody></table></div>
-<p>Thời gian hiển thị theo giờ Việt Nam.</p>
+<td class="nowrap" th:text="${#temporals.format(d.svBatDau, 'dd/MM/yyyy HH:mm')}"></td>
+<td class="nowrap" th:text="${#temporals.format(d.svKetThuc, 'dd/MM/yyyy HH:mm')}"></td>
+<td class="nowrap" th:text="${#temporals.format(d.hanNopBaoCao, 'dd/MM/yyyy HH:mm')}"></td></tr>
+<tr th:if="${#lists.isEmpty(cacDot)}"><td class="empty" colspan="5">Hiện không có đợt mở đăng ký.</td></tr></tbody></table></div>
+<p class="muted">Thời gian hiển thị theo giờ Việt Nam.</p>
 </main></body></html>

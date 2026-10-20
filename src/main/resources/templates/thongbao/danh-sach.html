@@ -1,11 +1,27 @@
 <!doctype html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1"><title>Quản lý đề tài sinh viên</title>
-<link rel="stylesheet" th:href="@{/css/app.css}"></head><body><nav th:replace="~{fragments/dieu-huong :: menu}"></nav>
-<main class="workspace"><p class="message success" th:if="${thanhCong}" th:text="${thanhCong}"></p><p class="message error" th:if="${loi}" th:text="${loi}"></p>
-
-<h1>Thông báo</h1>
-<div class="actions" th:if="${laCanBoKhoa or laQuanTriVien}"><a class="button" th:href="@{/thong-bao/tao}">Soạn thông báo</a><a th:href="@{/thong-bao/quan-ly}">Thông báo tôi quản lý</a><a th:href="@{/thong-bao}">Đã công bố</a></div>
-<section class="panel" th:each="t : ${danhSach}"><h2><a th:href="@{/thong-bao/{id}(id=${t.id})}" th:text="${t.tieuDe}"></a></h2><p><span th:text="${t.donViBanHanh.nhan}"></span> · <span th:text="${t.trangThai.nhan}"></span></p></section>
-<p th:if="${#lists.isEmpty(danhSach)}">Chưa có thông báo.</p>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(~{::title})}">
+    <title>Thông báo · Quản lý đề tài</title>
+</head>
+<body><nav th:replace="~{fragments/dieu-huong :: menu}"></nav>
+<main class="workspace">
+<!--/* Một template cho 2 URL: /thong-bao (đã công bố) và /thong-bao/quan-ly; tab đang mở do menu.js đánh dấu */-->
+<header class="page-header">
+    <div><h1>Thông báo</h1><p>Thông báo của nhà trường và khoa dành cho người dùng đã đăng nhập.</p></div>
+    <a class="button" th:if="${laCanBoKhoa or laQuanTriVien}" th:href="@{/thong-bao/tao}">Soạn thông báo</a>
+</header>
+<p class="message success" th:if="${thanhCong}" th:text="${thanhCong}"></p><p class="message error" th:if="${loi}" th:text="${loi}"></p>
+<nav class="tabs" aria-label="Chế độ xem thông báo" th:if="${laCanBoKhoa or laQuanTriVien}">
+    <a th:href="@{/thong-bao}">Đã công bố</a>
+    <a th:href="@{/thong-bao/quan-ly}">Thông báo tôi quản lý</a>
+</nav>
+<div class="notice-list">
+<article class="panel notice" th:each="t : ${danhSach}">
+<p class="eyebrow"><span th:text="${t.donViBanHanh.nhan}"></span><span th:if="${t.congBoLuc != null}"> · <span th:text="${#temporals.format(t.congBoLuc,'dd/MM/yyyy HH:mm')}"></span></span></p>
+<header class="panel-head"><h2><a th:href="@{/thong-bao/{id}(id=${t.id})}" th:text="${t.tieuDe}"></a></h2><span th:replace="~{fragments/nhan :: badge-trang-thai(${t.trangThai})}"></span></header>
+<p class="excerpt" th:text="${#strings.abbreviate(t.noiDung, 200)}"></p>
+<p class="muted"><span th:text="${t.nguoiDang}"></span><span th:if="${!#lists.isEmpty(t.teps)}"> · <span th:text="${#lists.size(t.teps)}"></span> tệp đính kèm</span></p>
+</article>
+</div>
+<p class="empty" th:if="${#lists.isEmpty(danhSach)}">Chưa có thông báo.</p>
 </main></body></html>

@@ -1,17 +1,23 @@
 <!doctype html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Không thể thực hiện thao tác</title>
-    <link rel="stylesheet" th:href="@{/css/app.css}">
+<head th:replace="~{fragments/layout :: head(~{::title})}">
+    <title>Không thể thực hiện thao tác · Quản lý đề tài</title>
 </head>
 <body>
-<main class="container dashboard">
-    <p class="eyebrow">Thông báo nghiệp vụ</p>
-    <h1>Không thể thực hiện thao tác</h1>
-    <p th:text="${message}">Thao tác không hợp lệ.</p>
-    <a class="button" href="javascript:history.back()">Quay lại</a>
+<!-- Không nhúng menu: Model của @ExceptionHandler không có các biến la... của DieuHuongAdvice -->
+<main class="error-shell">
+    <section class="error-page">
+        <p class="error-code warning" aria-hidden="true">!</p>
+        <div class="error-body">
+            <p class="eyebrow">Thông báo nghiệp vụ</p>
+            <h1>Không thể thực hiện thao tác</h1>
+            <p th:text="${message}">Thao tác không hợp lệ.</p>
+            <div class="actions">
+                <a class="button" href="javascript:history.back()">Quay lại</a>
+                <a class="button secondary" th:href="@{/dashboard}">Về bảng điều khiển</a>
+            </div>
+        </div>
+    </section>
 </main>
 </body>
 </html>

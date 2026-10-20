@@ -1,52 +1,58 @@
 <!doctype html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+<head th:replace="~{fragments/layout :: head(~{::title})}">
     <title>Danh sách đề tài · Quản lý đề tài</title>
-    <link rel="stylesheet" th:href="@{/css/app.css}">
 </head>
 <body>
 <nav th:replace="~{fragments/dieu-huong :: menu}"></nav>
+<!-- Một template cho 3 URL: /de-tai (có boLoc), /de-tai/cua-toi, /de-tai/quan-ly; tieuDe do controller đặt -->
 <main class="workspace">
-    <h1>Danh sách đề tài</h1>
+    <header class="page-header">
+        <div>
+            <p class="eyebrow">Đề tài</p>
+            <h1 th:text="${tieuDe}">Danh sách đề tài</h1>
+        </div>
+        <a class="button" th:if="${laGiangVien}" th:href="@{/de-tai/tao}">Đề xuất đề tài</a>
+    </header>
     <p class="message success" th:if="${thanhCong}" th:text="${thanhCong}"></p>
     <p class="message error" th:if="${loi}" th:text="${loi}"></p>
-
-    <h2 th:text="${tieuDe}"></h2>
-    <div class="actions">
+    <!-- Tab đang mở do menu.js đánh dấu (aria-current) theo đường dẫn; chỉ là hiển thị -->
+    <nav class="tabs" aria-label="Chế độ xem đề tài">
         <a th:href="@{/de-tai}">Đã công bố</a>
         <a th:if="${laGiangVien}" th:href="@{/de-tai/cua-toi}">Đề tài của tôi</a>
         <a th:if="${laCanBoKhoa}" th:href="@{/de-tai/quan-ly}">Quản lý đề tài</a>
-        <a class="button" th:if="${laGiangVien}" th:href="@{/de-tai/tao}">Đề xuất đề tài</a>
-    </div>
-    <form th:if="${boLoc != null}" method="get" th:action="@{/de-tai}" class="panel">
-        <label for="dotId">Đợt đăng ký</label>
-        <select id="dotId" name="dotId">
-            <option value="">Tất cả đợt</option>
-            <option th:each="d : ${boLoc.cacDot}" th:value="${d.key}" th:text="${d.value}" th:selected="${d.key == dotId}"></option>
-        </select>
-        <label for="boMonId">Bộ môn</label>
-        <select id="boMonId" name="boMonId">
-            <option value="">Tất cả bộ môn</option>
-            <option th:each="b : ${boLoc.cacBoMon}" th:value="${b.key}" th:text="${b.value}" th:selected="${b.key == boMonId}"></option>
-        </select>
+    </nav>
+    <!-- Giữ nguyên thẻ option (th:value trước th:selected, không thêm thuộc tính): DeTaiWebTest so khớp nguyên văn -->
+    <form th:if="${boLoc != null}" method="get" th:action="@{/de-tai}" class="panel filter-bar">
+        <div class="field">
+            <label for="dotId">Đợt đăng ký</label>
+            <select id="dotId" name="dotId">
+                <option value="">Tất cả đợt</option>
+                <option th:each="d : ${boLoc.cacDot}" th:value="${d.key}" th:text="${d.value}" th:selected="${d.key == dotId}"></option>
+            </select>
+        </div>
+        <div class="field">
+            <label for="boMonId">Bộ môn</label>
+            <select id="boMonId" name="boMonId">
+                <option value="">Tất cả bộ môn</option>
+                <option th:each="b : ${boLoc.cacBoMon}" th:value="${b.key}" th:text="${b.value}" th:selected="${b.key == boMonId}"></option>
+            </select>
+        </div>
         <div class="actions"><button type="submit">Lọc đề tài</button><a th:href="@{/de-tai}">Bỏ lọc</a></div>
     </form>
     <div class="table-wrap"><table>
         <thead><tr><th>Mã / Tên đề tài</th><th>Đợt / Loại</th><th>Bộ môn</th><th>Người đề xuất</th><th>GVHD</th><th>Trạng thái</th></tr></thead>
         <tbody>
         <tr th:each="d : ${danhSach}">
-            <td><strong th:text="${d.maDeTai}"></strong><br><a th:href="@{/de-tai/{id}(id=${d.id})}" th:text="${d.tenDeTai}"></a></td>
-            <td><span th:text="${d.tenDot}"></span><br><span th:text="${d.loai.nhan}"></span></td>
+            <td><span class="mono muted" th:text="${d.maDeTai}"></span><br><a class="row-title" th:href="@{/de-tai/{id}(id=${d.id})}" th:text="${d.tenDeTai}"></a></td>
+            <td><span th:text="${d.tenDot}"></span><br><span class="muted" th:text="${d.loai.nhan}"></span></td>
             <td th:text="${d.tenBoMon}"></td><td th:text="${d.nguoiDeXuat}"></td>
-            <td><div th:each="g : ${d.huongDans}" th:text="${g.hoTen}"></div><span th:if="${#lists.isEmpty(d.huongDans)}">Chưa phân công</span></td>
-            <td th:text="${d.trangThai.nhan}"></td>
+            <td><div th:each="g : ${d.huongDans}" th:text="${g.hoTen}"></div><span class="muted" th:if="${#lists.isEmpty(d.huongDans)}">Chưa phân công</span></td>
+            <td><span th:replace="~{fragments/nhan :: badge-trang-thai(${d.trangThai})}"></span></td>
         </tr>
-        <tr th:if="${#lists.isEmpty(danhSach)}"><td colspan="6">Chưa có đề tài trong danh sách này.</td></tr>
+        <tr th:if="${#lists.isEmpty(danhSach)}"><td class="empty" colspan="6">Chưa có đề tài trong danh sách này.</td></tr>
         </tbody>
     </table></div>
-
 </main>
 </body>
 </html>

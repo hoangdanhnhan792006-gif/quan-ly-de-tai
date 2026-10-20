@@ -1,22 +1,28 @@
 <!doctype html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1"><title>Quản lý đề tài sinh viên</title>
-<link rel="stylesheet" th:href="@{/css/app.css}"></head><body><nav th:replace="~{fragments/dieu-huong :: menu}"></nav>
-<main class="workspace"><p class="message success" th:if="${thanhCong}" th:text="${thanhCong}"></p><p class="message error" th:if="${loi}" th:text="${loi}"></p>
-
-<h1>Kết quả đề tài của tôi</h1>
-<form method="get" th:action="@{/sinh-vien/ket-qua}">
-<label for="dotId">Đợt đăng ký</label><select id="dotId" name="dotId">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(~{::title})}">
+    <title>Kết quả đề tài · Quản lý đề tài</title>
+</head>
+<body><nav th:replace="~{fragments/dieu-huong :: menu}"></nav>
+<main class="workspace">
+<header class="page-header"><div><h1>Kết quả đề tài của tôi</h1><p>Chỉ hiện kết quả khoa đã công bố cho các đề tài bạn tham gia.</p></div></header>
+<p class="message success" th:if="${thanhCong}" th:text="${thanhCong}"></p><p class="message error" th:if="${loi}" th:text="${loi}"></p>
+<!--/* Giữ nguyên thẻ option (th:value trước th:selected, không thêm thuộc tính) như bộ lọc đề tài */-->
+<form class="panel filter-bar" method="get" th:action="@{/sinh-vien/ket-qua}">
+<div class="field"><label for="dotId">Đợt đăng ký</label><select id="dotId" name="dotId">
 <option value="">Tất cả đợt của tôi</option>
 <option th:each="d : ${cacDot}" th:value="${d.key}" th:text="${d.value}" th:selected="${d.key == dotId}"></option>
-</select><button type="submit">Tra cứu</button></form>
+</select></div><div class="actions"><button type="submit">Tra cứu</button></div></form>
 <section class="panel" th:each="d : ${danhSach}">
-<h2 th:text="${d.tenDeTai}"></h2><p>Đợt: <strong th:text="${d.tenDot}"></strong></p><p th:text="${d.maNhom}"></p><p th:if="${d.ketQua==null}">Khoa chưa công bố kết quả.</p>
-<div th:if="${d.ketQua!=null}" th:with="k=${d.ketQua}">
-<p>Phiên bản công bố: <span th:text="${k.phienBan}"></span></p><p><strong th:text="${k.diemCuoi}"></strong> / 10 — <strong th:text="${k.dat?'Đạt':'Không đạt'}"></strong></p>
-<p class="message" th:if="${k.dangDieuChinh}">Đang điều chỉnh. Điểm hiển thị là kết quả đã công bố; kết quả mới chỉ thay thế khi khoa công bố lại.</p>
+<header class="panel-head"><div><p class="eyebrow"><span th:text="${d.tenDot}"></span> · <span class="mono" th:text="${d.maNhom}"></span></p><h2 th:text="${d.tenDeTai}"></h2></div></header>
+<p class="empty" th:if="${d.ketQua==null}">Khoa chưa công bố kết quả.</p>
+<div class="stack-block" th:if="${d.ketQua!=null}" th:with="k=${d.ketQua}">
+<div class="score-card"><span class="score"><strong th:text="${k.diemCuoi}"></strong> / 10</span>
+<span class="badge" th:classappend="${k.dat} ? 'success' : 'danger'" th:text="${k.dat?'Đạt':'Không đạt'}"></span>
+<span class="muted">Phiên bản công bố: <span th:text="${k.phienBan}"></span></span></div>
+<p class="message warning" th:if="${k.dangDieuChinh}">Đang điều chỉnh. Điểm hiển thị là kết quả đã công bố; kết quả mới chỉ thay thế khi khoa công bố lại.</p>
 <p class="multiline" th:text="${k.nhanXet}"></p>
-<table><thead><tr><th>Giảng viên</th><th>Điểm</th><th>Nhận xét trong kết quả công bố</th></tr></thead>
-<tbody><tr th:each="p : ${k.diems}"><td th:text="${p.giangVien}"></td><td th:text="${p.diem}"></td><td class="multiline" th:text="${p.nhanXet}"></td></tr></tbody></table>
-</div></section><p th:if="${#lists.isEmpty(danhSach)}">Bạn chưa có đăng ký đề tài được chấp thuận.</p>
+<div class="table-wrap"><table><thead><tr><th>Giảng viên</th><th>Điểm</th><th>Nhận xét trong kết quả công bố</th></tr></thead>
+<tbody><tr th:each="p : ${k.diems}"><td th:text="${p.giangVien}"></td><td><strong th:text="${p.diem}"></strong></td><td class="multiline" th:text="${p.nhanXet}"></td></tr></tbody></table></div>
+</div></section><p class="empty" th:if="${#lists.isEmpty(danhSach)}">Bạn chưa có đăng ký đề tài được chấp thuận.</p>
 </main></body></html>

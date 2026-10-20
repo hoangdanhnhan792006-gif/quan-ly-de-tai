@@ -1,21 +1,47 @@
 <!doctype html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1"><title>Quản lý đề tài sinh viên</title>
-<link rel="stylesheet" th:href="@{/css/app.css}"></head><body><nav th:replace="~{fragments/dieu-huong :: menu}"></nav>
-<main class="workspace"><p class="message success" th:if="${thanhCong}" th:text="${thanhCong}"></p><p class="message error" th:if="${loi}" th:text="${loi}"></p>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(~{::title})}">
+    <title>Chi tiết thông báo · Quản lý đề tài</title>
+</head>
+<body><nav th:replace="~{fragments/dieu-huong :: menu}"></nav>
+<main class="workspace">
+<a class="back-link" th:href="@{/thong-bao}">← Thông báo</a>
+<header class="page-header">
+    <div>
+        <p class="eyebrow"><span th:text="${thongBao.donViBanHanh.nhan}"></span><span th:if="${thongBao.congBoLuc != null}"> · <span th:text="${#temporals.format(thongBao.congBoLuc,'dd/MM/yyyy HH:mm')}"></span></span></p>
+        <h1 th:text="${thongBao.tieuDe}"></h1>
+        <p><span th:text="${thongBao.nguoiDang}"></span> · <span th:replace="~{fragments/nhan :: badge-trang-thai(${thongBao.trangThai})}"></span></p>
+    </div>
+</header>
+<p class="message success" th:if="${thanhCong}" th:text="${thanhCong}"></p><p class="message error" th:if="${loi}" th:text="${loi}"></p>
 
-<a th:href="@{/thong-bao}">← Thông báo</a><h1 th:text="${thongBao.tieuDe}"></h1>
-<p><span th:text="${thongBao.donViBanHanh.nhan}"></span> · <span th:text="${thongBao.nguoiDang}"></span> · <span th:text="${thongBao.trangThai.nhan}"></span></p>
-<p class="multiline" th:text="${thongBao.noiDung}"></p>
-<ul><li th:each="t : ${thongBao.teps}"><a th:href="@{/thong-bao/tep/{id}(id=${t.id})}" th:text="${t.ten}"></a> (<span th:text="${t.kichThuoc}"></span> byte)</li></ul>
-<th:block th:if="${thongBao.coTheSua}">
-<form th:if="${thongBao.trangThai.name()=='NHAP' and #lists.isEmpty(thongBao.teps)}" th:action="@{/thong-bao/{id}/xoa(id=${thongBao.id})}" method="post" onsubmit="return confirm('Xóa thông báo nháp?')"><button>Xóa nháp</button></form>
-<div th:if="${thongBao.trangThai.name()!='DA_CONG_BO'}">
-<a th:href="@{/thong-bao/{id}/sua(id=${thongBao.id})}">Sửa nội dung</a>
-<form class="panel" th:action="@{/thong-bao/{id}/tep(id=${thongBao.id})}" method="post" enctype="multipart/form-data">
-<label for="tep">Thêm tệp PDF/DOCX/PPTX/ZIP, tối đa 50 MB (tối đa 10 tệp)</label><input id="tep" name="tep" type="file" accept=".pdf,.docx,.pptx,.zip" required><button class="button">Thêm tệp</button></form>
-<form th:action="@{/thong-bao/{id}/cong-bo(id=${thongBao.id})}" method="post"><button class="button">Công bố thông báo</button></form>
+<div class="detail-layout">
+<div class="detail-main">
+<article class="panel"><p class="multiline" th:text="${thongBao.noiDung}"></p></article>
+<!--/* Tải tệp qua controller /thong-bao/tep/{id} (kiểm tra quyền xem) */-->
+<section class="panel"><h2>Tệp đính kèm</h2>
+<ul class="file-list" th:if="${!#lists.isEmpty(thongBao.teps)}"><li th:each="t : ${thongBao.teps}"><a th:href="@{/thong-bao/tep/{id}(id=${t.id})}" th:text="${t.ten}"></a>
+<span class="muted nowrap" th:title="${t.kichThuoc + ' byte'}" th:text="${t.kichThuoc >= 1048576 ? #numbers.formatDecimal(t.kichThuoc / 1048576.0, 1, 'POINT', 2, 'COMMA') + ' MB' : #numbers.formatDecimal(t.kichThuoc / 1024.0, 1, 'POINT', 1, 'COMMA') + ' KB'}"></span></li></ul>
+<p class="muted" th:if="${#lists.isEmpty(thongBao.teps)}">Không có tệp đính kèm.</p>
+</section>
 </div>
-<form th:if="${thongBao.trangThai.name()=='DA_CONG_BO'}" th:action="@{/thong-bao/{id}/thu-hoi(id=${thongBao.id})}" method="post"><button class="button secondary">Thu hồi thông báo</button></form>
+
+<!--/* Cùng điều kiện coTheSua với khối thao tác gốc; các điều kiện bên trong giữ nguyên */-->
+<aside class="detail-side" th:if="${thongBao.coTheSua}" aria-label="Quản lý thông báo">
+<th:block th:if="${thongBao.coTheSua}">
+<section class="panel" th:if="${thongBao.trangThai.name()!='DA_CONG_BO'}"><h2>Chỉnh sửa</h2>
+<a class="button secondary" th:href="@{/thong-bao/{id}/sua(id=${thongBao.id})}">Sửa nội dung</a>
+<form class="stack" th:action="@{/thong-bao/{id}/tep(id=${thongBao.id})}" method="post" enctype="multipart/form-data" data-chong-gui-lai>
+<div class="field"><label for="tep">Thêm tệp PDF/DOCX/PPTX/ZIP, tối đa 50 MB (tối đa 10 tệp)</label><input id="tep" name="tep" type="file" accept=".pdf,.docx,.pptx,.zip" required></div><button class="button secondary" type="submit">Thêm tệp</button></form>
+<form th:action="@{/thong-bao/{id}/cong-bo(id=${thongBao.id})}" method="post"><button class="button">Công bố thông báo</button></form>
+</section>
+<section class="panel" th:if="${thongBao.trangThai.name()=='DA_CONG_BO'}"><h2>Đang công bố</h2><p class="field-hint">Thu hồi để ẩn khỏi người dùng; sau đó có thể sửa và công bố lại.</p>
+<form th:action="@{/thong-bao/{id}/thu-hoi(id=${thongBao.id})}" method="post"><button class="button secondary">Thu hồi thông báo</button></form></section>
+<section class="panel danger-zone" th:if="${thongBao.trangThai.name()=='NHAP' and #lists.isEmpty(thongBao.teps)}"><h2>Xóa nháp</h2><p>Chỉ xóa được thông báo nháp chưa có tệp đính kèm.</p>
+<form th:action="@{/thong-bao/{id}/xoa(id=${thongBao.id})}" method="post" onsubmit="return confirm('Xóa thông báo nháp?')"><button class="button danger">Xóa nháp</button></form></section>
 </th:block>
-</main></body></html>
+</aside>
+</div>
+</main>
+<script th:src="@{/js/chong-gui-lai.js}" defer></script>
+</body></html>

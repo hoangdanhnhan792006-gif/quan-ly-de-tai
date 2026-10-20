@@ -1,33 +1,43 @@
 <!doctype html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+    <head th:replace="~{fragments/layout :: head(~{::title})}">
         <title>Thông tin bộ môn · Quản lý đề tài</title>
-        <link rel="stylesheet" th:href="@{/css/app.css}">
     </head>
     <body>
         <nav th:replace="~{fragments/dieu-huong :: menu}">
         </nav>
         <main class="workspace">
-            <h1>Thông tin bộ môn</h1>
+            <a class="back-link" th:href="@{/admin/bo-mon}">← Danh sách bộ môn</a>
+            <h1 th:text="${id != null} ? 'Sửa bộ môn' : 'Thêm bộ môn'">Thông tin bộ môn</h1>
             <p class="message success" th:if="${thanhCong}" th:text="${thanhCong}">
             </p>
-            <a th:href="@{/admin/bo-mon}">← Danh sách</a>
-            <form class="panel" th:action="${id != null} ? @{/admin/bo-mon/{id}/sua(id=${id})} : @{/admin/bo-mon/tao}" th:object="${form}" method="post">
+            <form class="panel stack" th:action="${id != null} ? @{/admin/bo-mon/{id}/sua(id=${id})} : @{/admin/bo-mon/tao}" th:object="${form}" method="post">
                 <div class="message error" th:if="${#fields.hasAnyErrors()}">
                     <ul>
                         <li th:each="e : ${#fields.allErrors()}" th:text="${e}">
                         </li>
                     </ul>
                 </div>
-                <label for="maBoMon">Mã bộ môn</label>
-                <input id="maBoMon" type="text" th:field="*{maBoMon}" required maxlength="20">
-                <label for="tenBoMon">Tên bộ môn</label>
-                <input id="tenBoMon" type="text" th:field="*{tenBoMon}" required maxlength="150">
-                <label class="check">
-                    <input type="checkbox" th:field="*{dangHoatDong}">Đang hoạt động</label>
-                <button class="button" type="submit">Lưu</button>
+                <div class="form-grid">
+                    <div class="field">
+                        <label for="maBoMon">Mã bộ môn<span class="req">*</span></label>
+                        <input id="maBoMon" type="text" th:field="*{maBoMon}" required maxlength="20">
+                        <p class="field-hint">Tối đa 20 ký tự: chữ, số hoặc dấu gạch.</p>
+                    </div>
+                    <div class="field">
+                        <label for="tenBoMon">Tên bộ môn<span class="req">*</span></label>
+                        <input id="tenBoMon" type="text" th:field="*{tenBoMon}" required maxlength="150">
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="check">
+                        <input type="checkbox" th:field="*{dangHoatDong}">Đang hoạt động</label>
+                    <p class="field-hint">Bộ môn ngừng hoạt động không nhận gán giảng viên mới.</p>
+                </div>
+                <div class="actions">
+                    <button class="button" type="submit">Lưu</button>
+                    <a class="button secondary" th:href="@{/admin/bo-mon}">Hủy</a>
+                </div>
             </form>
         </main>
     </body>

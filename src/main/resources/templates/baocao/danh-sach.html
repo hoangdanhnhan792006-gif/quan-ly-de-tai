@@ -1,13 +1,22 @@
 <!doctype html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1"><title>Quản lý đề tài sinh viên</title>
-<link rel="stylesheet" th:href="@{/css/app.css}"></head><body><nav th:replace="~{fragments/dieu-huong :: menu}"></nav>
-<main class="workspace"><p class="message success" th:if="${thanhCong}" th:text="${thanhCong}"></p><p class="message error" th:if="${loi}" th:text="${loi}"></p>
-
-<h1>Báo cáo đề tài</h1>
-<p>Nhóm trưởng nộp đủ PDF, slide và mã nguồn; mỗi lần nộp tạo một phiên bản mới.</p>
-<table><thead><tr><th>Nhóm</th><th>Đề tài</th><th>Hạn báo cáo (giờ Việt Nam)</th><th>Thao tác</th></tr></thead><tbody>
-<tr th:each="b : ${danhSach}"><td th:text="${b.maNhom}"></td><td th:text="${b.tenDeTai}"></td>
-<td th:text="${#temporals.format(b.hanNop,'dd/MM/yyyy HH:mm')}"></td><td><a th:href="@{/bao-cao/dang-ky/{id}(id=${b.dangKyId})}">Xem / Nộp báo cáo</a></td></tr>
-<tr th:if="${#lists.isEmpty(danhSach)}"><td colspan="4">Chưa có đăng ký được chấp thuận thuộc quyền xem của bạn.</td></tr></tbody></table>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(~{::title})}">
+    <title>Báo cáo đề tài · Quản lý đề tài</title>
+</head>
+<body><nav th:replace="~{fragments/dieu-huong :: menu}"></nav>
+<main class="workspace">
+<header class="page-header">
+    <div>
+        <h1>Báo cáo đề tài</h1>
+        <p>Nhóm trưởng nộp đủ PDF, slide và mã nguồn; mỗi lần nộp tạo một phiên bản mới.</p>
+    </div>
+</header>
+<p class="message success" th:if="${thanhCong}" th:text="${thanhCong}"></p><p class="message error" th:if="${loi}" th:text="${loi}"></p>
+<!--/* coTheNop do backend tính (nhóm trưởng, đã chấp thuận, còn hạn, chưa chốt); giao diện không tự so giờ */-->
+<div class="table-wrap"><table><thead><tr><th>Nhóm</th><th>Đề tài</th><th>Hạn báo cáo (giờ Việt Nam)</th><th>Quyền của bạn</th><th>Thao tác</th></tr></thead><tbody>
+<tr th:each="b : ${danhSach}"><td class="mono" th:text="${b.maNhom}"></td><td th:text="${b.tenDeTai}"></td>
+<td class="nowrap" th:text="${#temporals.format(b.hanNop,'dd/MM/yyyy HH:mm')}"></td>
+<td><span class="badge" th:classappend="${b.coTheNop} ? 'success' : 'neutral'" th:text="${b.coTheNop ? 'Bạn có thể nộp' : 'Chỉ xem'}"></span></td>
+<td><a class="button secondary" th:href="@{/bao-cao/dang-ky/{id}(id=${b.dangKyId})}" th:text="${b.coTheNop ? 'Nộp báo cáo' : 'Xem báo cáo'}">Xem / Nộp báo cáo</a></td></tr>
+<tr th:if="${#lists.isEmpty(danhSach)}"><td class="empty" colspan="5">Chưa có đăng ký được chấp thuận thuộc quyền xem của bạn.</td></tr></tbody></table></div>
 </main></body></html>

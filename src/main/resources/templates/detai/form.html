@@ -1,45 +1,59 @@
 <!doctype html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+<head th:replace="~{fragments/layout :: head(~{::title})}">
     <title>Đề xuất đề tài · Quản lý đề tài</title>
-    <link rel="stylesheet" th:href="@{/css/app.css}">
-<script th:src="@{/js/form.js}" defer></script>
 </head>
 <body>
 <nav th:replace="~{fragments/dieu-huong :: menu}"></nav>
 <main class="workspace">
-    <h1>Đề xuất đề tài</h1>
+    <a class="back-link" th:href="@{/de-tai/cua-toi}">← Đề tài của tôi</a>
+    <h1 th:text="${id != null} ? 'Sửa đề tài' : 'Đề xuất đề tài'">Đề xuất đề tài</h1>
     <p class="message success" th:if="${thanhCong}" th:text="${thanhCong}"></p>
     <p class="message error" th:if="${loi}" th:text="${loi}"></p>
-
-    <a th:href="@{/de-tai/cua-toi}">← Đề tài của tôi</a>
     <p>Chọn đợt đang mở cho GV. Lưu nháp trước, sau đó gửi khoa duyệt ở trang chi tiết.</p>
-    <p class="message error" th:if="${#lists.isEmpty(cacDot)}">Hiện không có đợt mở đề xuất. Liên hệ khoa để kiểm tra lịch.</p>
-    <form class="panel" th:action="${id != null} ? @{/de-tai/{id}/sua(id=${id})} : @{/de-tai/tao}" th:object="${form}" method="post">
+    <p class="message warning" th:if="${#lists.isEmpty(cacDot)}">Hiện không có đợt mở đề xuất. Liên hệ khoa để kiểm tra lịch.</p>
+    <form class="panel stack" th:action="${id != null} ? @{/de-tai/{id}/sua(id=${id})} : @{/de-tai/tao}" th:object="${form}" method="post">
         <div class="message error" th:if="${#fields.hasAnyErrors()}">
             <ul><li th:each="e : ${#fields.allErrors()}" th:text="${e}"></li></ul>
         </div>
-        <label for="dotId">Đợt đăng ký</label>
-        <select id="dotId" th:field="*{dotId}" required>
-            <option value="">Chọn đợt</option><option th:each="d : ${cacDot}" th:value="${d.id}" th:text="${d.tenDot + ' — ' + d.loai.nhan}"></option>
-        </select>
-        <p th:if="${id != null}">Đề tài đã tạo phải giữ nguyên đợt đăng ký.</p>
-        <label for="boMonId">Bộ môn</label>
-        <select id="boMonId" th:field="*{boMonId}" required>
-            <option value="">Chọn bộ môn</option><option th:each="b : ${cacBoMon}" th:value="${b.id}" th:text="${b.tenBoMon}"></option>
-        </select>
-        <label for="maDeTai">Mã đề tài</label><input id="maDeTai" th:field="*{maDeTai}" maxlength="30" required>
-        <label for="tenDeTai">Tên đề tài</label><input id="tenDeTai" th:field="*{tenDeTai}" maxlength="255" required>
-        <label for="noiDung">Nội dung</label><textarea id="noiDung" th:field="*{noiDung}" rows="7" maxlength="10000" required></textarea>
-        <label for="yeuCau">Yêu cầu thực hiện *</label><textarea id="yeuCau" th:field="*{yeuCau}" rows="4" maxlength="10000" required></textarea>
-<p class="field-error" th:errors="*{yeuCau}"></p>
-        <label for="sanPhamDuKien">Sản phẩm dự kiến *</label><textarea id="sanPhamDuKien" th:field="*{sanPhamDuKien}" rows="4" maxlength="10000" required></textarea>
-<p class="field-error" th:errors="*{sanPhamDuKien}"></p>
-        <button class="button" type="submit">Lưu đề tài</button>
+        <div class="form-grid">
+            <div class="field">
+                <label for="dotId">Đợt đăng ký<span class="req">*</span></label>
+                <select id="dotId" th:field="*{dotId}" required>
+                    <option value="">Chọn đợt</option><option th:each="d : ${cacDot}" th:value="${d.id}" th:text="${d.tenDot + ' — ' + d.loai.nhan}"></option>
+                </select>
+                <p class="field-hint" th:if="${id != null}">Đề tài đã tạo phải giữ nguyên đợt đăng ký.</p>
+            </div>
+            <div class="field">
+                <label for="boMonId">Bộ môn<span class="req">*</span></label>
+                <select id="boMonId" th:field="*{boMonId}" required>
+                    <option value="">Chọn bộ môn</option><option th:each="b : ${cacBoMon}" th:value="${b.id}" th:text="${b.tenBoMon}"></option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="maDeTai">Mã đề tài<span class="req">*</span></label><input id="maDeTai" th:field="*{maDeTai}" maxlength="30" required>
+            </div>
+            <div class="field">
+                <label for="tenDeTai">Tên đề tài<span class="req">*</span></label><input id="tenDeTai" th:field="*{tenDeTai}" maxlength="255" required>
+            </div>
+        </div>
+        <div class="field">
+            <label for="noiDung">Nội dung<span class="req">*</span></label><textarea id="noiDung" th:field="*{noiDung}" rows="7" maxlength="10000" required></textarea>
+        </div>
+        <div class="field">
+            <label for="yeuCau">Yêu cầu thực hiện<span class="req">*</span></label><textarea id="yeuCau" th:field="*{yeuCau}" rows="4" maxlength="10000" required></textarea>
+            <p class="field-error" th:errors="*{yeuCau}"></p>
+        </div>
+        <div class="field">
+            <label for="sanPhamDuKien">Sản phẩm dự kiến<span class="req">*</span></label><textarea id="sanPhamDuKien" th:field="*{sanPhamDuKien}" rows="4" maxlength="10000" required></textarea>
+            <p class="field-error" th:errors="*{sanPhamDuKien}"></p>
+        </div>
+        <div class="actions">
+            <button class="button" type="submit">Lưu đề tài</button>
+            <a class="button secondary" th:href="${id != null} ? @{/de-tai/{id}(id=${id})} : @{/de-tai/cua-toi}">Hủy</a>
+        </div>
     </form>
-
 </main>
+    <script th:src="@{/js/form.js}" defer></script>
 </body>
 </html>

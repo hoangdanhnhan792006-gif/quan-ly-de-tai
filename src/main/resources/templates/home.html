@@ -1,17 +1,41 @@
 <!doctype html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+<head th:replace="~{fragments/layout :: head(~{::title})}">
     <title>Quản lý đề tài sinh viên</title>
-    <link rel="stylesheet" th:href="@{/css/app.css}">
 </head>
 <body>
-<main class="container hero">
-    <p class="eyebrow">Khoa Công nghệ thông tin</p>
-    <h1>Hệ thống quản lý đề tài sinh viên</h1>
-    <p class="lead">Quản lý đề tài môn học, nghiên cứu khoa học, tiểu luận chuyên ngành và khóa luận tốt nghiệp.</p>
-    <a class="button" th:href="@{/login}">Đăng nhập</a>
+<header class="home-hero">
+    <div class="home-inner">
+        <p class="eyebrow">Khoa Công nghệ thông tin</p>
+        <h1>Hệ thống quản lý đề tài sinh viên</h1>
+        <p class="lead">Quản lý đề tài môn học, nghiên cứu khoa học, tiểu luận chuyên ngành và khóa luận tốt nghiệp.</p>
+        <a class="button" th:href="@{/login}">Đăng nhập</a>
+    </div>
+</header>
+<main class="home-inner home-main">
+    <section>
+        <h2>Bốn loại đề tài</h2>
+        <ul class="home-types">
+            <li><strong>Đề tài môn học</strong><span>Giảng viên phản biện chấm điểm.</span></li>
+            <li><strong>Nghiên cứu khoa học</strong><span>Phản biện, sau đó chấm tại hội đồng 3–5 giảng viên.</span></li>
+            <li><strong>Tiểu luận chuyên ngành</strong><span>Giảng viên phản biện chấm điểm, có hạn nộp điểm phản biện.</span></li>
+            <li><strong>Khóa luận tốt nghiệp</strong><span>Phản biện, sau đó báo cáo trước hội đồng theo ngày của đợt.</span></li>
+        </ul>
+    </section>
+    <section>
+        <h2>Quy trình một đợt</h2>
+        <ol class="home-steps">
+            <li>Khoa mở đợt đăng ký</li>
+            <li>Giảng viên đề xuất, bộ môn duyệt, khoa công bố đề tài</li>
+            <li>Sinh viên lập nhóm 3–5 người và đăng ký đề tài</li>
+            <li>Nhóm trưởng nộp báo cáo, slide và mã nguồn</li>
+            <li>Phản biện và hội đồng chấm điểm</li>
+            <li>Khoa xác nhận và công bố kết quả</li>
+        </ol>
+    </section>
 </main>
+<footer class="home-inner home-footer">
+    Khoa Công nghệ Thông tin · Tài khoản do quản trị viên cấp, người dùng không tự đăng ký.
+</footer>
 </body>
 </html>

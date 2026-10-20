@@ -1,35 +1,43 @@
 <!doctype html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+    <head th:replace="~{fragments/layout :: head(~{::title})}">
         <title>Đổi mật khẩu · Quản lý đề tài</title>
-        <link rel="stylesheet" th:href="@{/css/app.css}">
-    <script th:src="@{/js/form.js}" defer></script>
-</head>
+    </head>
     <body>
         <nav th:replace="~{fragments/dieu-huong :: menu}">
         </nav>
         <main class="workspace">
+            <a class="back-link" th:href="@{/ho-so}">← Hồ sơ của tôi</a>
             <h1>Đổi mật khẩu</h1>
             <p class="message success" th:if="${thanhCong}" th:text="${thanhCong}">
             </p>
-            <p>Sau khi đổi mật khẩu thành công, bạn cần đăng nhập lại.</p>
-            <form class="panel" th:action="@{/ho-so/doi-mat-khau}" th:object="${form}" method="post">
+            <!-- Ô mật khẩu không có th:field/value: không in lại mật khẩu; form.js thêm nút hiện/ẩn -->
+            <form class="panel stack narrow" th:action="@{/ho-so/doi-mat-khau}" th:object="${form}" method="post">
                 <div class="message error" th:if="${#fields.hasAnyErrors()}">
                     <ul>
                         <li th:each="e : ${#fields.allErrors()}" th:text="${e}">
                         </li>
                     </ul>
                 </div>
-                <label for="matKhauCu">Mật khẩu hiện tại</label>
-                <input id="matKhauCu" type="password" name="matKhauCu" required autocomplete="current-password">
-                <label for="matKhauMoi">Mật khẩu mới</label>
-                <input id="matKhauMoi" type="password" name="matKhauMoi" required minlength="8" maxlength="72" autocomplete="new-password">
-                <label for="xacNhanMatKhau">Nhập lại mật khẩu mới</label>
-                <input id="xacNhanMatKhau" type="password" name="xacNhanMatKhau" required autocomplete="new-password">
-                <button class="button" type="submit">Lưu</button>
+                <p class="message info">Sau khi đổi mật khẩu thành công, bạn cần đăng nhập lại.</p>
+                <div class="field">
+                    <label for="matKhauCu">Mật khẩu hiện tại<span class="req">*</span></label>
+                    <input id="matKhauCu" type="password" name="matKhauCu" required autocomplete="current-password">
+                </div>
+                <div class="field">
+                    <label for="matKhauMoi">Mật khẩu mới<span class="req">*</span></label>
+                    <input id="matKhauMoi" type="password" name="matKhauMoi" required minlength="8" maxlength="72" autocomplete="new-password">
+                    <p class="field-hint">8–72 ký tự, khác mật khẩu hiện tại.</p>
+                </div>
+                <div class="field">
+                    <label for="xacNhanMatKhau">Nhập lại mật khẩu mới<span class="req">*</span></label>
+                    <input id="xacNhanMatKhau" type="password" name="xacNhanMatKhau" required autocomplete="new-password">
+                </div>
+                <div class="actions">
+                    <button class="button" type="submit">Lưu</button>
+                </div>
             </form>
         </main>
+        <script th:src="@{/js/form.js}" defer></script>
     </body>
 </html>

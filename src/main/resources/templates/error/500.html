@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(~{::title})}">
+    <title>Lỗi hệ thống · Quản lý đề tài</title>
+</head>
+<body>
+<!-- Spring Boot tự dùng error/500.html khi có lỗi 500. Không hiện chi tiết kỹ thuật (exception, stack trace, đường dẫn). -->
+<main class="error-shell">
+    <section class="error-page">
+        <p class="error-code danger"><span class="sr-only">Lỗi </span>500</p>
+        <div class="error-body">
+            <h1>Hệ thống đang gặp sự cố</h1>
+            <p>Thao tác chưa hoàn tất do lỗi phía máy chủ. Hãy kiểm tra lại dữ liệu trước khi gửi lại.</p>
+            <p class="muted">Thử lại sau ít phút. Nếu lỗi lặp lại, báo người phụ trách kèm thời điểm xảy ra và thao tác vừa làm.</p>
+            <div class="actions">
+                <a class="button" th:href="@{/dashboard}">Về bảng điều khiển</a>
+                <a class="button secondary" href="javascript:history.back()">Quay lại</a>
+            </div>
+        </div>
+    </section>
+</main>
+</body>
+</html>

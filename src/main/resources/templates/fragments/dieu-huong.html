@@ -1,33 +1,54 @@
 <!doctype html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
     <body>
-        <nav class="topbar" th:fragment="menu" aria-label="Điều hướng chính">
-            <a th:href="@{/dashboard}">Quản lý đề tài</a>
-            <a th:href="@{/ho-so}">Hồ sơ của tôi</a>
-            <a th:href="@{/ho-so/doi-mat-khau}">Đổi mật khẩu</a>
-            <a th:href="@{/de-tai}">Đề tài</a>
-            <a th:href="@{/thong-bao}">Thông báo</a>
-            <a th:if="${laSinhVien or laGiangVien or laCanBoKhoa}" th:href="@{/bao-cao}">Báo cáo</a>
-            <a th:if="${laGiangVien or laCanBoKhoa}" th:href="@{/danh-gia}">Đánh giá</a>
-            <a th:if="${laSinhVien}" th:href="@{/sinh-vien/ket-qua}">Kết quả</a>
-            <a th:if="${laSinhVien}" th:href="@{/sinh-vien/nhom}">Nhóm và đăng ký</a>
-            <a th:if="${laGiangVien}" th:href="@{/de-tai/cua-toi}">Đề tài của tôi</a>
-            <a th:if="${laTruongBoMon and !laCanBoKhoa}" th:href="@{/de-tai/quan-ly}">Đề tài bộ môn</a>
-            <th:block th:if="${laCanBoKhoa}">
-                <a th:href="@{/khoa/dot-dang-ky}">Đợt đăng ký</a>
-                <a th:href="@{/de-tai/quan-ly}">Duyệt đề tài</a>
-                <a th:href="@{/khoa/dang-ky}">Duyệt đăng ký</a>
-                <a th:href="@{/khoa/hoi-dong}">Hội đồng</a>
-            </th:block>
-            <th:block th:if="${laQuanTriVien}">
-                <a th:href="@{/admin/tai-khoan}">Tài khoản</a>
-                <a th:href="@{/admin/bo-mon}">Bộ môn</a>
-                <a th:href="@{/admin/sinh-vien}">Sinh viên</a>
-                <a th:href="@{/admin/giang-vien}">Giảng viên</a>
-            </th:block>
-            <form th:action="@{/logout}" method="post">
-                <button type="submit" class="button secondary">Đăng xuất</button>
-            </form>
+        <nav class="sidebar" th:fragment="menu" aria-label="Điều hướng chính">
+            <!-- Chỉ hiện trên điện thoại; nút chỉ mở/đóng menu nên là type="button" -->
+            <div class="mobile-bar">
+                <span class="mobile-bar-title">Quản lý đề tài</span>
+                <button type="button" class="menu-toggle" aria-controls="sidebar-panel" aria-expanded="false">
+                    <span aria-hidden="true">☰</span> Menu
+                </button>
+            </div>
+
+            <div class="sidebar-panel" id="sidebar-panel">
+                <a class="sidebar-brand" th:href="@{/dashboard}">Quản lý đề tài<small>Khoa Công nghệ Thông tin</small></a>
+
+                <div class="sidebar-group">
+                    <a class="sidebar-link" th:href="@{/de-tai}">Đề tài</a>
+                    <a class="sidebar-link" th:href="@{/thong-bao}">Thông báo</a>
+                    <a class="sidebar-link" th:if="${laSinhVien or laGiangVien or laCanBoKhoa}" th:href="@{/bao-cao}">Báo cáo</a>
+                    <a class="sidebar-link" th:if="${laGiangVien or laCanBoKhoa}" th:href="@{/danh-gia}">Đánh giá</a>
+                    <a class="sidebar-link" th:if="${laSinhVien}" th:href="@{/sinh-vien/ket-qua}">Kết quả</a>
+                    <a class="sidebar-link" th:if="${laSinhVien}" th:href="@{/sinh-vien/nhom}">Nhóm và đăng ký</a>
+                    <a class="sidebar-link" th:if="${laGiangVien}" th:href="@{/de-tai/cua-toi}">Đề tài của tôi</a>
+                    <a class="sidebar-link" th:if="${laTruongBoMon and !laCanBoKhoa}" th:href="@{/de-tai/quan-ly}">Đề tài bộ môn</a>
+                </div>
+
+                <div class="sidebar-group" th:if="${laCanBoKhoa}">
+                    <p class="sidebar-heading">Nghiệp vụ khoa</p>
+                    <a class="sidebar-link" th:href="@{/khoa/dot-dang-ky}">Đợt đăng ký</a>
+                    <a class="sidebar-link" th:href="@{/de-tai/quan-ly}">Duyệt đề tài</a>
+                    <a class="sidebar-link" th:href="@{/khoa/dang-ky}">Duyệt đăng ký</a>
+                    <a class="sidebar-link" th:href="@{/khoa/hoi-dong}">Hội đồng</a>
+                </div>
+
+                <div class="sidebar-group" th:if="${laQuanTriVien}">
+                    <p class="sidebar-heading">Quản trị</p>
+                    <a class="sidebar-link" th:href="@{/admin/tai-khoan}">Tài khoản</a>
+                    <a class="sidebar-link" th:href="@{/admin/bo-mon}">Bộ môn</a>
+                    <a class="sidebar-link" th:href="@{/admin/sinh-vien}">Sinh viên</a>
+                    <a class="sidebar-link" th:href="@{/admin/giang-vien}">Giảng viên</a>
+                </div>
+
+                <div class="sidebar-footer">
+                    <a class="sidebar-link" th:href="@{/ho-so}">Hồ sơ của tôi</a>
+                    <a class="sidebar-link" th:href="@{/ho-so/doi-mat-khau}">Đổi mật khẩu</a>
+                    <form class="sidebar-logout" th:action="@{/logout}" method="post">
+                        <button type="submit" class="button secondary">Đăng xuất</button>
+                    </form>
+                </div>
+            </div>
+            <script th:src="@{/js/menu.js}" defer></script>
         </nav>
     </body>
 </html>

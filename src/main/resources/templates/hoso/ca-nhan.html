@@ -1,22 +1,26 @@
 <!doctype html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+    <head th:replace="~{fragments/layout :: head(~{::title})}">
         <title>Hồ sơ của tôi · Quản lý đề tài</title>
-        <link rel="stylesheet" th:href="@{/css/app.css}">
     </head>
     <body>
         <nav th:replace="~{fragments/dieu-huong :: menu}">
         </nav>
         <main class="workspace">
-            <h1>Hồ sơ của tôi</h1>
+            <header class="page-header">
+                <div>
+                    <p class="eyebrow">Hồ sơ của tôi</p>
+                    <h1 th:text="${hoSo.taiKhoan.hoTen}">Họ tên</h1>
+                </div>
+                <a class="button secondary" th:href="@{/ho-so/doi-mat-khau}">Đổi mật khẩu</a>
+            </header>
             <p class="message success" th:if="${thanhCong}" th:text="${thanhCong}">
             </p>
             <section class="panel">
+                <h2>Tài khoản</h2>
                 <dl>
                     <dt>Tên đăng nhập</dt>
-                    <dd th:text="${hoSo.taiKhoan.tenDangNhap}">
+                    <dd class="mono" th:text="${hoSo.taiKhoan.tenDangNhap}">
                     </dd>
                     <dt>Họ tên</dt>
                     <dd th:text="${hoSo.taiKhoan.hoTen}">
@@ -25,16 +29,15 @@
                     <dd th:text="${hoSo.taiKhoan.email}">
                     </dd>
                     <dt>Vai trò</dt>
-                    <dd th:text="${hoSo.taiKhoan.vaiTros}">
-                    </dd>
+                    <dd class="badge-list"><th:block th:each="v : ${hoSo.taiKhoan.vaiTros}"><span class="badge info" th:insert="~{fragments/nhan :: vai-tro(${v})}">Vai trò</span></th:block></dd>
                 </dl>
-                <p>Liên hệ quản trị viên nếu thông tin hồ sơ cần điều chỉnh.</p>
+                <p class="muted">Liên hệ quản trị viên nếu thông tin hồ sơ cần điều chỉnh.</p>
             </section>
             <section class="panel" th:if="${hoSo.sinhVien != null}">
                 <h2>Thông tin sinh viên</h2>
                 <dl>
                     <dt>Mã sinh viên</dt>
-                    <dd th:text="${hoSo.sinhVien.maSv}">
+                    <dd class="mono" th:text="${hoSo.sinhVien.maSv}">
                     </dd>
                     <dt>Lớp</dt>
                     <dd th:text="${hoSo.sinhVien.lop}">
@@ -48,7 +51,7 @@
                 <h2>Thông tin giảng viên</h2>
                 <dl>
                     <dt>Mã giảng viên</dt>
-                    <dd th:text="${hoSo.giangVien.maGv}">
+                    <dd class="mono" th:text="${hoSo.giangVien.maGv}">
                     </dd>
                     <dt>Bộ môn</dt>
                     <dd th:text="${hoSo.giangVien.tenBoMon}">

@@ -1,37 +1,37 @@
 <!doctype html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+<head th:replace="~{fragments/layout :: head(~{::title})}">
     <title>Đợt đăng ký · Quản lý đề tài</title>
-    <link rel="stylesheet" th:href="@{/css/app.css}">
 </head>
 <body>
 <nav th:replace="~{fragments/dieu-huong :: menu}"></nav>
 <main class="workspace">
-    <h1>Đợt đăng ký</h1>
+    <header class="page-header">
+        <div>
+            <h1>Đợt đăng ký</h1>
+            <p>Giờ hiển thị: Việt Nam. Chọn một đợt để xem lịch và trạng thái.</p>
+        </div>
+        <a class="button" th:if="${laTruongKhoa}" th:href="@{/khoa/dot-dang-ky/tao}">Tạo đợt</a>
+    </header>
     <p class="message success" th:if="${thanhCong}" th:text="${thanhCong}"></p>
     <p class="message error" th:if="${loi}" th:text="${loi}"></p>
-
-    <a class="button" th:if="${laTruongKhoa}" th:href="@{/khoa/dot-dang-ky/tao}">Tạo đợt</a>
-    <p>Giờ hiển thị: Việt Nam. Chọn một đợt để xem lịch và trạng thái.</p>
     <div class="table-wrap"><table>
-        <thead><tr><th>Mã đợt</th><th>Tên đợt</th><th>Loại</th><th>GV đăng ký</th><th>SV đăng ký</th><th>Trạng thái</th></tr></thead>
+        <thead><tr><th>Mã đợt</th><th>Tên đợt</th><th>Loại</th><th>GV đăng ký</th><th>SV đăng ký</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
         <tbody>
         <tr th:each="d : ${danhSach}">
-            <td th:text="${d.maDot}"></td>
-            <td><a th:href="@{/khoa/dot-dang-ky/{id}(id=${d.id})}" th:text="${d.tenDot}"></a></td>
+            <td class="mono" th:text="${d.maDot}"></td>
+            <td><a class="row-title" th:href="@{/khoa/dot-dang-ky/{id}(id=${d.id})}" th:text="${d.tenDot}"></a></td>
             <td th:text="${d.loai.nhan}"></td>
-            <td><span th:text="${#temporals.format(d.gvBatDau, 'dd/MM/yyyy HH:mm')}"></span><br>
-                <span th:text="${#temporals.format(d.gvKetThuc, 'dd/MM/yyyy HH:mm')}"></span></td>
-            <td><span th:text="${#temporals.format(d.svBatDau, 'dd/MM/yyyy HH:mm')}"></span><br>
-                <span th:text="${#temporals.format(d.svKetThuc, 'dd/MM/yyyy HH:mm')}"></span></td>
-            <td><span th:text="${d.trangThai.nhan}"></span><form th:if="${laTruongKhoa and d.trangThai.name()=='NHAP'}" th:action="@{/khoa/dot-dang-ky/{id}/xoa(id=${d.id})}" method="post" onsubmit="return confirm('Xóa đợt nháp?')"><button>Xóa nháp</button></form></td>
+            <td class="nowrap"><span th:text="${#temporals.format(d.gvBatDau, 'dd/MM/yyyy HH:mm')}"></span><br>
+                <span class="muted">→ </span><span th:text="${#temporals.format(d.gvKetThuc, 'dd/MM/yyyy HH:mm')}"></span></td>
+            <td class="nowrap"><span th:text="${#temporals.format(d.svBatDau, 'dd/MM/yyyy HH:mm')}"></span><br>
+                <span class="muted">→ </span><span th:text="${#temporals.format(d.svKetThuc, 'dd/MM/yyyy HH:mm')}"></span></td>
+            <td><span th:replace="~{fragments/nhan :: badge-trang-thai(${d.trangThai})}"></span></td>
+            <td><form th:if="${laTruongKhoa and d.trangThai.name()=='NHAP'}" th:action="@{/khoa/dot-dang-ky/{id}/xoa(id=${d.id})}" method="post" onsubmit="return confirm('Xóa đợt nháp?')"><button class="button danger">Xóa nháp</button></form></td>
         </tr>
-        <tr th:if="${#lists.isEmpty(danhSach)}"><td colspan="6">Chưa có đợt đăng ký.</td></tr>
+        <tr th:if="${#lists.isEmpty(danhSach)}"><td class="empty" colspan="7">Chưa có đợt đăng ký.</td></tr>
         </tbody>
     </table></div>
-
 </main>
 </body>
 </html>

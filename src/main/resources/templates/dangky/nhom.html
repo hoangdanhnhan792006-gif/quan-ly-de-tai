@@ -1,18 +1,26 @@
 <!doctype html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Nhóm và đăng ký · Quản lý đề tài</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<head th:replace="~{fragments/layout :: head(~{::title})}">
+    <title>Nhóm đăng ký · Quản lý đề tài</title>
+</head>
 <body><nav th:replace="~{fragments/dieu-huong :: menu}"></nav><main class="workspace">
+<a class="back-link" th:href="@{/khoa/dang-ky}">← Duyệt đăng ký</a>
+<header class="page-header">
+    <div>
+        <p class="eyebrow" th:text="${nhom.tenDot}">Đợt</p>
+        <h1 th:text="${nhom.maNhom + ' — ' + (nhom.tenNhom ?: '')}"></h1>
+        <p><span th:replace="~{fragments/nhan :: badge-trang-thai(${nhom.trangThai})}"></span>
+           <span class="muted"><span th:text="${#lists.size(nhom.thanhViens)}"></span> / 5 thành viên</span></p>
+    </div>
+</header>
 <p class="message success" th:if="${thanhCong}" th:text="${thanhCong}"></p>
 <p class="message error" th:if="${loi}" th:text="${loi}"></p>
-
-<a th:href="@{/khoa/dang-ky}">← Duyệt đăng ký</a>
-<h1 th:text="${nhom.maNhom + ' — ' + (nhom.tenNhom ?: '')}"></h1>
-<p><span th:text="${nhom.tenDot}"></span> · <strong th:text="${nhom.trangThai.nhan}"></strong></p>
-<table><thead><tr><th>Mã SV</th><th>Họ tên</th><th>Vai trò</th></tr></thead><tbody>
-<tr th:each="t : ${nhom.thanhViens}"><td th:text="${t.maSv}"></td><td th:text="${t.hoTen}"></td><td th:text="${t.truongNhom ? 'Nhóm trưởng' : 'Thành viên'}"></td></tr>
-</tbody></table>
+<section class="panel"><h2>Thành viên</h2>
+<div class="table-wrap"><table><thead><tr><th>Mã SV</th><th>Họ tên</th><th>Vai trò</th></tr></thead><tbody>
+<tr th:each="t : ${nhom.thanhViens}"><td class="mono" th:text="${t.maSv}"></td><td th:text="${t.hoTen}"></td><td><span class="badge" th:classappend="${t.truongNhom} ? 'info' : 'neutral'" th:text="${t.truongNhom ? 'Nhóm trưởng' : 'Thành viên'}"></span></td></tr>
+</tbody></table></div>
+</section>
 <section th:if="${nhom.dangKy != null}" class="panel"><h2>Đăng ký hiện hành</h2>
-<a th:href="@{/de-tai/{id}(id=${nhom.dangKy.deTaiId})}" th:text="${nhom.dangKy.tenDeTai}"></a>
-<p th:text="${nhom.dangKy.trangThai.nhan}"></p><p th:text="${nhom.dangKy.lyDo}"></p></section>
+<p><a class="row-title" th:href="@{/de-tai/{id}(id=${nhom.dangKy.deTaiId})}" th:text="${nhom.dangKy.tenDeTai}"></a></p>
+<p><span th:replace="~{fragments/nhan :: badge-trang-thai(${nhom.dangKy.trangThai})}"></span></p><p class="muted multiline" th:text="${nhom.dangKy.lyDo}"></p></section>
 </main></body></html>

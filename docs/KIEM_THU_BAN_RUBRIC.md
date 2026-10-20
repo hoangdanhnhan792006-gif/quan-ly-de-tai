@@ -1,5 +1,15 @@
 # Kiểm thử bản rubric và Lab 6 — 18/10/2026
 
+## Ghép giao diện ngày 20/10/2026
+
+- Ghép nhánh `origin/feature/giao-dien` tại commit `9172a47` vào bản backend đã có SSL Aiven/Render (`8c77b81`). Không thay đổi Java nghiệp vụ, schema hoặc migration.
+- Giữ form sửa tên đăng nhập/mật khẩu, nút hiện/ẩn mật khẩu, CSRF, các trường bắt buộc và phân quyền theo vai trò. Sửa `form.js` để chặn nội dung chỉ có dấu cách cả với ô text không khai báo thuộc tính `type`.
+- Maven `verify` với ba schema MySQL riêng: 209 ca được liệt kê, 208 đạt, 0 lỗi/thất bại, 1 ca SMTP thật bỏ qua. Schema và tài khoản thử đã dọn; không ghi database chính.
+- Chrome kiểm tra đăng nhập, nút mật khẩu độc lập, sửa tài khoản và đăng nhập bằng thông tin mới, tạo hồ sơ SV, tên nhóm bắt buộc, menu điện thoại, trang theo vai trò, tạo thông báo và tải tệp đính kèm. Không có lỗi JavaScript trong các bước đã chạy.
+- Log cục bộ: `.mvn-repository/test-ghep-day-du.log`; ảnh giao diện: `.mvn-repository/giao-dien-sau-ghep.png`. Các file thử không đưa lên Git.
+- Chưa redeploy giao diện mới lên Render trong lượt này. Đây là kiểm thử local sau ghép; chưa thay thế kiểm tra lại URL online sau deploy.
+
+
 ## Kết quả đã chạy
 
 **Form tài khoản và trường bắt buộc — 19/10/2026:** Thực hiện code và kiểm thử trước khi cập nhật hướng dẫn. `verify` BUILD SUCCESS, 209 ca liệt kê: 208 đạt, 0 failure/error, 1 SMTP bỏ qua. Cả ba bộ MySQL chạy trên schema mới, đã dọn sau test. Kiểm tra đổi tên giữ ID/hồ sơ, mật khẩu để trống giữ nguyên, sửa nhiều trường cùng transaction, trùng tên/email và xác nhận sai không lưu một phần, chặn tự khóa/đổi mật khẩu bỏ qua mật khẩu cũ, thu hồi phiên cũ, validation backend lớp/khóa học/tên nhóm/yêu cầu/sản phẩm. Chrome headless chạy ứng dụng trên schema riêng: con mắt, xác nhận sai, trường bắt buộc, nút trên viewport điện thoại, lưu tên+mật khẩu và đăng nhập lại giữ hồ sơ đều đạt. Không ghi database chính. Log local: `.mvn-repository/test-form-moi-day-du.log`, ảnh UI: `.mvn-repository/form-sua-tai-khoan.png`.

@@ -27,7 +27,8 @@ document.querySelectorAll('input[type="password"]').forEach((input) => {
     update();
 });
 
-document.querySelectorAll('input[required][type="text"], textarea[required]').forEach((input) => {
+// Input không khai báo type vẫn là ô text theo mặc định của HTML.
+document.querySelectorAll('input[required][type="text"], input[required]:not([type]), textarea[required]').forEach((input) => {
     const validate = () => input.setCustomValidity(input.value && !input.value.trim()
         ? 'Vui lòng nhập nội dung, không chỉ nhập dấu cách.' : '');
     input.addEventListener('input', validate);

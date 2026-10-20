@@ -1,54 +1,74 @@
 <!doctype html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Nhóm và đăng ký · Quản lý đề tài</title><link rel="stylesheet" th:href="@{/css/app.css}"><script th:src="@{/js/form.js}" defer></script>
+<head th:replace="~{fragments/layout :: head(~{::title})}">
+    <title>Chi tiết nhóm · Quản lý đề tài</title>
 </head>
 <body><nav th:replace="~{fragments/dieu-huong :: menu}"></nav><main class="workspace">
+<!--/* Chú thích dạng này bị Thymeleaf xóa khi render. NhomWebTest kiểm tra toàn bộ HTML với nhóm bị khóa,
+       nên chữ của các nút thay đổi nhóm chỉ được nằm trong khối th:if có nhom.coTheSua. */-->
+<a class="back-link" th:href="@{/sinh-vien/nhom}">← Nhóm của tôi</a>
+<header class="page-header">
+    <div>
+        <p class="eyebrow" th:text="${nhom.tenDot}">Đợt</p>
+        <h1 th:text="${nhom.maNhom + ' — ' + (nhom.tenNhom ?: '')}"></h1>
+        <p><span th:replace="~{fragments/nhan :: badge-trang-thai(${nhom.trangThai})}"></span>
+           <span class="muted"><span th:text="${#lists.size(nhom.thanhViens)}"></span> / 5 thành viên</span></p>
+    </div>
+</header>
 <p class="message success" th:if="${thanhCong}" th:text="${thanhCong}"></p>
 <p class="message error" th:if="${loi}" th:text="${loi}"></p>
+<p class="message info" th:unless="${nhom.coTheSua}">Nhóm không được thay đổi khi đã chấp thuận đăng ký hoặc khi đợt không còn mở cho sinh viên.</p>
 
-<a th:href="@{/sinh-vien/nhom}">← Nhóm của tôi</a>
-<h1 th:text="${nhom.maNhom + ' — ' + (nhom.tenNhom ?: '')}"></h1>
-<p><span th:text="${nhom.tenDot}"></span> · <strong th:text="${nhom.trangThai.nhan}"></strong></p>
-<p th:unless="${nhom.coTheSua}">Nhóm không được thay đổi khi đã chấp thuận đăng ký hoặc khi đợt không còn mở cho sinh viên.</p>
+<div class="detail-layout">
+<div class="detail-main">
 <section class="panel"><h2>Thành viên</h2>
-<table><thead><tr><th>Mã SV</th><th>Họ tên</th><th>Vai trò</th><th>Thao tác</th></tr></thead><tbody>
-<tr th:each="t : ${nhom.thanhViens}"><td th:text="${t.maSv}"></td><td th:text="${t.hoTen}"></td>
-<td th:text="${t.truongNhom ? 'Nhóm trưởng' : 'Thành viên'}"></td>
+<div class="table-wrap"><table><thead><tr><th>Mã SV</th><th>Họ tên</th><th>Vai trò</th><th>Thao tác</th></tr></thead><tbody>
+<tr th:each="t : ${nhom.thanhViens}"><td class="mono" th:text="${t.maSv}"></td><td th:text="${t.hoTen}"></td>
+<td><span class="badge" th:classappend="${t.truongNhom} ? 'info' : 'neutral'" th:text="${t.truongNhom ? 'Nhóm trưởng' : 'Thành viên'}"></span></td>
 <td><div class="actions" th:if="${nhom.truongNhom and nhom.coTheSua and !t.truongNhom}">
 <form th:action="@{/sinh-vien/nhom/{id}/doi-truong(id=${nhom.id})}" method="post"><input type="hidden" name="sinhVienId" th:value="${t.id}"><button class="secondary">Chuyển nhóm trưởng</button></form>
-<form th:action="@{/sinh-vien/nhom/{id}/xoa-thanh-vien(id=${nhom.id})}" method="post"><input type="hidden" name="sinhVienId" th:value="${t.id}"><button class="secondary">Đưa ra khỏi nhóm</button></form>
-</div></td></tr></tbody></table>
-<form th:if="${!nhom.truongNhom and nhom.coTheSua}" th:action="@{/sinh-vien/nhom/{id}/roi(id=${nhom.id})}" method="post"><button class="secondary">Rời nhóm</button></form>
+<form th:action="@{/sinh-vien/nhom/{id}/xoa-thanh-vien(id=${nhom.id})}" method="post"><input type="hidden" name="sinhVienId" th:value="${t.id}"><button class="button danger">Đưa ra khỏi nhóm</button></form>
+</div></td></tr></tbody></table></div>
 </section>
+
 <section class="panel"><h2>Đăng ký đề tài</h2>
-<div th:if="${nhom.dangKy != null}">
-<p><a th:href="@{/de-tai/{id}(id=${nhom.dangKy.deTaiId})}" th:text="${nhom.dangKy.tenDeTai}"></a></p>
-<p>Trạng thái: <strong th:text="${nhom.dangKy.trangThai.nhan}"></strong></p>
-<p th:if="${nhom.dangKy.lyDo != null}" th:text="${nhom.dangKy.lyDo}"></p>
-</div><p th:if="${nhom.dangKy == null}">Nhóm chưa đăng ký đề tài.</p>
+<div th:if="${nhom.dangKy != null}" class="text-block">
+<p><a class="row-title" th:href="@{/de-tai/{id}(id=${nhom.dangKy.deTaiId})}" th:text="${nhom.dangKy.tenDeTai}"></a></p>
+<p>Trạng thái: <span th:replace="~{fragments/nhan :: badge-trang-thai(${nhom.dangKy.trangThai})}"></span></p>
+<p class="message info multiline" th:if="${nhom.dangKy.lyDo != null}" th:text="${nhom.dangKy.lyDo}"></p>
+</div><p class="muted" th:if="${nhom.dangKy == null}">Nhóm chưa đăng ký đề tài.</p>
 <div class="actions" th:if="${nhom.truongNhom and nhom.coTheSua}">
 <a class="button" th:href="@{/sinh-vien/dang-ky/{id}(id=${nhom.id})}">Chọn / Đổi đề tài</a>
-<form th:if="${nhom.dangKy != null and nhom.dangKy.trangThai.name() == 'CHO_DUYET'}" th:action="@{/sinh-vien/dang-ky/{id}/huy(id=${nhom.id})}" method="post"><button class="secondary">Hủy đăng ký</button></form>
+<form th:if="${nhom.dangKy != null and nhom.dangKy.trangThai.name() == 'CHO_DUYET'}" th:action="@{/sinh-vien/dang-ky/{id}/huy(id=${nhom.id})}" method="post"><button class="button danger">Hủy đăng ký</button></form>
 </div></section>
+
+<section class="panel" th:if="${nhom.truongNhom}"><h2>Lời mời đã gửi</h2>
+<div class="table-wrap"><table><thead><tr><th>Mã SV</th><th>Trạng thái / Lý do</th><th>Thao tác</th></tr></thead><tbody>
+<tr th:each="l : ${nhom.loiMois}"><td class="mono" th:text="${l.nguoiNhan}"></td><td><span th:replace="~{fragments/nhan :: badge-trang-thai(${l.trangThai})}"></span><br><span class="muted" th:text="${l.lyDo}"></span></td>
+<td><form th:if="${nhom.coTheSua and l.coThePhanHoi}" th:action="@{/sinh-vien/nhom/loi-moi/{id}/thu-hoi(id=${l.id})}" method="post"><button class="secondary">Thu hồi</button></form></td></tr>
+<tr th:if="${#lists.isEmpty(nhom.loiMois)}"><td class="empty" colspan="3">Chưa có lời mời.</td></tr></tbody></table></div></section>
+</div>
+
+<!--/* Mọi khối bên trong đều đòi nhom.coTheSua, nên điều kiện ngoài cùng không đổi khối nào hiện; chỉ để bố cục về 1 cột khi nhóm bị khóa. */-->
+<aside class="detail-side" th:if="${nhom.coTheSua}" aria-label="Thao tác với nhóm">
 <th:block th:if="${nhom.truongNhom and nhom.coTheSua}">
 <section class="panel"><h2>Mời sinh viên</h2>
-<form th:action="@{/sinh-vien/nhom/{id}/moi(id=${nhom.id})}" method="post" th:object="${moiForm}">
+<form class="stack" th:action="@{/sinh-vien/nhom/{id}/moi(id=${nhom.id})}" method="post" th:object="${moiForm}">
 <div class="message error" th:if="${#fields.hasAnyErrors()}"><p th:each="e : ${#fields.allErrors()}" th:text="${e}"></p></div>
-<label for="maSv">Mã sinh viên</label><input th:field="*{maSv}" required maxlength="20">
-<label for="loiNhan">Lời nhắn</label><textarea th:field="*{loiNhan}" maxlength="500"></textarea>
+<div class="field"><label for="maSv">Mã sinh viên<span class="req">*</span></label><input th:field="*{maSv}" required maxlength="20"></div>
+<div class="field"><label for="loiNhan">Lời nhắn</label><textarea th:field="*{loiNhan}" maxlength="500"></textarea></div>
 <button th:disabled="${#lists.size(nhom.thanhViens) >= 5}">Gửi lời mời</button></form></section>
-<section class="panel"><h2>Đổi tên nhóm</h2><form th:action="@{/sinh-vien/nhom/{id}/doi-ten(id=${nhom.id})}" method="post" th:object="${tenForm}">
+<section class="panel"><h2>Đổi tên nhóm</h2><form class="stack" th:action="@{/sinh-vien/nhom/{id}/doi-ten(id=${nhom.id})}" method="post" th:object="${tenForm}">
 <div class="message error" th:if="${#fields.hasAnyErrors()}"><p th:each="e : ${#fields.allErrors()}" th:text="${e}"></p></div>
-<label for="tenNhom">Tên nhóm *</label><input th:field="*{tenNhom}" maxlength="150" required>
-<p class="field-error" th:errors="*{tenNhom}"></p><button>Lưu tên</button></form></section>
-<section class="panel"><h2>Giải thể nhóm</h2><p>Thành viên được rời nhóm; đăng ký đang giữ chỗ sẽ được hủy.</p>
+<div class="field"><label for="tenNhom">Tên nhóm<span class="req">*</span></label><input th:field="*{tenNhom}" maxlength="150" required>
+<p class="field-error" th:errors="*{tenNhom}"></p></div><button>Lưu tên</button></form></section>
+<section class="panel danger-zone"><h2>Giải thể nhóm</h2><p>Thành viên được rời nhóm; đăng ký đang giữ chỗ sẽ được hủy.</p>
 <form th:action="@{/sinh-vien/nhom/{id}/giai-the(id=${nhom.id})}" method="post">
-<label><input type="checkbox" required> Tôi xác nhận giải thể nhóm</label><button class="secondary">Giải thể nhóm</button></form></section>
+<label class="check"><input type="checkbox" required> Tôi xác nhận giải thể nhóm</label><button class="button danger">Giải thể nhóm</button></form></section>
 </th:block>
-<section class="panel" th:if="${nhom.truongNhom}"><h2>Lời mời đã gửi</h2>
-<table><thead><tr><th>Mã SV</th><th>Trạng thái / Lý do</th><th>Thao tác</th></tr></thead><tbody>
-<tr th:each="l : ${nhom.loiMois}"><td th:text="${l.nguoiNhan}"></td><td><span th:text="${l.trangThai.nhan}"></span><br><span th:text="${l.lyDo}"></span></td>
-<td><form th:if="${nhom.coTheSua and l.coThePhanHoi}" th:action="@{/sinh-vien/nhom/loi-moi/{id}/thu-hoi(id=${l.id})}" method="post"><button class="secondary">Thu hồi</button></form></td></tr>
-<tr th:if="${#lists.isEmpty(nhom.loiMois)}"><td colspan="3">Chưa có lời mời.</td></tr></tbody></table></section>
-</main></body></html>
+<section class="panel danger-zone" th:if="${!nhom.truongNhom and nhom.coTheSua}"><h2>Rời nhóm</h2>
+<form th:action="@{/sinh-vien/nhom/{id}/roi(id=${nhom.id})}" method="post"><button class="button danger">Rời nhóm</button></form>
+</section>
+</aside>
+</div>
+</main><script th:src="@{/js/form.js}" defer></script></body></html>

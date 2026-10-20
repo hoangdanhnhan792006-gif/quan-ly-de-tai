@@ -1,18 +1,29 @@
 <!doctype html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1"><title>Quản lý đề tài sinh viên</title>
-<link rel="stylesheet" th:href="@{/css/app.css}"></head><body><nav th:replace="~{fragments/dieu-huong :: menu}"></nav>
-<main class="workspace"><p class="message success" th:if="${thanhCong}" th:text="${thanhCong}"></p><p class="message error" th:if="${loi}" th:text="${loi}"></p>
-
-<h1 th:text="${id==null?'Tạo hội đồng':'Sửa hội đồng nháp'}"></h1><a th:href="@{/khoa/hoi-dong}">← Hội đồng</a>
-<form class="panel" th:object="${form}" th:action="${id==null}?@{/khoa/hoi-dong/tao}:@{/khoa/hoi-dong/{id}/sua(id=${id})}" method="post">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(~{::title})}">
+    <title>Thành phần hội đồng · Quản lý đề tài</title>
+</head>
+<body><nav th:replace="~{fragments/dieu-huong :: menu}"></nav>
+<main class="workspace">
+<a class="back-link" th:href="@{/khoa/hoi-dong}">← Hội đồng</a>
+<h1 th:text="${id==null?'Tạo hội đồng':'Sửa hội đồng nháp'}"></h1>
+<p class="message success" th:if="${thanhCong}" th:text="${thanhCong}"></p><p class="message error" th:if="${loi}" th:text="${loi}"></p>
+<form class="panel stack" th:object="${form}" th:action="${id==null}?@{/khoa/hoi-dong/tao}:@{/khoa/hoi-dong/{id}/sua(id=${id})}" method="post">
 <div class="message error" th:if="${#fields.hasAnyErrors()}"><p th:each="e : ${#fields.allErrors()}" th:text="${e}"></p></div>
-<label for="dotId">Đợt NCKH/KLTN</label><select th:field="*{dotId}" required><option value="">Chọn đợt</option><option th:each="d : ${cacDot}" th:value="${d.id}" th:text="${d.tenDot+' — '+d.loai.nhan}"></option></select>
-<label for="maHoiDong">Mã hội đồng</label><input th:field="*{maHoiDong}" maxlength="30" required th:readonly="${id!=null}">
-<label for="tenHoiDong">Tên hội đồng</label><input th:field="*{tenHoiDong}" maxlength="200" required>
-<label for="chuTichId">Chủ tịch</label><select th:field="*{chuTichId}" required><option value="">Chọn GV</option><option th:each="g : ${giangViens}" th:value="${g.id}" th:text="${g.maGv+' — '+g.hoTen}"></option></select>
-<label for="thuKyId">Thư ký</label><select th:field="*{thuKyId}" required><option value="">Chọn GV</option><option th:each="g : ${giangViens}" th:value="${g.id}" th:text="${g.maGv+' — '+g.hoTen}"></option></select>
-<p>Chọn 1–3 ủy viên khác chủ tịch và thư ký (tổng cộng 3–5 GV).</p>
+<fieldset><legend>Thông tin</legend>
+<div class="field"><label for="dotId">Đợt NCKH/KLTN<span class="req">*</span></label><select th:field="*{dotId}" required><option value="">Chọn đợt</option><option th:each="d : ${cacDot}" th:value="${d.id}" th:text="${d.tenDot+' — '+d.loai.nhan}"></option></select></div>
+<div class="form-grid">
+<div class="field"><label for="maHoiDong">Mã hội đồng<span class="req">*</span></label><input th:field="*{maHoiDong}" maxlength="30" required th:readonly="${id!=null}"><p class="field-hint" th:if="${id!=null}">Mã không đổi sau khi tạo.</p></div>
+<div class="field"><label for="tenHoiDong">Tên hội đồng<span class="req">*</span></label><input th:field="*{tenHoiDong}" maxlength="200" required></div>
+</div></fieldset>
+<fieldset><legend>Thành phần</legend>
+<div class="form-grid">
+<div class="field"><label for="chuTichId">Chủ tịch<span class="req">*</span></label><select th:field="*{chuTichId}" required><option value="">Chọn GV</option><option th:each="g : ${giangViens}" th:value="${g.id}" th:text="${g.maGv+' — '+g.hoTen}"></option></select></div>
+<div class="field"><label for="thuKyId">Thư ký<span class="req">*</span></label><select th:field="*{thuKyId}" required><option value="">Chọn GV</option><option th:each="g : ${giangViens}" th:value="${g.id}" th:text="${g.maGv+' — '+g.hoTen}"></option></select></div>
+</div>
+<p class="field-hint">Chọn 1–3 ủy viên khác chủ tịch và thư ký (tổng cộng 3–5 GV). Không chọn GVHD của đề tài sẽ được hội đồng chấm.</p>
+<div class="check-grid">
 <label class="check" th:each="g : ${giangViens}"><input type="checkbox" th:field="*{uyVienIds}" th:value="${g.id}"><span th:text="${g.maGv+' — '+g.hoTen}"></span></label>
-<button class="button">Lưu hội đồng nháp</button></form>
+</div></fieldset>
+<div class="actions"><button class="button">Lưu hội đồng nháp</button><a class="button secondary" th:href="@{/khoa/hoi-dong}">Hủy</a></div></form>
 </main></body></html>
