@@ -26,6 +26,6 @@ server:
         http-only: true
         same-site: lax
 app:
-  public-url: ${APP_PUBLIC_URL}
+  public-url: ${APP_PUBLIC_URL:${RENDER_EXTERNAL_URL}}
   storage:
     root: ${UPLOAD_DIR}
