@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+    <!--
+        Nhãn tiếng Việt cho mã enum. Chỉ đổi chữ hiển thị; giá trị gửi về backend (th:value) vẫn là mã enum.
+        Lưu ý khi dùng trong vòng lặp: th:insert chạy TRƯỚC th:each trên cùng một thẻ,
+        nên đặt th:each ở thẻ ngoài rồi th:insert ở thẻ trong.
+    -->
+    <body>
+        <!-- vai-tro(ma): nhận enum VaiTro hoặc chuỗi quyền "ROLE_..." (dashboard). So sánh bằng chuỗi; mã lạ hiện nguyên. -->
+        <th:block th:fragment="vai-tro(ma)" th:with="m=${#strings.replace(#strings.toString(ma), 'ROLE_', '')}"><th:block th:switch="${m}"><th:block th:case="'ADMIN'">Quản trị viên</th:block><th:block th:case="'TRUONG_KHOA'">Trưởng khoa</th:block><th:block th:case="'CAN_BO_KHOA'">Cán bộ khoa</th:block><th:block th:case="'TRUONG_BO_MON'">Trưởng bộ môn</th:block><th:block th:case="'GIANG_VIEN'">Giảng viên</th:block><th:block th:case="'SINH_VIEN'">Sinh viên</th:block><th:block th:case="*" th:text="${m}">MA</th:block></th:block></th:block>
+
+        <!-- trang-thai-tai-khoan(ma): badge cho TrangThaiTaiKhoan (HOAT_DONG / BI_KHOA); mã lạ hiện nguyên -->
+        <span th:fragment="trang-thai-tai-khoan(ma)" class="badge" th:with="m=${#strings.toString(ma)}"
+              th:classappend="${m == 'HOAT_DONG'} ? 'success' : (${m == 'BI_KHOA'} ? 'danger' : 'neutral')"
+              th:text="${m == 'HOAT_DONG'} ? 'Hoạt động' : (${m == 'BI_KHOA'} ? 'Bị khóa' : ${m})">Hoạt động</span>
+    </body>
+</html>

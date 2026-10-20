@@ -167,6 +167,30 @@ code {
     margin-top: var(--space-4);
 }
 
+/* Đầu trang danh sách: tiêu đề + mô tả bên trái, nút chính bên phải; tự xuống dòng khi hẹp */
+.page-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-3) var(--space-5);
+}
+
+.page-header > div {
+    display: grid;
+    gap: var(--space-1);
+    min-width: 0;
+    max-width: 68ch;
+}
+
+.page-header p:not(.eyebrow) {
+    color: var(--color-text-muted);
+}
+
+.workspace > .back-link + h1 {
+    margin-top: var(--space-2);
+}
+
 /* Link "← Quay lại" đứng trực tiếp trong main là inline, cần inline-block để nhận khoảng cách */
 .workspace > a {
     display: inline-block;
@@ -472,6 +496,45 @@ textarea:focus {
     font-size: var(--text-sm);
 }
 
+/* Form có nhóm trường: .stack giãn khoảng cách giữa các nhóm, .field gom nhãn + ô + lỗi + gợi ý */
+form.stack {
+    gap: var(--space-4);
+}
+
+form.panel.narrow {
+    max-width: 480px;
+}
+
+.field {
+    display: grid;
+    align-content: start;
+    gap: var(--space-1);
+    min-width: 0;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-4);
+}
+
+.req {
+    margin-left: 2px;
+    color: var(--color-danger);
+}
+
+.field-hint {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+}
+
+/* Lưới checkbox (vai trò); input nằm trong label nên nhãn trỏ đúng ô */
+.check-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: var(--space-2) var(--space-4);
+}
+
 /* Gợi ý sớm khi người dùng đã nhập rồi rời ô; lỗi thật vẫn do backend trả về */
 input:user-invalid,
 select:user-invalid,
@@ -654,6 +717,12 @@ dd:empty::after {
     border-color: var(--color-danger);
 }
 
+.message.info {
+    color: var(--color-info);
+    background: var(--color-info-bg);
+    border-color: var(--color-info);
+}
+
 .message ul {
     margin: 0;
     padding-left: var(--space-5);
@@ -676,6 +745,18 @@ dd:empty::after {
     font-weight: 600;
     line-height: 1.6;
     white-space: nowrap;
+}
+
+.badge-list {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: var(--space-1);
+}
+
+.self-tag {
+    margin-left: var(--space-1);
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
 }
 
 .badge.success { background: var(--color-success-bg); color: var(--color-success); }
@@ -1104,6 +1185,10 @@ td.empty {
 @media (max-width: 600px) {
     .workspace {
         padding: var(--space-5) var(--space-4) var(--space-6);
+    }
+
+    .form-grid {
+        grid-template-columns: minmax(0, 1fr);
     }
 
     .error-page {

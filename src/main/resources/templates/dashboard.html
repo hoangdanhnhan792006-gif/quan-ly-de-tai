@@ -8,18 +8,10 @@
 <main class="workspace">
     <p class="eyebrow">Bảng điều khiển</p>
     <h1>Xin chào, <span th:text="${username}">người dùng</span></h1>
-    <!-- Chỉ đổi nhãn hiển thị của quyền backend trả về; quyền lạ hiện nguyên giá trị -->
+    <!-- Chỉ đổi nhãn hiển thị của quyền backend trả về (fragments/nhan); quyền lạ hiện nguyên giá trị -->
     <p class="role-badges">
         <span class="muted">Vai trò:</span>
-        <span class="badge info" th:each="a : ${authorities}" th:switch="${a.authority}">
-            <th:block th:case="'ROLE_ADMIN'">Quản trị viên</th:block>
-            <th:block th:case="'ROLE_TRUONG_KHOA'">Trưởng khoa</th:block>
-            <th:block th:case="'ROLE_CAN_BO_KHOA'">Cán bộ khoa</th:block>
-            <th:block th:case="'ROLE_TRUONG_BO_MON'">Trưởng bộ môn</th:block>
-            <th:block th:case="'ROLE_GIANG_VIEN'">Giảng viên</th:block>
-            <th:block th:case="'ROLE_SINH_VIEN'">Sinh viên</th:block>
-            <th:block th:case="*" th:text="${a.authority}">ROLE_USER</th:block>
-        </span>
+        <th:block th:each="a : ${authorities}"><span class="badge info" th:insert="~{fragments/nhan :: vai-tro(${a.authority})}">Vai trò</span></th:block>
     </p>
     <p>Chọn chức năng trong menu hoặc dùng các lối tắt dưới đây.</p>
 

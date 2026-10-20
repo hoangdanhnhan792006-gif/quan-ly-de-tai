@@ -7,12 +7,16 @@
         <nav th:replace="~{fragments/dieu-huong :: menu}">
         </nav>
         <main class="workspace">
-            <h1>Quản lý tài khoản</h1>
+            <header class="page-header">
+                <div>
+                    <h1>Quản lý tài khoản</h1>
+                    <p>Chỉ xóa tài khoản chưa có hồ sơ và dữ liệu liên quan. Tài khoản đã sử dụng nên được khóa.</p>
+                </div>
+                <a class="button" th:href="@{/admin/tai-khoan/tao}">Tạo tài khoản</a>
+            </header>
             <p class="message success" th:if="${thanhCong}" th:text="${thanhCong}">
             </p>
-            <a class="button" th:href="@{/admin/tai-khoan/tao}">Tạo tài khoản</a>
             <p class="message error" th:if="${loi}" th:text="${loi}"></p>
-            <p>Chỉ xóa tài khoản chưa có hồ sơ và dữ liệu liên quan. Tài khoản đã sử dụng nên được khóa.</p>
             <div class="table-wrap">
                 <table>
                     <thead>
@@ -26,21 +30,25 @@
                     </thead>
                     <tbody>
                         <tr th:each="tk : ${danhSach}">
-                            <td th:text="${tk.tenDangNhap}">
+                            <td>
+                                <span class="mono" th:text="${tk.tenDangNhap}"></span>
+                                <span class="self-tag" th:if="${tk.tenDangNhap == tenDangNhapHienTai}">(bạn)</span>
                             </td>
                             <td>
                                 <strong th:text="${tk.hoTen}">
                                 </strong>
                                 <br>
-                                <span th:text="${tk.email}">
+                                <span class="muted" th:text="${tk.email}">
                                 </span>
                             </td>
-                            <td th:text="${tk.vaiTros}">
-                            </td>
-                            <td th:text="${tk.trangThai}">
+                            <td>
+                                <span class="badge-list"><th:block th:each="v : ${tk.vaiTros}"><span class="badge info" th:insert="~{fragments/nhan :: vai-tro(${v})}">Vai trò</span></th:block></span>
                             </td>
                             <td>
-                                <a th:href="@{/admin/tai-khoan/{id}/sua(id=${tk.id})}">Sửa</a>
+                                <span th:replace="~{fragments/nhan :: trang-thai-tai-khoan(${tk.trangThai})}"></span>
+                            </td>
+                            <td>
+                                <a class="button secondary" th:href="@{/admin/tai-khoan/{id}/sua(id=${tk.id})}">Sửa</a>
                                 <form th:action="@{/admin/tai-khoan/{id}/trang-thai(id=${tk.id})}" method="post">
                                     <input type="hidden" name="trangThai" th:value="${tk.trangThai.name() == 'HOAT_DONG' ? 'BI_KHOA' : 'HOAT_DONG'}">
                                     <button class="button secondary" type="submit" th:text="${tk.trangThai.name() == 'HOAT_DONG' ? 'Khóa' : 'Mở khóa'}">
@@ -49,12 +57,12 @@
                                 <form th:if="${tk.tenDangNhap != tenDangNhapHienTai}"
                                       th:action="@{/admin/tai-khoan/{id}/xoa(id=${tk.id})}" method="post"
                                       onsubmit="return confirm('Xóa vĩnh viễn tài khoản này? Chỉ tài khoản chưa có dữ liệu liên quan mới xóa được.');">
-                                    <button class="button secondary" type="submit">Xóa</button>
+                                    <button class="button danger" type="submit">Xóa</button>
                                 </form>
                             </td>
                         </tr>
                         <tr th:if="${#lists.isEmpty(danhSach)}">
-                            <td colspan="5">Chưa có tài khoản.</td>
+                            <td class="empty" colspan="5">Chưa có tài khoản.</td>
                         </tr>
                     </tbody>
                 </table>

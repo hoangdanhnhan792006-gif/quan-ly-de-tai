@@ -7,10 +7,16 @@
         <nav th:replace="~{fragments/dieu-huong :: menu}">
         </nav>
         <main class="workspace">
-            <p class="message error" th:if="${loi}" th:text="${loi}"></p><h1>Quản lý sinh viên</h1>
+            <header class="page-header">
+                <div>
+                    <h1>Quản lý sinh viên</h1>
+                    <p>Mỗi hồ sơ gắn với một tài khoản có vai trò sinh viên. Chỉ xóa hồ sơ chưa được sử dụng.</p>
+                </div>
+                <a class="button" th:href="@{/admin/sinh-vien/tao}">Thêm hồ sơ</a>
+            </header>
             <p class="message success" th:if="${thanhCong}" th:text="${thanhCong}">
             </p>
-            <a class="button" th:href="@{/admin/sinh-vien/tao}">Thêm hồ sơ</a>
+            <p class="message error" th:if="${loi}" th:text="${loi}"></p>
             <div class="table-wrap">
                 <table>
                     <thead>
@@ -25,23 +31,23 @@
                     </thead>
                     <tbody>
                         <tr th:each="s : ${danhSach}">
-                            <td th:text="${s.maSv}">
+                            <td class="mono" th:text="${s.maSv}">
                             </td>
                             <td th:text="${s.hoTen}">
                             </td>
-                            <td th:text="${s.tenDangNhap}">
+                            <td class="mono" th:text="${s.tenDangNhap}">
                             </td>
                             <td th:text="${s.lop}">
                             </td>
                             <td th:text="${s.khoaHoc}">
                             </td>
                             <td>
-                                <a th:href="@{/admin/sinh-vien/{id}/sua(id=${s.id})}">Sửa</a>
-<form th:action="@{/admin/sinh-vien/{id}/xoa(id=${s.id})}" method="post" onsubmit="return confirm('Xóa bản ghi chưa được sử dụng?')"><button type="submit" class="button secondary">Xóa</button></form>
+                                <a class="button secondary" th:href="@{/admin/sinh-vien/{id}/sua(id=${s.id})}">Sửa</a>
+                                <form th:action="@{/admin/sinh-vien/{id}/xoa(id=${s.id})}" method="post" onsubmit="return confirm('Xóa bản ghi chưa được sử dụng?')"><button type="submit" class="button danger">Xóa</button></form>
                             </td>
                         </tr>
                         <tr th:if="${#lists.isEmpty(danhSach)}">
-                            <td colspan="6">Chưa có hồ sơ.</td>
+                            <td class="empty" colspan="6">Chưa có hồ sơ.</td>
                         </tr>
                     </tbody>
                 </table>

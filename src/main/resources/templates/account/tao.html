@@ -7,34 +7,53 @@
         <nav th:replace="~{fragments/dieu-huong :: menu}">
         </nav>
         <main class="workspace">
+            <a class="back-link" th:href="@{/admin/tai-khoan}">← Danh sách tài khoản</a>
             <h1>Tạo tài khoản</h1>
             <p class="message success" th:if="${thanhCong}" th:text="${thanhCong}">
             </p>
-            <a th:href="@{/admin/tai-khoan}">← Danh sách</a>
-            <form class="panel" th:action="@{/admin/tai-khoan/tao}" th:object="${form}" method="post">
+            <form class="panel stack" th:action="@{/admin/tai-khoan/tao}" th:object="${form}" method="post">
                 <div class="message error" th:if="${#fields.hasAnyErrors()}">
                     <ul>
                         <li th:each="e : ${#fields.allErrors()}" th:text="${e}">
                         </li>
                     </ul>
                 </div>
-                <label for="tenDangNhap">Tên đăng nhập</label>
-                <input id="tenDangNhap" type="text" th:field="*{tenDangNhap}" required maxlength="50" autocomplete="off">
-                <label for="matKhau">Mật khẩu ban đầu</label>
-                <input id="matKhau" type="password" name="matKhau" required minlength="8" maxlength="72" autocomplete="new-password">
-                <label for="hoTen">Họ tên</label>
-                <input id="hoTen" type="text" th:field="*{hoTen}" required maxlength="150">
-                <label for="email">Email</label>
-                <input id="email" type="email" th:field="*{email}" required maxlength="254">
+                <div class="form-grid">
+                    <div class="field">
+                        <label for="tenDangNhap">Tên đăng nhập<span class="req">*</span></label>
+                        <input id="tenDangNhap" type="text" th:field="*{tenDangNhap}" required maxlength="50" autocomplete="off">
+                        <p class="field-hint">3–50 ký tự: chữ, số, dấu gạch hoặc dấu chấm.</p>
+                    </div>
+                    <div class="field">
+                        <label for="matKhau">Mật khẩu ban đầu<span class="req">*</span></label>
+                        <!-- Không dùng th:field/value: mật khẩu không bao giờ được in lại ra HTML -->
+                        <input id="matKhau" type="password" name="matKhau" required minlength="8" maxlength="72" autocomplete="new-password">
+                        <p class="field-hint">8–72 ký tự.</p>
+                    </div>
+                    <div class="field">
+                        <label for="hoTen">Họ tên<span class="req">*</span></label>
+                        <input id="hoTen" type="text" th:field="*{hoTen}" required maxlength="150">
+                    </div>
+                    <div class="field">
+                        <label for="email">Email<span class="req">*</span></label>
+                        <input id="email" type="email" th:field="*{email}" required maxlength="254">
+                    </div>
+                </div>
                 <fieldset>
-                    <legend>Vai trò</legend>
-                    <label class="check" th:each="v : ${cacVaiTro}">
-                        <input type="checkbox" th:field="*{vaiTros}" th:value="${v}">
-                        <span th:text="${v}">
-                        </span>
-                    </label>
+                    <legend>Vai trò<span class="req">*</span></legend>
+                    <div class="check-grid">
+                        <!-- Input nằm trong label nên nhãn luôn trỏ đúng ô do th:field sinh id -->
+                        <label class="check" th:each="v : ${cacVaiTro}">
+                            <input type="checkbox" th:field="*{vaiTros}" th:value="${v}">
+                            <span th:insert="~{fragments/nhan :: vai-tro(${v})}">Vai trò</span>
+                        </label>
+                    </div>
                 </fieldset>
-                <button class="button" type="submit">Lưu</button>
+                <p class="field-hint">Tài khoản sinh viên hoặc giảng viên cần tạo thêm hồ sơ tương ứng sau khi lưu.</p>
+                <div class="actions">
+                    <button class="button" type="submit">Lưu</button>
+                    <a class="button secondary" th:href="@{/admin/tai-khoan}">Hủy</a>
+                </div>
             </form>
         </main>
         <script th:src="@{/js/form.js}" defer></script>

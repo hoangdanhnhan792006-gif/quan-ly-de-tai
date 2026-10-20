@@ -7,35 +7,49 @@
         <nav th:replace="~{fragments/dieu-huong :: menu}">
         </nav>
         <main class="workspace">
-            <h1>Hồ sơ giảng viên</h1>
+            <a class="back-link" th:href="@{/admin/giang-vien}">← Danh sách giảng viên</a>
+            <h1 th:text="${id != null} ? 'Sửa hồ sơ giảng viên' : 'Thêm hồ sơ giảng viên'">Hồ sơ giảng viên</h1>
             <p class="message success" th:if="${thanhCong}" th:text="${thanhCong}">
             </p>
-            <a th:href="@{/admin/giang-vien}">← Danh sách</a>
-            <p>Tạo tài khoản với vai trò tương ứng trước khi thêm hồ sơ. Tài khoản gắn với hồ sơ không được thay đổi sau khi tạo.</p>
-            <form class="panel" th:action="${id != null} ? @{/admin/giang-vien/{id}/sua(id=${id})} : @{/admin/giang-vien/tao}" th:object="${form}" method="post">
+            <form class="panel stack" th:action="${id != null} ? @{/admin/giang-vien/{id}/sua(id=${id})} : @{/admin/giang-vien/tao}" th:object="${form}" method="post">
                 <div class="message error" th:if="${#fields.hasAnyErrors()}">
                     <ul>
                         <li th:each="e : ${#fields.allErrors()}" th:text="${e}">
                         </li>
                     </ul>
                 </div>
-                <label for="taiKhoanId">Tài khoản</label>
-                <select id="taiKhoanId" th:field="*{taiKhoanId}" required>
-                    <option value="">Chọn tài khoản</option>
-                    <option th:each="t : ${taiKhoans}" th:value="${t.id}" th:text="${t.tenDangNhap + ' — ' + t.hoTen}">
-                    </option>
-                </select>
-                <label for="maGv">Mã giảng viên</label>
-                <input id="maGv" type="text" th:field="*{maGv}" required maxlength="20">
-                <label for="boMonId">Bộ môn</label>
-                <select id="boMonId" th:field="*{boMonId}" required>
-                    <option value="">Chọn bộ môn</option>
-                    <option th:each="b : ${boMons}" th:value="${b.id}" th:text="${b.tenBoMon + (b.dangHoatDong ? '' : ' (ngừng hoạt động)')}">
-                    </option>
-                </select>
-                <label for="hocVi">Học vị</label>
-                <input id="hocVi" type="text" th:field="*{hocVi}" maxlength="50">
-                <button class="button" type="submit">Lưu</button>
+                <p class="message info">Tạo tài khoản với vai trò tương ứng trước khi thêm hồ sơ. Tài khoản gắn với hồ sơ không được thay đổi sau khi tạo.</p>
+                <div class="form-grid">
+                    <div class="field">
+                        <label for="taiKhoanId">Tài khoản<span class="req">*</span></label>
+                        <select id="taiKhoanId" th:field="*{taiKhoanId}" required>
+                            <option value="">Chọn tài khoản</option>
+                            <option th:each="t : ${taiKhoans}" th:value="${t.id}" th:text="${t.tenDangNhap + ' — ' + t.hoTen}">
+                            </option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="maGv">Mã giảng viên<span class="req">*</span></label>
+                        <input id="maGv" type="text" th:field="*{maGv}" required maxlength="20">
+                    </div>
+                    <div class="field">
+                        <label for="boMonId">Bộ môn<span class="req">*</span></label>
+                        <select id="boMonId" th:field="*{boMonId}" required>
+                            <option value="">Chọn bộ môn</option>
+                            <option th:each="b : ${boMons}" th:value="${b.id}" th:text="${b.tenBoMon + (b.dangHoatDong ? '' : ' (ngừng hoạt động)')}">
+                            </option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="hocVi">Học vị</label>
+                        <input id="hocVi" type="text" th:field="*{hocVi}" maxlength="50">
+                        <p class="field-hint">Không bắt buộc.</p>
+                    </div>
+                </div>
+                <div class="actions">
+                    <button class="button" type="submit">Lưu</button>
+                    <a class="button secondary" th:href="@{/admin/giang-vien}">Hủy</a>
+                </div>
             </form>
         </main>
     </body>
