@@ -17,9 +17,11 @@
         <!-- badge-trang-thai(tt): enum có getNhan() (đề tài, đợt, nhóm, đăng ký, lời mời...).
              Chữ lấy từ nhãn backend ${tt.nhan}; fragment chỉ chọn màu theo mã (so khớp regex bằng "matches").
              success: đã được chấp nhận/đang chạy · warning: chờ người khác xử lý · danger: bị từ chối/hủy
-             info: đang trong quá trình · còn lại (NHAP, KET_THUC, GIAI_THE, DA_THU_HOI...): xám -->
+             info: đang trong quá trình · còn lại (NHAP, KET_THUC, GIAI_THE, DA_THU_HOI, CHUA_BAT_DAU, KHONG_AP_DUNG...): xám
+             Lưu ý trùng mã: DA_CHOT của nhóm = "Chờ duyệt đăng ký" (vàng); DA_CHOT của hội đồng = "Đã chốt"
+             nên trang danhgia/hoi-dong tự gán màu, không dùng fragment này. -->
         <span th:fragment="badge-trang-thai(tt)" class="badge" th:with="m=${#strings.toString(tt) ?: ''}"
-              th:classappend="${m matches 'DA_CONG_BO|TRIEN_KHAI|DANG_THUC_HIEN|HOAN_THANH|CHAP_THUAN|DA_CHAP_NHAN'} ? 'success' : (${m matches 'CHO_DUYET|DA_CHOT|CHO_PHAN_HOI'} ? 'warning' : (${m matches 'TU_CHOI|HUY'} ? 'danger' : (${m matches 'DA_DUYET|DANG_LAP'} ? 'info' : 'neutral')))"
+              th:classappend="${m matches 'DA_CONG_BO|TRIEN_KHAI|DANG_THUC_HIEN|HOAN_THANH|CHAP_THUAN|DA_CHAP_NHAN|HOAN_TAT|DA_NOP'} ? 'success' : (${m matches 'CHO_DUYET|DA_CHOT|CHO_PHAN_HOI|CHO_XAC_NHAN'} ? 'warning' : (${m matches 'TU_CHOI|HUY'} ? 'danger' : (${m matches 'DA_DUYET|DANG_LAP|DANG_CHAM|DA_XAC_NHAN|DA_NOP_DIEU_CHINH'} ? 'info' : 'neutral')))"
               th:text="${tt.nhan}">Trạng thái</span>
     </body>
 </html>

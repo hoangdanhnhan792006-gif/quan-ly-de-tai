@@ -1129,6 +1129,82 @@ form.filter-bar {
     text-align: center;
 }
 
+/* Đánh giá: đầu panel (tiêu đề + badge), ô điểm lớn, ô nhập điểm hẹp, danh sách hội đồng */
+.panel-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-2) var(--space-4);
+}
+
+.panel-head .eyebrow {
+    margin-bottom: 2px;
+}
+
+.score-card {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2) var(--space-4);
+    padding: var(--space-3) var(--space-4);
+    background: var(--color-surface-muted);
+    border-radius: var(--radius);
+}
+
+.score {
+    color: var(--color-text-muted);
+    font-size: var(--text-lg);
+    font-variant-numeric: tabular-nums;
+}
+
+.score strong {
+    color: var(--color-text);
+    font-size: 2rem;
+    line-height: 1;
+}
+
+.score-input {
+    max-width: 160px;
+}
+
+.stack-block {
+    display: grid;
+    gap: var(--space-3);
+}
+
+.request {
+    display: grid;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    border-left: 3px solid var(--color-border-strong);
+    background: var(--color-bg);
+}
+
+.card-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: var(--space-4);
+}
+
+.member-list {
+    display: grid;
+    gap: var(--space-1);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.member-list li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    padding: var(--space-1) 0;
+    border-bottom: 1px solid var(--color-border);
+}
+
 /* Thao tác không hoàn tác (kết thúc/hủy) */
 .danger-zone {
     border-color: var(--color-danger);

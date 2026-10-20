@@ -1,15 +1,25 @@
 <!doctype html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org"><head th:replace="~{fragments/layout :: head(~{::title})}">
-    <title>Quản lý đề tài sinh viên</title>
-</head><body><nav th:replace="~{fragments/dieu-huong :: menu}"></nav>
-<main class="workspace"><p class="message success" th:if="${thanhCong}" th:text="${thanhCong}"></p><p class="message error" th:if="${loi}" th:text="${loi}"></p>
-
-<h1>Hội đồng đánh giá</h1><a class="button" th:href="@{/khoa/hoi-dong/tao}">Tạo hội đồng</a>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(~{::title})}">
+    <title>Hội đồng đánh giá · Quản lý đề tài</title>
+</head>
+<body><nav th:replace="~{fragments/dieu-huong :: menu}"></nav>
+<main class="workspace">
+<header class="page-header">
+    <div><h1>Hội đồng đánh giá</h1><p>Hội đồng gồm 3–5 giảng viên: một chủ tịch, một thư ký, còn lại là ủy viên. Chỉ hội đồng đã chốt mới dùng được khi lập kế hoạch.</p></div>
+    <a class="button" th:href="@{/khoa/hoi-dong/tao}">Tạo hội đồng</a>
+</header>
+<p class="message success" th:if="${thanhCong}" th:text="${thanhCong}"></p><p class="message error" th:if="${loi}" th:text="${loi}"></p>
+<div class="card-list">
 <section class="panel" th:each="h : ${danhSach}">
-<h2 th:text="${h.maHoiDong + ' — ' + h.tenHoiDong}"></h2><p><span th:text="${h.tenDot}"></span> · <strong th:text="${h.trangThai.nhan}"></strong></p>
-<ul><li th:each="t : ${h.thanhViens}" th:text="${t.maGv+' — '+t.hoTen+' ('+t.vaiTro.nhan+')'}"></li></ul>
-<div class="actions" th:if="${h.trangThai.name()=='NHAP'}"><a th:href="@{/khoa/hoi-dong/{id}/sua(id=${h.id})}">Sửa thành phần</a>
+<header class="panel-head"><div><p class="eyebrow mono" th:text="${h.maHoiDong}"></p><h2 th:text="${h.tenHoiDong}"></h2></div>
+<!--/* Không dùng fragment badge-trang-thai: DA_CHOT ở đây nghĩa "Đã chốt" (trùng mã với nhóm). Chữ vẫn lấy từ backend. */-->
+<span class="badge" th:classappend="${h.trangThai.name()=='HOAN_THANH'} ? 'success' : (${h.trangThai.name()=='DA_CHOT'} ? 'info' : 'neutral')" th:text="${h.trangThai.nhan}"></span></header>
+<p class="muted" th:text="${h.tenDot}"></p>
+<ul class="member-list"><li th:each="t : ${h.thanhViens}"><span><span class="mono muted" th:text="${t.maGv}"></span> <span th:text="${t.hoTen}"></span></span><span class="badge neutral" th:text="${t.vaiTro.nhan}"></span></li></ul>
+<div class="actions" th:if="${h.trangThai.name()=='NHAP'}"><a class="button secondary" th:href="@{/khoa/hoi-dong/{id}/sua(id=${h.id})}">Sửa thành phần</a>
 <form th:action="@{/khoa/hoi-dong/{id}/chot(id=${h.id})}" method="post"><button class="button">Chốt hội đồng</button></form></div>
 <form th:if="${h.trangThai.name()=='DA_CHOT'}" th:action="@{/khoa/hoi-dong/{id}/hoan-thanh(id=${h.id})}" method="post"><button class="button secondary">Xác nhận hoàn thành hội đồng</button></form>
-</section><p th:if="${#lists.isEmpty(danhSach)}">Chưa có hội đồng.</p>
+</section>
+</div><p class="empty" th:if="${#lists.isEmpty(danhSach)}">Chưa có hội đồng.</p>
 </main></body></html>
