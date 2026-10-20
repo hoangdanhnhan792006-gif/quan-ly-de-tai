@@ -1,18 +1,51 @@
 <!doctype html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/layout :: head(~{::title})}">
-    <title>Bảng điều khiển</title>
+    <title>Bảng điều khiển · Quản lý đề tài</title>
 </head>
 <body>
 <nav th:replace="~{fragments/dieu-huong :: menu}"></nav>
-<main class="container dashboard">
+<main class="workspace">
     <p class="eyebrow">Bảng điều khiển</p>
     <h1>Xin chào, <span th:text="${username}">người dùng</span></h1>
-    <p>Vai trò hiện tại: <span th:text="${authorities}">ROLE_USER</span></p>
-    <p>Chọn chức năng trên thanh điều hướng để bắt đầu.</p>
-    <form th:action="@{/logout}" method="post">
-        <button class="button secondary" type="submit">Đăng xuất</button>
-    </form>
+    <!-- Chỉ đổi nhãn hiển thị của quyền backend trả về; quyền lạ hiện nguyên giá trị -->
+    <p class="role-badges">
+        <span class="muted">Vai trò:</span>
+        <span class="badge info" th:each="a : ${authorities}" th:switch="${a.authority}">
+            <th:block th:case="'ROLE_ADMIN'">Quản trị viên</th:block>
+            <th:block th:case="'ROLE_TRUONG_KHOA'">Trưởng khoa</th:block>
+            <th:block th:case="'ROLE_CAN_BO_KHOA'">Cán bộ khoa</th:block>
+            <th:block th:case="'ROLE_TRUONG_BO_MON'">Trưởng bộ môn</th:block>
+            <th:block th:case="'ROLE_GIANG_VIEN'">Giảng viên</th:block>
+            <th:block th:case="'ROLE_SINH_VIEN'">Sinh viên</th:block>
+            <th:block th:case="*" th:text="${a.authority}">ROLE_USER</th:block>
+        </span>
+    </p>
+    <p>Chọn chức năng trong menu hoặc dùng các lối tắt dưới đây.</p>
+
+    <!-- Lối tắt: chỉ dùng link và điều kiện th:if giống hệt fragments/dieu-huong.html -->
+    <section class="shortcut-grid" aria-label="Lối tắt theo vai trò">
+        <a class="shortcut" th:href="@{/de-tai}"><strong>Đề tài</strong><span>Đề tài đã công bố theo đợt và bộ môn.</span></a>
+        <a class="shortcut" th:href="@{/thong-bao}"><strong>Thông báo</strong><span>Thông báo của khoa và tệp đính kèm.</span></a>
+        <a class="shortcut" th:if="${laSinhVien or laGiangVien or laCanBoKhoa}" th:href="@{/bao-cao}"><strong>Báo cáo</strong><span>Hạn nộp và các phiên bản báo cáo.</span></a>
+        <a class="shortcut" th:if="${laGiangVien or laCanBoKhoa}" th:href="@{/danh-gia}"><strong>Đánh giá</strong><span>Phản biện, chấm điểm và tổng hợp kết quả.</span></a>
+        <a class="shortcut" th:if="${laSinhVien}" th:href="@{/sinh-vien/ket-qua}"><strong>Kết quả</strong><span>Điểm và nhận xét đã công bố.</span></a>
+        <a class="shortcut" th:if="${laSinhVien}" th:href="@{/sinh-vien/nhom}"><strong>Nhóm và đăng ký</strong><span>Lập nhóm, nhận lời mời, chọn đề tài.</span></a>
+        <a class="shortcut" th:if="${laGiangVien}" th:href="@{/de-tai/cua-toi}"><strong>Đề tài của tôi</strong><span>Đề xuất, sửa và gửi duyệt đề tài.</span></a>
+        <a class="shortcut" th:if="${laTruongBoMon and !laCanBoKhoa}" th:href="@{/de-tai/quan-ly}"><strong>Đề tài bộ môn</strong><span>Duyệt đề tài và phân công GVHD.</span></a>
+        <th:block th:if="${laCanBoKhoa}">
+            <a class="shortcut" th:href="@{/khoa/dot-dang-ky}"><strong>Đợt đăng ký</strong><span>Lịch và trạng thái các đợt.</span></a>
+            <a class="shortcut" th:href="@{/de-tai/quan-ly}"><strong>Duyệt đề tài</strong><span>Công bố đề tài đã được bộ môn duyệt.</span></a>
+            <a class="shortcut" th:href="@{/khoa/dang-ky}"><strong>Duyệt đăng ký</strong><span>Chấp thuận hoặc từ chối nhóm đăng ký.</span></a>
+            <a class="shortcut" th:href="@{/khoa/hoi-dong}"><strong>Hội đồng</strong><span>Thành phần hội đồng chấm.</span></a>
+        </th:block>
+        <th:block th:if="${laQuanTriVien}">
+            <a class="shortcut" th:href="@{/admin/tai-khoan}"><strong>Tài khoản</strong><span>Tạo, sửa, khóa và xóa tài khoản.</span></a>
+            <a class="shortcut" th:href="@{/admin/bo-mon}"><strong>Bộ môn</strong><span>Danh sách bộ môn của khoa.</span></a>
+            <a class="shortcut" th:href="@{/admin/sinh-vien}"><strong>Sinh viên</strong><span>Hồ sơ sinh viên gắn với tài khoản.</span></a>
+            <a class="shortcut" th:href="@{/admin/giang-vien}"><strong>Giảng viên</strong><span>Hồ sơ giảng viên và bộ môn.</span></a>
+        </th:block>
+    </section>
 </main>
 </body>
 </html>

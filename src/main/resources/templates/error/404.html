@@ -1,14 +1,23 @@
 <!doctype html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/layout :: head(~{::title})}">
-    <title>Không tìm thấy dữ liệu</title>
+    <title>Không tìm thấy dữ liệu · Quản lý đề tài</title>
 </head>
 <body>
-<main class="container dashboard">
-    <p class="eyebrow">Lỗi 404</p>
-    <h1>Không tìm thấy dữ liệu</h1>
-    <p th:text="${message}">Dữ liệu được yêu cầu không tồn tại.</p>
-    <a class="button" th:href="@{/dashboard}">Về bảng điều khiển</a>
+<!-- Không nhúng menu: Model của @ExceptionHandler không có các biến la... của DieuHuongAdvice -->
+<main class="error-shell">
+    <section class="error-page">
+        <p class="error-code"><span class="sr-only">Lỗi </span>404</p>
+        <div class="error-body">
+            <h1>Không tìm thấy dữ liệu</h1>
+            <!-- Gõ URL lạ thì Spring Boot không gửi message (include-message: never) nên dùng câu mặc định -->
+            <p th:text="${message ?: 'Trang hoặc dữ liệu bạn tìm không tồn tại.'}">Dữ liệu được yêu cầu không tồn tại.</p>
+            <div class="actions">
+                <a class="button" th:href="@{/dashboard}">Về bảng điều khiển</a>
+                <a class="button secondary" href="javascript:history.back()">Quay lại</a>
+            </div>
+        </div>
+    </section>
 </main>
 </body>
 </html>
