@@ -6,41 +6,87 @@
 <body>
 <nav th:replace="~{fragments/dieu-huong :: menu}"></nav>
 <main class="workspace">
-    <h1>Thông tin đợt đăng ký</h1>
+    <a class="back-link" th:href="@{/khoa/dot-dang-ky}">← Danh sách đợt</a>
+    <h1 th:text="${id != null} ? 'Sửa lịch đợt đăng ký' : 'Tạo đợt đăng ký'">Thông tin đợt đăng ký</h1>
     <p class="message success" th:if="${thanhCong}" th:text="${thanhCong}"></p>
     <p class="message error" th:if="${loi}" th:text="${loi}"></p>
-
-    <a th:href="@{/khoa/dot-dang-ky}">← Danh sách đợt</a>
-    <p>Nhập giờ Việt Nam. Giai đoạn SV chỉ bắt đầu khi thời gian GV đề xuất đã kết thúc. Chỉ sửa đợt khi còn nháp.</p>
-    <form class="panel" th:action="${id != null} ? @{/khoa/dot-dang-ky/{id}/sua(id=${id})} : @{/khoa/dot-dang-ky/tao}"
+    <!-- Ô ngày giờ nhập giờ Việt Nam; backend tự đổi UTC khi lưu. Không tự cộng/trừ múi giờ. -->
+    <form class="panel stack" th:action="${id != null} ? @{/khoa/dot-dang-ky/{id}/sua(id=${id})} : @{/khoa/dot-dang-ky/tao}"
           th:object="${form}" method="post">
         <div class="message error" th:if="${#fields.hasAnyErrors()}">
             <ul><li th:each="e : ${#fields.allErrors()}" th:text="${e}"></li></ul>
         </div>
-        <label for="maDot">Mã đợt</label><input id="maDot" th:field="*{maDot}" maxlength="30" required>
-        <label for="tenDot">Tên đợt</label><input id="tenDot" th:field="*{tenDot}" maxlength="200" required>
-        <label for="loai">Loại đề tài</label>
-        <select id="loai" th:field="*{loai}" required>
-            <option value="">Chọn loại</option>
-            <option th:each="l : ${cacLoai}" th:value="${l}" th:text="${l.nhan}"></option>
-        </select>
-        <label for="gvBatDau">GV bắt đầu đăng ký</label>
-        <input id="gvBatDau" type="datetime-local" th:field="*{gvBatDau}" required>
-        <label for="gvKetThuc">GV kết thúc đăng ký</label>
-        <input id="gvKetThuc" type="datetime-local" th:field="*{gvKetThuc}" required>
-        <label for="svBatDau">SV bắt đầu đăng ký</label>
-        <input id="svBatDau" type="datetime-local" th:field="*{svBatDau}" required>
-        <label for="svKetThuc">SV kết thúc đăng ký</label>
-        <input id="svKetThuc" type="datetime-local" th:field="*{svKetThuc}" required>
-        <label for="hanNopBaoCao">Hạn nộp báo cáo</label>
-        <input id="hanNopBaoCao" type="datetime-local" th:field="*{hanNopBaoCao}" required>
-        <label for="hanNopDiemPb">Hạn nộp điểm phản biện (chỉ TLCN/KLTN)</label>
-        <input id="hanNopDiemPb" type="datetime-local" th:field="*{hanNopDiemPb}">
-        <label for="ngayBaoCaoHd">Ngày báo cáo hội đồng (chỉ KLTN)</label>
-        <input id="ngayBaoCaoHd" type="date" th:field="*{ngayBaoCaoHd}">
-        <button class="button" type="submit">Lưu đợt nháp</button>
+        <p class="message info">Nhập giờ Việt Nam. Giai đoạn SV chỉ bắt đầu khi thời gian GV đề xuất đã kết thúc. Chỉ sửa đợt khi còn nháp.</p>
+        <fieldset>
+            <legend>Thông tin đợt</legend>
+            <div class="form-grid">
+                <div class="field">
+                    <label for="maDot">Mã đợt<span class="req">*</span></label><input id="maDot" th:field="*{maDot}" maxlength="30" required>
+                </div>
+                <div class="field">
+                    <label for="loai">Loại đề tài<span class="req">*</span></label>
+                    <select id="loai" th:field="*{loai}" required>
+                        <option value="">Chọn loại</option>
+                        <option th:each="l : ${cacLoai}" th:value="${l}" th:text="${l.nhan}"></option>
+                    </select>
+                </div>
+            </div>
+            <div class="field">
+                <label for="tenDot">Tên đợt<span class="req">*</span></label><input id="tenDot" th:field="*{tenDot}" maxlength="200" required>
+            </div>
+        </fieldset>
+        <fieldset>
+            <legend>Giai đoạn giảng viên đề xuất</legend>
+            <div class="form-grid">
+                <div class="field">
+                    <label for="gvBatDau">GV bắt đầu đăng ký<span class="req">*</span></label>
+                    <input id="gvBatDau" type="datetime-local" th:field="*{gvBatDau}" required>
+                </div>
+                <div class="field">
+                    <label for="gvKetThuc">GV kết thúc đăng ký<span class="req">*</span></label>
+                    <input id="gvKetThuc" type="datetime-local" th:field="*{gvKetThuc}" required>
+                </div>
+            </div>
+        </fieldset>
+        <fieldset>
+            <legend>Giai đoạn sinh viên đăng ký</legend>
+            <div class="form-grid">
+                <div class="field">
+                    <label for="svBatDau">SV bắt đầu đăng ký<span class="req">*</span></label>
+                    <input id="svBatDau" type="datetime-local" th:field="*{svBatDau}" required>
+                    <p class="field-hint">Không sớm hơn lúc GV kết thúc.</p>
+                </div>
+                <div class="field">
+                    <label for="svKetThuc">SV kết thúc đăng ký<span class="req">*</span></label>
+                    <input id="svKetThuc" type="datetime-local" th:field="*{svKetThuc}" required>
+                </div>
+            </div>
+        </fieldset>
+        <fieldset>
+            <legend>Báo cáo và đánh giá</legend>
+            <div class="form-grid">
+                <div class="field">
+                    <label for="hanNopBaoCao">Hạn nộp báo cáo<span class="req">*</span></label>
+                    <input id="hanNopBaoCao" type="datetime-local" th:field="*{hanNopBaoCao}" required>
+                    <p class="field-hint">Không sớm hơn lúc SV kết thúc.</p>
+                </div>
+                <div class="field">
+                    <label for="hanNopDiemPb">Hạn nộp điểm phản biện (chỉ TLCN/KLTN)</label>
+                    <input id="hanNopDiemPb" type="datetime-local" th:field="*{hanNopDiemPb}">
+                    <p class="field-hint">Bắt buộc với TLCN và KLTN; loại khác để trống.</p>
+                </div>
+                <div class="field">
+                    <label for="ngayBaoCaoHd">Ngày báo cáo hội đồng (chỉ KLTN)</label>
+                    <input id="ngayBaoCaoHd" type="date" th:field="*{ngayBaoCaoHd}">
+                    <p class="field-hint">Bắt buộc với KLTN; loại khác để trống.</p>
+                </div>
+            </div>
+        </fieldset>
+        <div class="actions">
+            <button class="button" type="submit">Lưu đợt nháp</button>
+            <a class="button secondary" th:href="${id != null} ? @{/khoa/dot-dang-ky/{id}(id=${id})} : @{/khoa/dot-dang-ky}">Hủy</a>
+        </div>
     </form>
-
 </main>
 </body>
 </html>

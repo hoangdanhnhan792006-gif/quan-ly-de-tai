@@ -6,15 +6,21 @@
 <body>
 <nav th:replace="~{fragments/dieu-huong :: menu}"></nav>
 <main class="workspace">
-    <h1>Chi tiết đợt đăng ký</h1>
+    <a class="back-link" th:href="@{/khoa/dot-dang-ky}">← Danh sách đợt</a>
+    <header class="page-header">
+        <div>
+            <p class="eyebrow mono" th:text="${dot.maDot}">DOT01</p>
+            <h1 th:text="${dot.tenDot}">Tên đợt</h1>
+            <p><span th:replace="~{fragments/nhan :: badge-trang-thai(${dot.trangThai})}"></span> <span class="muted" th:text="${dot.loai.nhan}"></span></p>
+        </div>
+    </header>
     <p class="message success" th:if="${thanhCong}" th:text="${thanhCong}"></p>
     <p class="message error" th:if="${loi}" th:text="${loi}"></p>
 
-    <a th:href="@{/khoa/dot-dang-ky}">← Danh sách đợt</a>
     <section class="panel">
-        <h2 th:text="${dot.tenDot}"></h2>
+        <h2>Lịch đợt</h2>
         <dl>
-        <dt>Mã đợt</dt><dd th:text="${dot.maDot}"></dd>
+        <dt>Mã đợt</dt><dd class="mono" th:text="${dot.maDot}"></dd>
         <dt>Loại</dt><dd th:text="${dot.loai.nhan}"></dd>
         <dt>Trạng thái</dt><dd th:text="${dot.trangThai.nhan}"></dd>
         <dt>GV bắt đầu đăng ký</dt><dd th:text="${dot.gvBatDau != null ? #temporals.format(dot.gvBatDau, 'dd/MM/yyyy HH:mm') : 'Không áp dụng'}"></dd>
@@ -24,27 +30,34 @@
         <dt>Hạn nộp báo cáo</dt><dd th:text="${dot.hanNopBaoCao != null ? #temporals.format(dot.hanNopBaoCao, 'dd/MM/yyyy HH:mm') : 'Không áp dụng'}"></dd>
         <dt>Hạn nộp điểm phản biện (chỉ TLCN/KLTN)</dt><dd th:text="${dot.hanNopDiemPb != null ? #temporals.format(dot.hanNopDiemPb, 'dd/MM/yyyy HH:mm') : 'Không áp dụng'}"></dd>
         <dt>Ngày báo cáo hội đồng (chỉ KLTN)</dt><dd th:text="${dot.ngayBaoCaoHd != null ? #temporals.format(dot.ngayBaoCaoHd, 'dd/MM/yyyy') : 'Không áp dụng'}"></dd>
-        </dl><p>Tất cả giờ hiển thị theo giờ Việt Nam.</p>
-    </section>
-    <section class="panel" th:if="${laTruongKhoa}">
-        <th:block th:if="${dot.trangThai.name() == 'NHAP'}">
-            <a class="button secondary" th:href="@{/khoa/dot-dang-ky/{id}/sua(id=${dot.id})}">Sửa lịch / thông tin</a>
-            <form th:action="@{/khoa/dot-dang-ky/{id}/trien-khai(id=${dot.id})}" method="post">
-                <button class="button" type="submit">Triển khai đợt</button>
-            </form>
-        </th:block>
-        <form th:if="${dot.trangThai.name() == 'TRIEN_KHAI'}" th:action="@{/khoa/dot-dang-ky/{id}/ket-thuc(id=${dot.id})}" method="post">
-            <p>Kết thúc sẽ đóng đợt ngay, kể cả khi còn thời gian đăng ký. Không mở lại trong phiên bản này.</p>
-            <label class="check"><input type="checkbox" required> Tôi xác nhận kết thúc đợt</label>
-            <button class="button secondary" type="submit">Kết thúc đợt</button>
-        </form>
-        <form th:if="${dot.trangThai.name() == 'NHAP' or dot.trangThai.name() == 'TRIEN_KHAI'}" th:action="@{/khoa/dot-dang-ky/{id}/huy(id=${dot.id})}" method="post">
-            <p>Chỉ hủy khi chưa có nhóm giữ chỗ hoặc được chấp thuận.</p>
-            <label class="check"><input type="checkbox" required> Tôi xác nhận hủy đợt</label>
-            <button class="button secondary" type="submit">Hủy đợt</button>
-        </form>
+        </dl><p class="muted">Tất cả giờ hiển thị theo giờ Việt Nam.</p>
     </section>
 
+    <!-- Thao tác chỉ dành cho trưởng khoa; backend vẫn kiểm tra quyền và trạng thái -->
+    <th:block th:if="${laTruongKhoa}">
+        <section class="panel" th:if="${dot.trangThai.name() == 'NHAP'}">
+            <h2>Thao tác</h2>
+            <div class="actions">
+                <a class="button secondary" th:href="@{/khoa/dot-dang-ky/{id}/sua(id=${dot.id})}">Sửa lịch / thông tin</a>
+                <form th:action="@{/khoa/dot-dang-ky/{id}/trien-khai(id=${dot.id})}" method="post">
+                    <button class="button" type="submit">Triển khai đợt</button>
+                </form>
+            </div>
+        </section>
+        <section class="panel danger-zone" th:if="${dot.trangThai.name() == 'NHAP' or dot.trangThai.name() == 'TRIEN_KHAI'}">
+            <h2>Thao tác không hoàn tác</h2>
+            <form th:if="${dot.trangThai.name() == 'TRIEN_KHAI'}" th:action="@{/khoa/dot-dang-ky/{id}/ket-thuc(id=${dot.id})}" method="post">
+                <p>Kết thúc sẽ đóng đợt ngay, kể cả khi còn thời gian đăng ký. Không mở lại trong phiên bản này.</p>
+                <label class="check"><input type="checkbox" required> Tôi xác nhận kết thúc đợt</label>
+                <button class="button danger" type="submit">Kết thúc đợt</button>
+            </form>
+            <form th:if="${dot.trangThai.name() == 'NHAP' or dot.trangThai.name() == 'TRIEN_KHAI'}" th:action="@{/khoa/dot-dang-ky/{id}/huy(id=${dot.id})}" method="post">
+                <p>Chỉ hủy khi chưa có nhóm giữ chỗ hoặc được chấp thuận.</p>
+                <label class="check"><input type="checkbox" required> Tôi xác nhận hủy đợt</label>
+                <button class="button danger" type="submit">Hủy đợt</button>
+            </form>
+        </section>
+    </th:block>
 </main>
 </body>
 </html>

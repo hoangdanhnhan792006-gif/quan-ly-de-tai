@@ -13,5 +13,11 @@
         <span th:fragment="trang-thai-tai-khoan(ma)" class="badge" th:with="m=${#strings.toString(ma)}"
               th:classappend="${m == 'HOAT_DONG'} ? 'success' : (${m == 'BI_KHOA'} ? 'danger' : 'neutral')"
               th:text="${m == 'HOAT_DONG'} ? 'Hoạt động' : (${m == 'BI_KHOA'} ? 'Bị khóa' : ${m})">Hoạt động</span>
+
+        <!-- badge-trang-thai(tt): enum có getNhan() (TrangThaiDeTai, TrangThaiDotDangKy...).
+             Chữ lấy từ nhãn backend ${tt.nhan}; fragment chỉ chọn màu theo mã, mã chưa khai báo màu xám. -->
+        <span th:fragment="badge-trang-thai(tt)" class="badge" th:with="m=${#strings.toString(tt)}"
+              th:classappend="${m == 'DA_CONG_BO' or m == 'TRIEN_KHAI'} ? 'success' : (${m == 'CHO_DUYET'} ? 'warning' : (${m == 'TU_CHOI' or m == 'HUY'} ? 'danger' : (${m == 'DA_DUYET'} ? 'info' : 'neutral')))"
+              th:text="${tt.nhan}">Trạng thái</span>
     </body>
 </html>

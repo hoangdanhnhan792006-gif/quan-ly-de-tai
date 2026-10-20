@@ -52,4 +52,11 @@
     if (tot) {
         tot.setAttribute('aria-current', 'page');
     }
+
+    // Thanh tab chuyển chế độ trong trang (ví dụ /de-tai, /de-tai/cua-toi): chỉ đánh dấu tab khớp đúng đường dẫn.
+    document.querySelectorAll('.tabs a[href]').forEach(function (a) {
+        if (new URL(a.href, location.href).pathname === hienTai) {
+            a.setAttribute('aria-current', 'page');
+        }
+    });
 })();

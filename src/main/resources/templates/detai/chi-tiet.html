@@ -6,66 +6,103 @@
 <body>
 <nav th:replace="~{fragments/dieu-huong :: menu}"></nav>
 <main class="workspace">
-    <h1>Chi tiết đề tài</h1>
+    <p class="link-row">
+        <a th:href="@{/de-tai}">← Đề tài đã công bố</a>
+        <a th:if="${laGiangVien}" th:href="@{/de-tai/cua-toi}">Đề tài của tôi</a>
+        <a th:if="${laCanBoKhoa}" th:href="@{/de-tai/quan-ly}">Quản lý đề tài</a>
+    </p>
+    <header class="page-header">
+        <div>
+            <p class="eyebrow mono" th:text="${deTai.maDeTai}">DT01</p>
+            <h1 th:text="${deTai.tenDeTai}">Tên đề tài</h1>
+            <p><span th:replace="~{fragments/nhan :: badge-trang-thai(${deTai.trangThai})}"></span></p>
+        </div>
+    </header>
     <p class="message success" th:if="${thanhCong}" th:text="${thanhCong}"></p>
     <p class="message error" th:if="${loi}" th:text="${loi}"></p>
 
-    <a th:href="@{/de-tai}">← Đề tài đã công bố</a>
-    <a th:if="${laGiangVien}" th:href="@{/de-tai/cua-toi}"> · Đề tài của tôi</a>
-    <a th:if="${laCanBoKhoa}" th:href="@{/de-tai/quan-ly}"> · Quản lý đề tài</a>
-    <section class="panel">
-        <h2 th:text="${deTai.tenDeTai}"></h2>
-        <dl>
-            <dt>Mã đề tài</dt><dd th:text="${deTai.maDeTai}"></dd>
-            <dt>Đợt / loại</dt><dd th:text="${deTai.tenDot + ' — ' + deTai.loai.nhan}"></dd>
-            <dt>Bộ môn</dt><dd th:text="${deTai.tenBoMon}"></dd>
-            <dt>Người đề xuất</dt><dd th:text="${deTai.nguoiDeXuat}"></dd>
-            <dt>Trạng thái</dt><dd th:text="${deTai.trangThai.nhan}"></dd>
-            <dt>Nội dung</dt><dd class="multiline" th:text="${deTai.noiDung}"></dd>
-            <dt>Yêu cầu</dt><dd class="multiline" th:text="${deTai.yeuCau ?: 'Không có yêu cầu bổ sung'}"></dd>
-            <dt>Sản phẩm dự kiến</dt><dd class="multiline" th:text="${deTai.sanPhamDuKien ?: 'Chưa ghi'}"></dd>
-            <dt>Giảng viên hướng dẫn</dt><dd>
-                <div th:each="g : ${deTai.huongDans}" th:text="${g.maGv + ' — ' + g.hoTen}"></div>
-                <span th:if="${#lists.isEmpty(deTai.huongDans)}">Chưa phân công</span>
-            </dd>
-            <dt th:if="${deTai.nhanXetDuyet != null}">Nhận xét duyệt</dt>
-            <dd class="multiline" th:if="${deTai.nhanXetDuyet != null}" th:text="${deTai.nhanXetDuyet}"></dd>
-        </dl>
-        <a class="button secondary" th:if="${deTai.coTheSua}" th:href="@{/de-tai/{id}/sua(id=${deTai.id})}">Sửa đề tài</a>
-        <form th:if="${deTai.coTheGui}" th:action="@{/de-tai/{id}/gui-duyet(id=${deTai.id})}" method="post">
-            <button class="button" type="submit">Gửi duyệt</button>
-        </form>
-        <form th:if="${deTai.coTheSua and deTai.trangThai.name()=='NHAP'}" th:action="@{/de-tai/{id}/xoa(id=${deTai.id})}" method="post" onsubmit="return confirm('Xóa đề tài nháp?')"><button class="button secondary">Xóa bản nháp</button></form>
-    </section>
-    <th:block th:object="${duyetForm}"><div class="message error" th:if="${#fields.hasAnyErrors()}">
-            <ul><li th:each="e : ${#fields.allErrors()}" th:text="${e}"></li></ul>
-        </div></th:block>
-    <form class="panel" th:if="${deTai.coTheDuyet}" th:action="@{/de-tai/{id}/duyet(id=${deTai.id})}" th:object="${duyetForm}" method="post">
-        <h2>Duyệt đề xuất</h2>
-        <label for="chapThuan">Quyết định</label>
-        <select id="chapThuan" th:field="*{chapThuan}" required><option value="">Chọn</option><option value="true">Chấp thuận</option><option value="false">Từ chối</option></select>
-        <label for="nhanXet">Nhận xét (bắt buộc khi từ chối)</label>
-        <textarea id="nhanXet" th:field="*{nhanXet}" rows="4" maxlength="10000"></textarea>
-        <button class="button" type="submit">Lưu quyết định</button>
-    </form>
-    <th:block th:object="${huongDanForm}"><div class="message error" th:if="${#fields.hasAnyErrors()}">
-            <ul><li th:each="e : ${#fields.allErrors()}" th:text="${e}"></li></ul>
-        </div></th:block>
-    <form class="panel" th:if="${deTai.coThePhanCong}" th:action="@{/de-tai/{id}/huong-dan(id=${deTai.id})}" th:object="${huongDanForm}" method="post">
-        <h2>Phân công GVHD</h2>
-        <p>Chọn 1–2 GV. Người đề xuất không tự động trở thành GVHD. GV đang chấm đề tài này không được chọn.</p>
-        <label class="check" th:each="g : ${cacGiangVien}">
-            <input type="checkbox" th:field="*{giangVienIds}" th:value="${g.id}">
-            <span th:text="${g.maGv + ' — ' + g.hoTen}"></span>
-        </label>
-        <p th:if="${#lists.isEmpty(cacGiangVien)}">Chưa có giảng viên hoạt động để phân công.</p>
-        <button class="button" type="submit">Lưu phân công</button>
-    </form>
-    <form class="panel" th:if="${deTai.coTheCongBo}" th:action="@{/de-tai/{id}/cong-bo(id=${deTai.id})}" method="post">
-        <h2>Công bố đề tài</h2><p>Đề tài cần có đủ 1–2 GVHD hợp lệ trước khi công bố cho sinh viên.</p>
-        <button class="button" type="submit">Công bố</button>
-    </form>
+    <div class="detail-layout">
+        <!-- Cột trái: thông tin đề tài -->
+        <div class="detail-main">
+            <section class="panel">
+                <h2>Thông tin</h2>
+                <dl>
+                    <dt>Mã đề tài</dt><dd class="mono" th:text="${deTai.maDeTai}"></dd>
+                    <dt>Đợt / loại</dt><dd th:text="${deTai.tenDot + ' — ' + deTai.loai.nhan}"></dd>
+                    <dt>Bộ môn</dt><dd th:text="${deTai.tenBoMon}"></dd>
+                    <dt>Người đề xuất</dt><dd th:text="${deTai.nguoiDeXuat}"></dd>
+                    <dt>Trạng thái</dt><dd th:text="${deTai.trangThai.nhan}"></dd>
+                    <dt>Giảng viên hướng dẫn</dt><dd>
+                        <div th:each="g : ${deTai.huongDans}" th:text="${g.maGv + ' — ' + g.hoTen}"></div>
+                        <span class="muted" th:if="${#lists.isEmpty(deTai.huongDans)}">Chưa phân công</span>
+                    </dd>
+                </dl>
+            </section>
+            <section class="panel text-block">
+                <h2>Nội dung</h2>
+                <p class="multiline" th:text="${deTai.noiDung}"></p>
+                <h2>Yêu cầu thực hiện</h2>
+                <p class="multiline" th:text="${deTai.yeuCau ?: 'Không có yêu cầu bổ sung'}"></p>
+                <h2>Sản phẩm dự kiến</h2>
+                <p class="multiline" th:text="${deTai.sanPhamDuKien ?: 'Chưa ghi'}"></p>
+            </section>
+            <section class="message info" th:if="${deTai.nhanXetDuyet != null}">
+                <strong>Nhận xét duyệt</strong>
+                <p class="multiline" th:text="${deTai.nhanXetDuyet}"></p>
+            </section>
+        </div>
 
+        <!-- Cột phải: thao tác, mỗi khối hiện theo cờ quyền backend tính sẵn trong DeTaiDto -->
+        <aside class="detail-side" aria-label="Thao tác">
+            <section class="panel" th:if="${deTai.coTheSua or deTai.coTheGui}">
+                <h2>Đề xuất của tôi</h2>
+                <div class="actions">
+                    <a class="button secondary" th:if="${deTai.coTheSua}" th:href="@{/de-tai/{id}/sua(id=${deTai.id})}">Sửa đề tài</a>
+                    <form th:if="${deTai.coTheGui}" th:action="@{/de-tai/{id}/gui-duyet(id=${deTai.id})}" method="post">
+                        <button class="button" type="submit">Gửi duyệt</button>
+                    </form>
+                    <form th:if="${deTai.coTheSua and deTai.trangThai.name()=='NHAP'}" th:action="@{/de-tai/{id}/xoa(id=${deTai.id})}" method="post" onsubmit="return confirm('Xóa đề tài nháp?')"><button class="button danger">Xóa bản nháp</button></form>
+                </div>
+            </section>
+
+            <th:block th:object="${duyetForm}"><div class="message error" th:if="${#fields.hasAnyErrors()}">
+                    <ul><li th:each="e : ${#fields.allErrors()}" th:text="${e}"></li></ul>
+                </div></th:block>
+            <form class="panel stack" th:if="${deTai.coTheDuyet}" th:action="@{/de-tai/{id}/duyet(id=${deTai.id})}" th:object="${duyetForm}" method="post">
+                <h2>Duyệt đề xuất</h2>
+                <div class="field">
+                    <label for="chapThuan">Quyết định<span class="req">*</span></label>
+                    <select id="chapThuan" th:field="*{chapThuan}" required><option value="">Chọn</option><option value="true">Chấp thuận</option><option value="false">Từ chối</option></select>
+                </div>
+                <div class="field">
+                    <label for="nhanXet">Nhận xét (bắt buộc khi từ chối)</label>
+                    <textarea id="nhanXet" th:field="*{nhanXet}" rows="4" maxlength="10000"></textarea>
+                </div>
+                <button class="button" type="submit">Lưu quyết định</button>
+            </form>
+
+            <th:block th:object="${huongDanForm}"><div class="message error" th:if="${#fields.hasAnyErrors()}">
+                    <ul><li th:each="e : ${#fields.allErrors()}" th:text="${e}"></li></ul>
+                </div></th:block>
+            <form class="panel stack" th:if="${deTai.coThePhanCong}" th:action="@{/de-tai/{id}/huong-dan(id=${deTai.id})}" th:object="${huongDanForm}" method="post">
+                <h2>Phân công GVHD</h2>
+                <p class="field-hint">Chọn 1–2 GV. Người đề xuất không tự động trở thành GVHD. GV đang chấm đề tài này không được chọn.</p>
+                <div class="check-grid">
+                    <label class="check" th:each="g : ${cacGiangVien}">
+                        <input type="checkbox" th:field="*{giangVienIds}" th:value="${g.id}">
+                        <span th:text="${g.maGv + ' — ' + g.hoTen}"></span>
+                    </label>
+                </div>
+                <p class="muted" th:if="${#lists.isEmpty(cacGiangVien)}">Chưa có giảng viên hoạt động để phân công.</p>
+                <button class="button" type="submit">Lưu phân công</button>
+            </form>
+
+            <form class="panel stack" th:if="${deTai.coTheCongBo}" th:action="@{/de-tai/{id}/cong-bo(id=${deTai.id})}" method="post">
+                <h2>Công bố đề tài</h2><p class="field-hint">Đề tài cần có đủ 1–2 GVHD hợp lệ trước khi công bố cho sinh viên.</p>
+                <button class="button" type="submit">Công bố</button>
+            </form>
+        </aside>
+    </div>
 </main>
 </body>
 </html>
