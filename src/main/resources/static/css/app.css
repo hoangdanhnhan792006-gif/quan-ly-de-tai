@@ -1056,11 +1056,16 @@ form.filter-bar {
 }
 
 /* Chi tiết 2 cột: nội dung bên trái, thao tác bên phải */
+/* Mặc định 1 cột; chỉ chia 2 cột khi có cột thao tác (.detail-side), ví dụ nhóm bị khóa thì không có */
 .detail-layout {
     display: grid;
-    grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+    grid-template-columns: minmax(0, 1fr);
     align-items: start;
     gap: var(--space-5);
+}
+
+.detail-layout:has(> .detail-side) {
+    grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
 }
 
 .detail-main,
@@ -1233,7 +1238,8 @@ form.filter-bar {
 /* ---------- 18. Màn hình hẹp ---------- */
 
 @media (max-width: 1100px) {
-    .detail-layout {
+    .detail-layout,
+    .detail-layout:has(> .detail-side) {
         grid-template-columns: minmax(0, 1fr);
     }
 }

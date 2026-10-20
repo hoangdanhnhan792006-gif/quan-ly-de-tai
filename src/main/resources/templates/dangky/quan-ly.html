@@ -1,22 +1,25 @@
 <!doctype html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/layout :: head(~{::title})}">
-    <title>Nhóm và đăng ký · Quản lý đề tài</title>
+    <title>Duyệt đăng ký · Quản lý đề tài</title>
 </head>
 <body><nav th:replace="~{fragments/dieu-huong :: menu}"></nav><main class="workspace">
+<header class="page-header">
+    <div>
+        <h1>Duyệt đăng ký đề tài</h1>
+        <p>Kiểm tra đề tài và danh sách thành viên trước khi chấp thuận. Chấp thuận sẽ khóa thay đổi nhóm và đề tài.</p>
+    </div>
+</header>
 <p class="message success" th:if="${thanhCong}" th:text="${thanhCong}"></p>
 <p class="message error" th:if="${loi}" th:text="${loi}"></p>
-
-<h1>Duyệt đăng ký đề tài</h1>
-<p>Kiểm tra đề tài và danh sách thành viên trước khi chấp thuận. Chấp thuận sẽ khóa thay đổi nhóm và đề tài.</p>
 <div class="table-wrap"><table><thead><tr><th>Nhóm / Đợt</th><th>Đề tài / Thời điểm gửi</th><th>Trạng thái / Lý do</th><th>Xử lý</th></tr></thead><tbody>
 <tr th:each="d : ${danhSach}">
-<td><a th:href="@{/khoa/dang-ky/nhom/{id}(id=${d.nhomId})}" th:text="${d.maNhom}"></a><br><span th:text="${d.tenDot}"></span></td>
-<td><a th:href="@{/de-tai/{id}(id=${d.deTaiId})}" th:text="${d.tenDeTai}"></a><br><span th:text="${#temporals.format(d.dangKyLuc, 'dd/MM/yyyy HH:mm')}"></span></td>
-<td><strong th:text="${d.trangThai.nhan}"></strong><p th:text="${d.lyDo}"></p></td>
+<td><a class="row-title" th:href="@{/khoa/dang-ky/nhom/{id}(id=${d.nhomId})}" th:text="${d.maNhom}"></a><br><span class="muted" th:text="${d.tenDot}"></span></td>
+<td><a th:href="@{/de-tai/{id}(id=${d.deTaiId})}" th:text="${d.tenDeTai}"></a><br><span class="muted nowrap" th:text="${#temporals.format(d.dangKyLuc, 'dd/MM/yyyy HH:mm')}"></span></td>
+<td><span th:replace="~{fragments/nhan :: badge-trang-thai(${d.trangThai})}"></span><p class="muted multiline" th:text="${d.lyDo}"></p></td>
 <td><form th:if="${d.coTheDuyet}" th:action="@{/khoa/dang-ky/{id}/duyet(id=${d.id})}" method="post">
 <input type="hidden" name="deTaiId" th:value="${d.deTaiId}">
 <label th:for="${'lyDo' + d.id}">Lý do (bắt buộc khi từ chối)</label><textarea th:id="${'lyDo' + d.id}" name="lyDo" maxlength="2000"></textarea>
-<button name="chapThuan" value="true">Chấp thuận</button><button class="secondary" name="chapThuan" value="false">Từ chối</button>
-</form></td></tr><tr th:if="${#lists.isEmpty(danhSach)}"><td colspan="4">Chưa có đăng ký.</td></tr></tbody></table></div>
+<div class="actions"><button name="chapThuan" value="true">Chấp thuận</button><button class="button danger" name="chapThuan" value="false">Từ chối</button></div>
+</form></td></tr><tr th:if="${#lists.isEmpty(danhSach)}"><td class="empty" colspan="4">Chưa có đăng ký.</td></tr></tbody></table></div>
 </main></body></html>
