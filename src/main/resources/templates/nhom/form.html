@@ -1,7 +1,8 @@
 <!doctype html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Nhóm và đăng ký · Quản lý đề tài</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<head th:replace="~{fragments/layout :: head(~{::title})}">
+    <title>Nhóm và đăng ký · Quản lý đề tài</title>
+</head>
 <body><nav th:replace="~{fragments/dieu-huong :: menu}"></nav><main class="workspace">
 <p class="message success" th:if="${thanhCong}" th:text="${thanhCong}"></p>
 <p class="message error" th:if="${loi}" th:text="${loi}"></p>

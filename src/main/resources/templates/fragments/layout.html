@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+    <!--
+        Phần <head> dùng chung. Mỗi trang gọi:
+        <head th:replace="~{fragments/layout :: head(~{::title})}"><title>Tên trang</title></head>
+        ~{::title} lấy thẻ <title> của chính trang đó để giữ tiêu đề riêng.
+    -->
+    <head th:fragment="head(title)">
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title th:replace="${title}">Quản lý đề tài</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap">
+        <link rel="stylesheet" th:href="@{/css/app.css}">
+    </head>
+    <body>
+    </body>
+</html>

@@ -1,7 +1,7 @@
 <!doctype html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1"><title>Quản lý đề tài sinh viên</title>
-<link rel="stylesheet" th:href="@{/css/app.css}"></head><body><nav th:replace="~{fragments/dieu-huong :: menu}"></nav>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"><head th:replace="~{fragments/layout :: head(~{::title})}">
+    <title>Quản lý đề tài sinh viên</title>
+</head><body><nav th:replace="~{fragments/dieu-huong :: menu}"></nav>
 <main class="workspace"><p class="message success" th:if="${thanhCong}" th:text="${thanhCong}"></p><p class="message error" th:if="${loi}" th:text="${loi}"></p>
 
 <h1>Hội đồng đánh giá</h1><a class="button" th:href="@{/khoa/hoi-dong/tao}">Tạo hội đồng</a>
