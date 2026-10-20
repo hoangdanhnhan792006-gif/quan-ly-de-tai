@@ -1091,6 +1091,44 @@ form.filter-bar {
     margin-top: var(--space-2);
 }
 
+/* Báo cáo: mỗi phiên bản một panel, mỗi tệp một dòng (nhãn loại, link tải, dung lượng) */
+.version > h3 {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.file-list {
+    display: grid;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.file-list li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-1) var(--space-3);
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    background: var(--color-bg);
+}
+
+.file-list a {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    font-weight: 600;
+}
+
+.file-list .badge {
+    min-width: 96px;
+    text-align: center;
+}
+
 /* Thao tác không hoàn tác (kết thúc/hủy) */
 .danger-zone {
     border-color: var(--color-danger);
