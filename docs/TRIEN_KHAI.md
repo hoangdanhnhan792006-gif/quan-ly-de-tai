@@ -1,80 +1,105 @@
-# Deploy theo hướng dẫn của thầy: GitHub → Render → Aiven
+# Triển khai online — Render, Aiven và tên miền riêng
 
-## Trạng thái hiện tại
+Cập nhật 20/10/2026. Bản online đã chạy, đăng nhập admin và tạo tài khoản/hồ sơ được; FE đã ghép. Render đã hiển thị Verified và Certificate Issued cho tên miền riêng. Đây là hướng dẫn cấu hình và cập nhật bản hiện tại, không yêu cầu tạo lại dịch vụ.
 
-Project dùng Java 21, Spring Boot MVC/Thymeleaf, MySQL và Flyway. Đã có Dockerfile, profile prod và cấu hình qua biến môi trường. Đã tạo Aiven MySQL 8.4 và bổ sung CA công khai vào Docker. Chưa triển khai Render, chưa có URL online và chưa chạy migration trên Aiven. Không coi build JAR thành công là deploy thành công.
+## 1. Thông tin bản triển khai
 
-## 1. Kiểm thử và đóng gói
+| Thành phần | Giá trị |
+|---|---|
+| URL chính | https://nhom4qldt.id.vn |
+| www | https://www.nhom4qldt.id.vn, chuyển về URL chính |
+| URL Render | https://quan-ly-de-tai.onrender.com |
+| Git branch | develop |
+| Runtime | Docker, Java 21, profile prod |
+| Render compute | Free |
+| Root Directory | Trống, Dockerfile và pom.xml ở root repo |
+| Dockerfile Path | ./Dockerfile |
+| Health Check | /login |
+| Cổng bên trong | PORT do Render cấp; log đã ghi nhận 10000 |
+| Database | Aiven MySQL, defaultdb; log đã ghi nhận MySQL 8.4.11 |
 
-Trong thư mục chứa pom.xml, chạy `mvnw.cmd clean verify`. Kiểm thử MySQL chỉ chạy khi cấu hình schema thử riêng theo hướng dẫn backend. File chạy: `target/quan-ly-de-tai-0.0.1-SNAPSHOT.jar`.
+Local và Aiven là hai database riêng. Deploy không tự chuyển tài khoản, điểm, dữ liệu hoặc uploads từ máy cá nhân lên cloud. Đăng nhập online dùng tài khoản trong Aiven.
 
-Dockerfile build bằng Java 21 và chạy Java 21. Render tự build Docker; không bắt buộc cài Docker trên máy. Không cần chạy lại git init hoặc thay remote đã có. Chỉ commit source sau khi rà soát `git status`; không commit target, .mvn-repository, .env, mật khẩu và uploads.
+## 2. Aiven và SSL database
 
-## 2. Aiven MySQL
+```text
+jdbc:mysql://quan-ly-de-tai-hoangdanhnhan792006-b337.g.aivencloud.com:24935/defaultdb?serverTimezone=UTC&sslMode=VERIFY_IDENTITY
+```
 
-- Tạo tài khoản Aiven, chọn MySQL và đúng **Free Plan**. Ảnh trang 6 của Deployment.pdf minh họa gói trial developer-1 có giá sau trial, không chọn theo ảnh đó.
-- Chọn vùng khả dụng trên gói miễn phí, không nâng gói chỉ để chọn vùng.
-- Ghi host, port, database, user, password vào nơi riêng. Không dùng mật khẩu root local trên cloud.
-- Dùng database rỗng cho lần đầu; Flyway chạy V1 rồi V2. Giữ `ddl-auto=validate`, không đổi sang update như ví dụ Todo.
-- Kiểm tra phiên bản MySQL do Aiven cấp trước khi chạy migration; không mặc định giống 8.0.46 local.
-- Connector/J dùng tham số `sslMode` (đúng hoa thường), không sao chép `sslmode=require` trong ví dụ. Ưu tiên VERIFY_IDENTITY và cấu hình chứng chỉ CA/truststore theo hướng dẫn Aiven. REQUIRED yêu cầu mã hóa nhưng không xác minh danh tính máy chủ.
+User cloud hiện dùng avnadmin; mật khẩu nhập trực tiếp trong Render Environment. Không dùng mật khẩu root/doan_dev local.
 
-### Cấu hình Aiven hiện tại
+`deploy/aiven-ca.pem` là CA công khai, được commit. Dockerfile dùng keytool nhập CA vào truststore có sẵn của Java và đưa truststore sang runtime. Không thay bằng PFX của HTTPS local và không bỏ xác minh SSL để chữa lỗi kết nối.
 
-- Host: `quan-ly-de-tai-hoangdanhnhan792006-b337.g.aivencloud.com`
-- Port: `24935`; database: `defaultdb`; user: `avnadmin`.
-- Chứng chỉ công khai: `deploy/aiven-ca.pem`. Được phép đưa file này lên Git; tuyệt đối không đưa mật khẩu hoặc khóa riêng lên Git.
-- Dockerfile bổ sung CA Aiven vào bản sao truststore mặc định của Java, giữ các CA có sẵn để kết nối HTTPS khác vẫn hoạt động. Không cần sửa Java trên máy thành viên.
-- Đã kiểm tra TLS và tên máy chủ bằng MySQL client. Chưa xác thực bằng tài khoản Aiven thật; lần deploy đầu phải kiểm tra Flyway và quyền tạo bảng/constraint trên MySQL 8.4.
+Flyway đã xác nhận V1/V2 và schema up to date trên Aiven. Log có cảnh báo phiên bản MySQL 8.4 mới hơn mức được Flyway đang dùng kiểm thử chính thức; cảnh báo này không làm lần deploy hiện tại thất bại. Khi nâng dependency phải kiểm tra migration, không sửa checksum V1/V2 cũ hoặc bật ddl-auto=update.
 
-## 3. Render Web Service
+## 3. Biến môi trường Render
 
-Tạo tài khoản bằng GitHub → New Web Service → chọn repository quan-ly-de-tai → chọn nhánh **develop** → Docker → Free. Nếu repo chứa trực tiếp pom.xml và Dockerfile thì để Root Directory trống; nếu repo có thư mục bao ngoài thì chọn đúng thư mục chứa hai file đó.
-
-Đặt tên dịch vụ `quan-ly-de-tai`. Dockerfile Path: `./Dockerfile`; Health Check Path: `/login`. Với Docker không cần tự điền lệnh Maven build hoặc Java start. Chọn đúng gói Free trước khi tạo dịch vụ.
-
-Các biến môi trường:
-
-| Biến | Giá trị |
+| Key | Giá trị/cách đặt |
 |---|---|
 | SPRING_PROFILES_ACTIVE | prod |
-| DB_URL | `jdbc:mysql://quan-ly-de-tai-hoangdanhnhan792006-b337.g.aivencloud.com:24935/defaultdb?serverTimezone=UTC&sslMode=VERIFY_IDENTITY` |
+| DB_URL | JDBC URL ở mục 2 |
 | DB_USERNAME | avnadmin |
-| DB_PASSWORD | Mật khẩu Aiven, nhập ở Render, không ghi Git |
-| APP_PUBLIC_URL | Có thể bỏ qua trên Render: ứng dụng tự lấy RENDER_EXTERNAL_URL. Chỉ đặt khi dùng URL công khai khác |
-| UPLOAD_DIR | /app/uploads cho bản thử; đây là ổ tạm trên Render Free |
-| MAIL_ENABLED | false trong lần deploy đầu chưa có SMTP truy cập được |
-| APP_BOOTSTRAP_ADMIN_ENABLED | true chỉ trong lần tạo quản trị đầu tiên, sau đó false |
-| APP_BOOTSTRAP_ADMIN_USERNAME | admin |
-| APP_BOOTSTRAP_ADMIN_PASSWORD | Mật khẩu đăng nhập web do nhóm tự đặt, ít nhất 8 ký tự, không dùng mật khẩu mẫu |
-| APP_BOOTSTRAP_ADMIN_FULL_NAME | Quan tri vien |
-| APP_BOOTSTRAP_ADMIN_EMAIL | Email thật của người quản trị |
+| DB_PASSWORD | Mật khẩu Aiven, chỉ lưu trong Environment |
+| APP_PUBLIC_URL | https://nhom4qldt.id.vn — nên đặt khi dùng tên miền riêng |
+| UPLOAD_DIR | /app/uploads, ổ tạm |
+| MAIL_ENABLED | false ở bản online hiện tại |
+| APP_BOOTSTRAP_ADMIN_ENABLED | false sau khi đã tạo admin đầu tiên |
+| JAVA_TOOL_OPTIONS | -XX:TieredStopAtLevel=1 |
 
-PORT nhận từ Render, mặc định 8080. Tài khoản ví dụ của bài Todo không phải tài khoản project này. Không bật bootstrap với mật khẩu mẫu đã công khai.
+Nếu APP_PUBLIC_URL chưa đặt, profile prod lấy RENDER_EXTERNAL_URL; web vẫn có thể truy cập nhưng link trong email có thể dùng địa chỉ onrender.com. Cần tự kiểm tra Environment trên dashboard, không coi hướng dẫn là bằng chứng biến đã được lưu.
 
-Lấy DB_PASSWORD bằng nút sao chép trong Aiven và dán trực tiếp vào Environment của Render. Mật khẩu database và mật khẩu quản trị web là hai giá trị khác nhau. Tài khoản/dữ liệu local không tự xuất hiện trên Aiven; Flyway tạo cấu trúc, còn bootstrap chỉ tạo tài khoản admin đầu tiên.
+Chỉ lần đầu trên schema rỗng mới cần bật bootstrap và đặt APP_BOOTSTRAP_ADMIN_USERNAME/PASSWORD/FULL_NAME/EMAIL. Sau khi đăng nhập được, tắt bootstrap; có thể xóa bốn biến thông tin bootstrap. Không bật lại để đổi mật khẩu một tài khoản đã tồn tại; dùng chức năng tài khoản trên web.
 
-Sau khi deploy thành công và đăng nhập admin được, đặt APP_BOOTSTRAP_ADMIN_ENABLED=false rồi redeploy. Có thể xóa các biến APP_BOOTSTRAP_ADMIN_USERNAME/PASSWORD/FULL_NAME/EMAIL khi đã tắt bootstrap. Các lần khởi động sau không tạo lại hay đặt lại mật khẩu admin.
+Không thêm LOCAL_SSL_PASSWORD hoặc LOCAL_SSL_KEY_STORE lên Render. Không bật local-domain/local-https trên cloud. Render cấp HTTPS ngoài ứng dụng; Java bên trong vẫn nhận HTTP qua PORT, secure cookie và forward headers đã cấu hình.
 
-Prod bật cookie secure; truy cập HTTPS. Không tắt secure để chữa lỗi đăng nhập. Database cũ phải sao lưu và kiểm tra lịch sử Flyway trước, không bật baseline tùy tiện.
+## 4. Tên miền riêng và HTTPS
 
-## 4. Kiểm thử URL online
+Tên miền đăng ký tại Tenten: nhom4qldt.id.vn; ảnh quản lý ghi hạn 20/10/2028. Theo dõi phí/điều kiện gia hạn khi hết ưu đãi, không coi miễn phí vĩnh viễn.
 
-- Log báo ứng dụng khởi động và Flyway chạy thành công.
-- Mở /login; đăng nhập từng vai trò; kiểm tra menu và thao tác trái quyền.
-- Tạo dữ liệu demo và chạy quy trình đăng ký → báo cáo → chấm → công bố → xem điểm theo đợt.
-- Thử trên thiết bị khác; không đưa dữ liệu thật của SV lên bản thử.
+DNS online đang cấu hình theo hướng dẫn Render:
 
-## 5. Hai giới hạn chưa được bài Todo mẫu giải quyết
+| Loại | Host | Giá trị |
+|---|---|---|
+| A | @ | 216.24.57.1 |
+| CNAME | www | quan-ly-de-tai.onrender.com |
 
-Theo [Render Free](https://render.com/docs/free), file upload mất khi restart/redeploy/spin-down, và SMTP 25/465/587 bị chặn. Vì thế:
+Render Settings → Custom Domains có nhom4qldt.id.vn và www.nhom4qldt.id.vn. Cả hai đã Verified/Certificate Issued, www chuyển về root. Render tự cấp/gia hạn TLS của phần online; không cần tải chứng chỉ win-acme lên.
 
-- Bản thử Render hiện chưa đáp ứng lưu báo cáo bền vững. Trước nghiệm thu toàn bộ online phải chọn nơi lưu tệp ngoài hoặc môi trường có lưu trữ bền vững. Không quảng cáo rằng dữ liệu MySQL giữ được đồng nghĩa file báo cáo cũng giữ được.
-- Mailpit trên máy cá nhân không được Render truy cập bằng localhost. Email local kiểm chứng theo Lab 6; email thật từ cloud cần SMTP/đường gửi được hỗ trợ và cấu hình riêng. Không triển khai Mailpit công khai không có bảo vệ.
-- Chưa giải quyết hai mục này thì chỉ coi là deploy thử web/database, chưa phải nghiệm thu đầy đủ.
+`qldt.nhom4qldt.id.vn:8443` là bản local riêng, ánh xạ hosts trên máy người phát triển. Không thêm @ hoặc www vào hosts về 127.0.0.1, nếu không chính máy đó có thể không vào bản Render như mong muốn. Không xóa bản ghi mail hoặc DNS khác chỉ để gắn web.
 
-## 6. Sau khi thầy chấm xong
+Nếu đổi dịch vụ hoặc tên miền, lấy lại hướng dẫn DNS trên dashboard trước khi sửa; giá trị trong tài liệu là cấu hình tại ngày cập nhật.
 
-Sao lưu dữ liệu/tệp cần giữ, rồi chủ tài khoản tự dọn các dịch vụ không còn dùng. Không xóa trước buổi chấm vì thầy có thể cần truy cập link. Chỉ dùng gói miễn phí, không tự nâng gói trả phí.
+## 5. Cập nhật code lên online
 
-Nguồn: Deployment.pdf của thầy; [Aiven Free MySQL](https://aiven.io/docs/products/mysql/concepts/mysql-free-tier); [Connector/J TLS](https://dev.mysql.com/doc/connector-j/en/connector-j-reference-using-ssl.html). Kiểm tra lại gói dịch vụ khi tạo tài khoản.
+1. Chạy/test bản local đã ghép; rà git status và diff, tránh đưa bí mật vào commit.
+2. Commit đúng file, tích hợp develop sau review. Nếu đang trên nhánh tích hợp được nhóm thống nhất và dùng quy trình hiện tại, push HEAD:develop; không dùng lệnh này từ nhánh tính năng chưa review.
+3. Render → Manual Deploy → Deploy latest commit. Không tạo service/database mới cho mỗi lần cập nhật.
+4. Theo dõi build, log Spring Boot, Flyway và dòng Started; chờ Status Live.
+5. Mở URL chính, Ctrl+F5, đăng nhập và thử luồng chịu ảnh hưởng. Chỉ Live không chứng minh mọi nghiệp vụ đã được kiểm thử.
+
+Auto-Deploy nên để Off khi nhóm còn ghép code; kiểm tra dashboard để biết trạng thái thực tế. Không cần bật lại chỉ vì thêm tên miền.
+
+## 6. Khi deploy chậm hoặc lỗi
+
+| Hiện tượng | Cách xử lý |
+|---|---|
+| Building đang tải Maven | Theo dõi dòng log mới; không bấm deploy nhiều lần |
+| Port scan timeout | Xem Java có dòng Started chưa; cấu hình hiện đã đọc PORT đúng. Kiểm tra JAVA_TOOL_OPTIONS, giới hạn tài nguyên, log mới trước khi đổi cổng |
+| Access denied 1045 | Kiểm tra đúng user/mật khẩu cloud trong Environment, không dùng root/doan_dev local |
+| Lỗi chứng chỉ Aiven | Kiểm tra CA công khai, hostname, sslMode và truststore; không bỏ xác minh |
+| Flyway checksum/migration lỗi | Dừng sửa thủ công; đối chiếu source và history, sao lưu trước xử lý |
+| Domain Verified nhưng Certificate Pending | Giữ DNS, chờ và tải lại; không cần deploy lại chỉ để xin HTTPS |
+| Live nhưng giao diện cũ | Kiểm tra commit deploy/branch, rồi Ctrl+F5 |
+| Lần mở đầu chậm | Render Free có thể ngủ khi không dùng; mở trước buổi demo |
+
+Từng có lượt startup timeout; thêm TieredStopAtLevel=1 rồi log ghi Started sau khoảng 83 giây. Đây là kết quả đã quan sát, không phải cam kết mọi lần khởi động cùng thời gian.
+
+## 7. Giới hạn bản demo và sao lưu
+
+- Render Free không có persistent disk; upload có thể mất khi restart/redeploy/spin-down. File metadata còn trong MySQL không có nghĩa file vẫn tải được.
+- MAIL_ENABLED đang tắt. Mailpit ở localhost của máy cá nhân không phải SMTP mà Render có thể truy cập. Cổng SMTP 25/465/587 bị chặn trên Free; chưa cấu hình email Internet cho bản online.
+- Nhóm chọn demo đầy đủ báo cáo/email bằng local, online minh chứng deploy theo phạm vi đồ án. Chưa làm object storage, email HTTP API hoặc tunnel; không cần tự thêm chỉ để đổi tên miền.
+- Sao lưu dữ liệu/tệp quan trọng trước dọn demo. Không xóa Aiven/Render/tên miền trước buổi chấm.
+- Chỉ dùng gói miễn phí, không tự nâng gói hoặc bật dịch vụ trả phí. Theo dõi quota và thông báo của nhà cung cấp.
+
+Nguồn: Deployment.pdf của thầy; [Render Custom Domains](https://render.com/docs/custom-domains), [Render DNS](https://render.com/docs/configure-other-dns), [Render Free](https://render.com/docs/free), [Connector/J SSL](https://dev.mysql.com/doc/connector-j/en/connector-j-server-authentication.html).

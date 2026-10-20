@@ -1,0 +1,22 @@
+# Chỉ dùng trên máy phát triển. Render tiếp tục dùng profile prod.
+spring:
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/quan_ly_de_tai?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+server:
+  address: 127.0.0.1
+  port: 8443
+  ssl:
+    enabled: true
+    key-store: ${LOCAL_SSL_KEY_STORE:file:./.local-https/localhost.p12}
+    key-store-type: PKCS12
+    key-store-password: ${LOCAL_SSL_PASSWORD}
+    key-alias: local-https
+  servlet:
+    session:
+      cookie:
+        name: QLDT_LOCAL_HTTPS_SESSION
+        secure: true
+        http-only: true
+        same-site: lax
+app:
+  public-url: https://localhost:8443

@@ -1,4 +1,6 @@
-# Hướng dẫn làm frontend và ghép với backend
+# Hướng dẫn bảo trì frontend và ghép với backend
+
+Cập nhật 20/10/2026. FE đã được ghép vào ứng dụng MVC; tài liệu dùng khi chỉnh tiếp, không yêu cầu dựng lại giao diện hay project FE riêng.
 
 ## 1. Nhận code và đọc tài liệu nào?
 
@@ -18,11 +20,19 @@ Project dùng **Spring Boot + Spring MVC + Thymeleaf**, xác thực bằng sessi
 
 Luồng dữ liệu: `Trình duyệt → Controller → Service → Database → DTO/Model → Thymeleaf → trình duyệt`.
 
-- Chạy Spring Boot và xem bằng `http://localhost:8080`. Mở HTML trực tiếp hoặc bằng Live Server chỉ xem phần tĩnh, không kiểm tra được dữ liệu, session và quyền.
+- Chạy Spring Boot và xem bằng `http://localhost:8080`, hoặc tên miền local HTTPS khi máy đã cấu hình theo HTTPS_LOCAL.md. Mở HTML trực tiếp hoặc bằng Live Server chỉ xem phần tĩnh, không kiểm tra được dữ liệu, session và quyền.
 - Giữ kiến trúc MVC hiện có. Chưa cần React/Vue, JWT, REST API hoặc project frontend chạy riêng. Nếu muốn đổi kiến trúc, phải thống nhất lại API và xác thực trước khi code.
 - Backend quyết định quyền, trạng thái, thời hạn, giữ chỗ, tính điểm và công bố. JavaScript chỉ hỗ trợ trải nghiệm và kiểm tra nhập liệu sớm.
 
-## 3. Thư mục cần sử dụng
+## 3. Thành phần dùng chung đang có
+
+- `templates/fragments/layout.html`: head, font/CSS và favicon. `dieu-huong.html`: sidebar theo quyền + mobile; `nhan.html`: nhãn vai trò/trạng thái.
+- `static/css/app.css`: màu, font, form, bảng/nút; giữ management-table, table-actions, account-table để nút link/form cùng chiều cao và cột Khóa/Mở khóa không làm lệch Xóa.
+- `static/js/form.js`: con mắt, đối chiếu mật khẩu và chặn required chỉ dấu cách, kể cả input không khai báo type.
+- `static/js/menu.js`: menu mobile, Esc và đánh dấu trang đang mở. `chong-gui-lai.js`: khóa nút trong lúc nộp tệp, mở lại khi quay về từ bfcache.
+- `static/images/logo.png`: logo người dùng cung cấp, dùng ở trang chủ/login/menu/favicon. Không tạo ảnh giả hoặc link ổ đĩa cá nhân.
+
+### Thư mục cần sử dụng
 
 | Đường dẫn trong project | Công dụng |
 |---|---|
@@ -37,7 +47,7 @@ Luồng dữ liệu: `Trình duyệt → Controller → Service → Database →
 
 Tệp báo cáo/thông báo được tải qua Controller có kiểm tra quyền. Không chuyển tệp upload sang `static`, không dùng đường dẫn ổ đĩa làm link tải.
 
-## 4. Danh sách màn hình cần làm
+## 4. Bản đồ màn hình đã có
 
 Tên file tính từ `src/main/resources/templates/`. Trong mỗi hàng, các file sau dấu phẩy vẫn thuộc thư mục ghi ở đầu. Nhiều URL dùng chung template; giữ các điều kiện phân biệt chế độ hiện có.
 
@@ -62,7 +72,7 @@ Tên file tính từ `src/main/resources/templates/`. Trong mỗi hàng, các fi
 | Đánh giá — GV/khoa | `danhgia/danh-sach.html`, `chi-tiet.html` | `/danh-gia`, `/danh-gia/{id}` | Chốt báo cáo, mở chấm, điểm, sửa điểm, tổng hợp, xác nhận/công bố, lịch sử |
 | Kết quả — SV | `danhgia/ket-qua-sinh-vien.html` | `/sinh-vien/ket-qua` | Lọc theo đợt, điểm/nhận xét, đạt, phiên bản, Đang điều chỉnh |
 | Thông báo | `thongbao/danh-sach.html`, `form.html`, `chi-tiet.html` | `/thong-bao`, `/thong-bao/quan-ly` | Danh sách/chi tiết, soạn/sửa, tệp, công bố/thu hồi/xóa đúng quyền |
-| Lỗi | `error/403.html`, `404.html`, `business.html` | Backend hiển thị theo tình huống | Thông báo rõ, nút quay lại; không hiện stack trace |
+| Lỗi | `error/403.html`, `404.html`, `500.html`, `business.html` | Backend hiển thị theo tình huống | Thông báo rõ, nút quay lại; không hiện stack trace |
 | Email, nếu sửa | `mail/ket-qua-de-tai.html` | Xem trong Mailpit | HTML email, CSS inline; giữ dữ liệu động và link kết quả |
 
 `{id}` là ID thật. **ID nhóm, đăng ký, đề tài, đánh giá và kết quả khác nhau**; không thay thế cho nhau dù giá trị tình cờ giống nhau. Dùng link/action sẵn có để giữ đúng loại ID.

@@ -4,36 +4,23 @@ Làm theo thứ tự: **chuẩn bị → quản trị → luồng Môn học →
 
 ## 1. Chuẩn bị trước khi bắt đầu
 
-### 1.1. Chạy website
+### 1.1. Chạy website và chọn môi trường
 
-Mỗi thành viên dùng MySQL và mật khẩu trên máy mình. Máy mới cần tạo database rỗng `quan_ly_de_tai` và tài khoản có quyền trên database đó theo [README](../README.md) và [hướng dẫn backend](HUONG_DAN_LAM_BACKEND_NHOM.md). Flyway tạo cấu trúc khi khởi động; không import lại SQL vào database đang có dữ liệu.
+Mỗi máy dùng MySQL và mật khẩu của mình. Máy mới: làm [README](../README.md) và [hướng dẫn backend](HUONG_DAN_LAM_BACKEND_NHOM.md), để Flyway tạo bảng rồi khởi tạo admin. Git không có dữ liệu/tài khoản web của máy người khác; không import lại SQL vào schema đã chạy Flyway.
 
-Mở terminal tại thư mục project có `pom.xml` và `mvnw.cmd`, kiểm tra `./mvnw.cmd -v`: Java phải là **21**. Chọn đúng cú pháp terminal bên dưới.
+Chọn một cách chạy, không mở hai tiến trình trên cùng cổng:
 
-**PowerShell:**
+| Môi trường | Cách mở | Phù hợp kiểm thử |
+|---|---|---|
+| Local HTTP | Chạy theo README, http://localhost:8080/login | Toàn bộ luồng; cấu hình Mailpit để xem email |
+| Local HTTPS tên miền | [HTTPS local](HTTPS_LOCAL.md), chạy script -TenMien; https://qldt.nhom4qldt.id.vn:8443/login | Toàn bộ luồng trên máy đã có hosts/PFX |
+| Online | https://nhom4qldt.id.vn/login | Bản demo Aiven; mail đang tắt, upload không bền vững |
 
-```powershell
-$env:DB_USERNAME = "doan_dev"
-$env:DB_PASSWORD = "<mat_khau_mysql_tren_may_ban>"
-$env:MAIL_ENABLED = "true"
-.\mvnw.cmd --settings .mvn\settings.xml spring-boot:run
-```
+Kiểm tra `./mvnw.cmd -v` dùng Java 21 trước khi chạy local. PowerShell dùng `$env:...`, CMD dùng `set`; không trộn hai cú pháp. Khi code/config đổi: Ctrl+C → chạy lại → Ctrl+F5 trên trình duyệt. Với script HTTPS, chạy trong cùng PowerShell để giữ mật khẩu trong phiên; xem hướng dẫn HTTPS khi nhập sai/đổi mật khẩu.
 
-**CMD:**
+Tài khoản web khác tài khoản MySQL root/doan_dev và mật khẩu PFX. Người test dùng tài khoản do admin tạo trong đúng môi trường. Không có tài khoản demo/mật khẩu mặc định đi kèm repo.
 
-```cmd
-set "DB_USERNAME=doan_dev"
-set "DB_PASSWORD=mat_khau_mysql_tren_may_ban"
-set "MAIL_ENABLED=true"
-mvnw.cmd --settings .mvn\settings.xml spring-boot:run
-```
-
-Thay các giá trị mẫu trước khi chạy. Nếu mật khẩu chứa ký tự đặc biệt của CMD, nên dùng PowerShell và đặt mật khẩu trong dấu nháy đơn. Không gửi mật khẩu lên Git. File `.env` không tự được đọc khi chạy Maven.
-
-- Chờ ứng dụng khởi động xong rồi mở http://localhost:8080/login.
-- Tài khoản web khác tài khoản MySQL `root`/`doan_dev`. Chưa có admin thì làm mục **Tạo quản trị viên đầu tiên** trong README; tạo xong phải tắt `APP_BOOTSTRAP_ADMIN_ENABLED` và chạy lại.
-- Khi đổi code hoặc biến môi trường: **Ctrl+C → chạy lại trong cùng terminal** để giữ cấu hình database. Chỉ chạy một ứng dụng trên cổng 8080.
-- Hai tab cùng profile trình duyệt dùng chung đăng nhập. Để thử nhiều vai trò đồng thời, dùng profile riêng hoặc trình duyệt khác nhau; nếu không, đăng xuất rồi đăng nhập lần lượt.
+Hai tab cùng profile trình duyệt dùng chung phiên đăng nhập. Thử nhiều vai trò đồng thời bằng profile trình duyệt khác nhau hoặc đăng xuất/đăng nhập lần lượt. Không coi mở thêm tab là đã có phiên độc lập.
 
 ### 1.2. Chuẩn bị Mailpit để xem thư khi công bố
 
@@ -73,6 +60,14 @@ Cấu hình local mặc định: SMTP `localhost:1025`, không cần tài khoả
 - ADMIN không tự có quyền khoa/GV/SV. Dùng các tài khoản riêng ở bảng để tránh nhầm quyền.
 - Chuẩn bị báo cáo PDF V1 và V2 có nội dung khác nhau, slide PDF/PPTX, mã nguồn ZIP có tệp bên trong và một PDF thông báo. Mỗi tệp tối đa **50 MiB**; không dùng tệp chỉ đổi đuôi để làm tài liệu hợp lệ.
 - Dùng tiền tố `THU_` cho dữ liệu thử. Việc test trên web sẽ lưu dữ liệu vào database ứng dụng đang kết nối.
+
+### 1.4. Kiểm tra giao diện sau khi ghép
+
+- Logo hiển thị ở trang chủ/login/menu, font và các nút đọc rõ; con mắt không gửi form.
+- Trang tài khoản: Sửa/Khóa/Mở khóa/Xóa thẳng hàng, nút không xê dịch khi đổi trạng thái. Các bảng SV/GV/bộ môn có cùng kiểu căn hàng.
+- Thu nhỏ màn hình: menu mở/đóng và Esc hoạt động, bảng cuộn ngang trong khung thay vì làm tràn cả trang, form/label không che nhau.
+- Trang rỗng có hướng dẫn rõ; không yêu cầu mọi danh sách phải có dữ liệu ngay sau clone.
+- Thử Ctrl+F5 sau deploy để tránh CSS cũ. Không đổi tên enum hoặc action form để làm nhãn đẹp hơn.
 
 ## 2. Test quản trị và đăng nhập
 
@@ -250,7 +245,7 @@ Với TLCN, chạy như mục 3 và bảo đảm GVPB nộp trước hạn đi�
 3. Chờ tới giờ hội đồng; sau khi PB hoàn tất, khoa mở chi tiết đánh giá → **Mở chấm hội đồng**.
 4. GV3 nộp **7.0**, GV4 nộp **9.0** và nhận xét. GV2 đã có điểm PB, không cần phiếu thứ hai vì kiêm ủy viên.
 5. **GV3/chủ tịch** mở chi tiết → nhập nhận xét tổng hợp → **Tạo phiên bản kết quả**.
-6. **Khoa** xác nhận và công bố. SV xem kết quả, Mailpit nhận thư.
+6. **Khoa** xác nhận và công bố. SV xem kết quả, Mailpit nhận thư. Bản hiện tại cho phép tổng hợp/công bố khi đã hoàn tất đủ phiếu, không bắt đợi giờ kết thúc hội đồng riêng; nếu muốn đổi quy tắc này phải thống nhất trước khi sửa.
 7. Kiểm tra điểm cuối **(8 + 7 + 9) / 3 = 8.0**; mỗi GV chỉ tính một điểm, GVHD không có điểm chấm.
 8. Khoa thử hoàn thành hội đồng khi mọi đề tài được giao đã chấm xong. Nếu còn đề tài chưa xong phải bị chặn.
 
@@ -314,4 +309,4 @@ Làm trên nhóm/đợt phụ. Một thao tác bị từ chối đúng quy tắc
 
 Bấm tay chỉ kiểm tra sơ bộ. Nếu cần kiểm thử transaction tự động, xem hướng dẫn backend; không chạy script test vào database chính.
 
-Khi gặp vấn đề, kiểm tra đúng vai trò/hồ sơ, đúng hạn và đúng trạng thái trước. Nếu vẫn lỗi, gửi người phụ trách **vai trò đang dùng, mã đợt/nhóm/đề tài, các bước thao tác, thời gian, ảnh lỗi và phần đầu log có ERROR/Caused by**; không gửi mật khẩu. Sau khi deploy, chạy lại luồng chính bằng URL online.
+Khi gặp vấn đề, kiểm tra đúng vai trò/hồ sơ, đúng hạn và đúng trạng thái trước. Nếu vẫn lỗi, gửi người phụ trách **vai trò đang dùng, mã đợt/nhóm/đề tài, các bước thao tác, thời gian, ảnh lỗi và phần đầu log có ERROR/Caused by**; không gửi mật khẩu. Sau khi deploy, thử lại đăng nhập và các thao tác chịu ảnh hưởng trên URL online; email/báo cáo đầy đủ nên demo local theo giới hạn đã ghi. Hướng dẫn này chỉ nêu cách test, không ghi kết quả đã chạy.

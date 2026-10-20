@@ -21,3 +21,10 @@ logs/
 # Hệ điều hành
 .DS_Store
 Thumbs.db
+
+# Chứng chỉ và khóa riêng chỉ dành cho HTTPS local
+.local-https/
+*.p12
+*.pfx
+*.jks
+*.key

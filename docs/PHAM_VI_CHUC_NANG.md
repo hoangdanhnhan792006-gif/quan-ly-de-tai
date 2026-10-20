@@ -1,4 +1,6 @@
-# Hệ thống Quản lý Đề tài Sinh viên — Phạm vi chức năng
+# Hệ thống Quản lý Đề tài Sinh viên — Chức năng và nghiệp vụ
+
+Bản hiện hành ngày 20/10/2026, dùng để đọc hiểu và bảo trì các chức năng đã triển khai. Phần quy tắc này ưu tiên rubric mới nhất: nhóm 3–5, hai giai đoạn không chồng nhau, không có điểm GVHD.
 
 ## 1. Mục tiêu project
 
@@ -119,7 +121,7 @@ Project không phải hệ thống đăng ký tín chỉ. Không có môn tiên 
 - Điểm cuối là trung bình cộng điểm của các giảng viên hợp lệ.
 - Làm tròn đến một chữ số thập phân.
 - Kết quả đạt khi điểm cuối từ 4,0 trở lên.
-- Chỉ tổng hợp khi đã có đủ phiếu chấm bắt buộc.
+- Chỉ tổng hợp khi đã có đủ phiếu chấm bắt buộc và đánh giá hoàn tất. Bản hiện tại không bắt đợi giờ kết thúc hội đồng nếu đã hoàn tất đủ phiếu; đây là hành vi đã đối chiếu code, không tự thêm điều kiện thời gian mới.
 - Khoa xác nhận và công bố kết quả.
 - Sinh viên tra cứu theo đợt và chỉ xem kết quả của đề tài mình tham gia.
 - Sau khi công bố được commit, gửi email HTML nền cho từng SV; demo bằng Mailpit theo Lab 6.
@@ -160,7 +162,7 @@ Hệ thống sử dụng 24 bảng nghiệp vụ, chia theo các nhóm:
 - Điểm và kết quả: `phieu_cham`, `yeu_cau_sua_diem`, `ket_qua`, `chi_tiet_ket_qua`.
 - Thông báo: `thong_bao`, `thong_bao_tep`.
 
-File cấu trúc chuẩn là `src/main/resources/db/migration/V1__khoi_tao_24_bang.sql`. Không sửa trực tiếp V1 sau khi đã chia sẻ project. Mọi thay đổi schema phải tạo migration Flyway mới. V2 bổ sung TRUONG_BO_MON; không có bảng email, vẫn 24 bảng nghiệp vụ.
+Đặc tả từng bảng/cột/PK/FK ở [Cơ sở dữ liệu](CO_SO_DU_LIEU.md). File cấu trúc chuẩn là `src/main/resources/db/migration/V1__khoi_tao_24_bang.sql`. Không sửa trực tiếp V1 sau khi đã chia sẻ project. Mọi thay đổi schema phải tạo migration Flyway mới. V2 bổ sung TRUONG_BO_MON; không có bảng email, vẫn 24 bảng nghiệp vụ.
 
 ## 6. Phạm vi không thực hiện
 
@@ -189,3 +191,40 @@ Một chức năng được xem là hoàn thành khi:
 - Chạy `./mvnw clean test` thành công trước khi mở Pull Request.
 
 Quy tắc phân công module, Git, database local và cách mở Pull Request nằm trong `docs/HUONG_DAN_LAM_BACKEND_NHOM.md` của repository.
+
+## 8. Yêu cầu chức năng (FR) để đưa báo cáo
+
+| Mã | Yêu cầu | Phân hệ/kiểm chứng |
+|---|---|---|
+| FR01 | Đăng nhập, đăng xuất, đổi mật khẩu; admin tạo/sửa/khóa/xóa có điều kiện và cấp vai trò | account, hướng dẫn test mục 2 |
+| FR02 | Quản lý bộ môn và hồ sơ SV/GV, ràng buộc tài khoản/vai trò/mã | hoso |
+| FR03 | Tạo/quản lý đợt theo bốn loại, hai giai đoạn và các hạn áp dụng | dotdangky |
+| FR04 | GV đề xuất, bộ môn duyệt/phân công 1–2 GVHD, khoa công bố | detai |
+| FR05 | SV tạo nhóm, mời/đồng ý/từ chối, chuyển trưởng/rời/giải thể đúng điều kiện | nhom |
+| FR06 | Trưởng đăng ký/đổi/hủy, giữ chỗ và khoa chấp thuận/từ chối | dangky |
+| FR07 | Trưởng nộp đủ ba tệp theo phiên bản; người được phép xem/tải | baocao |
+| FR08 | Khoa tổ chức phản biện/hội đồng, phân công và mở chấm đúng lịch | danhgia |
+| FR09 | GV lưu nháp/nộp phiếu; cấm GVHD chấm; khử trùng điểm kiêm nhiệm | danhgia |
+| FR10 | Tổng hợp, xác nhận, công bố snapshot và SV tra cứu đúng nhóm/đợt | danhgia |
+| FR11 | Xin sửa, duyệt, nộp điểm mới và công bố lại, giữ lịch sử | danhgia |
+| FR12 | Sau công bố gửi email HTML riêng cho từng SV | email, demo Mailpit |
+| FR13 | Soạn thông báo, đính kèm, công bố/thu hồi/xóa đúng quyền | thongbao |
+
+FR là yêu cầu hành vi, không phải mỗi FR tương ứng một bảng hoặc một trang. Các điều kiện chi tiết ở mục 4 là tiêu chí chấp nhận; không chỉ kiểm tra có nút bấm.
+
+## 9. Yêu cầu phi chức năng (NFR)
+
+| Mã | Yêu cầu hiện hành | Cách kiểm tra/giới hạn |
+|---|---|---|
+| NFR01 | Mật khẩu băm BCrypt, có phân quyền URL + method/bản ghi và CSRF | Thử trái quyền/thiếu CSRF; không lưu mật khẩu dạng rõ trong DB/Git |
+| NFR02 | Transaction và ràng buộc chống đăng ký/thành viên trùng khi đồng thời | Test MySQL trên schema riêng, không dùng kiểm tra exists đơn thuần |
+| NFR03 | Không ghi đè điểm/kết quả đã công bố; FK giữ lịch sử | Quy trình sửa phiên bản, xóa có điều kiện |
+| NFR04 | Giao diện dễ thao tác, hỗ trợ desktop/mobile, lỗi nhập liệu rõ | Menu mobile, bảng cuộn, nút/label, password toggle và thông báo nghiệp vụ |
+| NFR05 | Controller mỏng, Service nghiệp vụ, Repository truy cập DB, Form/DTO riêng | Review package/code; không lẫn Java nghiệp vụ trong HTML |
+| NFR06 | Cấu trúc DB tái tạo được bằng migration; cấu hình qua env/profile | Clone máy mới, Flyway V1/V2, không phát mật khẩu chung |
+| NFR07 | Tệp có kiểm tra nội dung/dung lượng và tải qua quyền truy cập | Tệp giả/quá dung lượng, nhóm/GV ngoài phân công không tải được |
+| NFR08 | HTTPS cho local khi chọn profile và cho bản online | Đúng hostname/chain, secure cookie; local HTTP vẫn là lựa chọn phát triển |
+| NFR09 | Email nền chỉ sau commit, lỗi SMTP không mất kết quả | Mailpit/transaction test; chưa có queue/retry bền vững |
+| NFR10 | Thử nghiệm có môi trường riêng, thông báo rõ dữ liệu trống | Ba bộ MySQL riêng, SMTP optional; không có cam kết tải lớn/SLA hosting free |
+
+Chưa đánh giá tải lớn hoặc bảo đảm thời gian đáp ứng cố định. Render Free có ngủ và ổ tạm; online đang tắt email. Các giới hạn này phải ghi trong báo cáo, không mô tả như tính năng đã được giải quyết.

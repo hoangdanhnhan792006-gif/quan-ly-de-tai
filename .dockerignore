@@ -9,3 +9,10 @@ logs
 *.log
 **/application-local.*
 docs
+
+# Chứng chỉ và khóa riêng chỉ dành cho HTTPS local
+.local-https/
+*.p12
+*.pfx
+*.jks
+*.key
