@@ -67,7 +67,8 @@ Cấu hình local mặc định: SMTP `localhost:1025`, không cần tài khoả
 | `thu_phu` | SINH_VIEN | Tài khoản phụ chưa có hồ sơ để thử khóa/xóa/đặt lại mật khẩu |
 
 - Tất cả GV và trưởng bộ môn phải có hồ sơ GV, gắn vào `THU_CNTT`. Trưởng bộ môn phụ trách bộ môn ghi trong hồ sơ của mình.
-- SV1–6 phải có hồ sơ SV. Chỉ tạo tài khoản đăng nhập là chưa đủ để làm nghiệp vụ.
+- SV1–6 phải có hồ sơ SV và điền đủ mã SV, lớp hành chính, khóa học. Chỉ tạo tài khoản đăng nhập là chưa đủ để làm nghiệp vụ.
+- Khi tạo/sửa hồ sơ SV, thử bỏ trống hoặc chỉ nhập dấu cách vào lớp/khóa học: phải báo lỗi, không lưu. Nhập đủ thì lưu được.
 - Tài khoản phải đang hoạt động; tên đăng nhập, email, mã SV/GV riêng biệt. Có thể dùng email thử `thu_sv1@example.test` để xem trong Mailpit.
 - ADMIN không tự có quyền khoa/GV/SV. Dùng các tài khoản riêng ở bảng để tránh nhầm quyền.
 - Chuẩn bị báo cáo PDF V1 và V2 có nội dung khác nhau, slide PDF/PPTX, mã nguồn ZIP có tệp bên trong và một PDF thông báo. Mỗi tệp tối đa **50 MiB**; không dùng tệp chỉ đổi đuôi để làm tài liệu hợp lệ.
@@ -80,18 +81,20 @@ Dùng tài khoản phụ cho thao tác đổi quyền, khóa, xóa hoặc đặt
 | Chức năng | Cách thao tác | Điều cần kiểm tra |
 |---|---|---|
 | Đăng nhập/đăng xuất | Đăng nhập đúng, đăng xuất, mở lại trang riêng; thử mật khẩu sai | Đúng thì vào dashboard; sai hoặc đã đăng xuất thì không truy cập được trang riêng |
-| Tạo và sửa tài khoản | Admin → Quản lý tài khoản → Tạo tài khoản; sau đó Sửa | Lưu được thông tin hợp lệ; tên đăng nhập/email trùng hoặc thiếu trường bị từ chối |
+| Tạo tài khoản | Admin → Quản lý tài khoản → Tạo tài khoản, điền đủ các trường | Lưu được thông tin hợp lệ; trùng tên đăng nhập/email hoặc thiếu trường bị từ chối |
+| Sửa thông tin và mật khẩu | Admin → Quản lý tài khoản → Sửa; đổi tên đăng nhập, họ tên, email, vai trò/trạng thái; nếu muốn đổi mật khẩu thì nhập mới và xác nhận → Lưu thay đổi | Tất cả lưu cùng lúc; tên/email trùng hoặc mật khẩu sai thì không lưu một phần. Tên mới đăng nhập được, liên kết hồ sơ giữ nguyên |
+| Giữ mật khẩu hiện tại | Vào Sửa, thay thông tin khác và để trống cả hai ô mật khẩu | Lưu được và vẫn đăng nhập bằng mật khẩu hiện tại |
+| Hiện/ẩn mật khẩu | Thử con mắt tại đăng nhập, tạo tài khoản, Sửa và Đổi mật khẩu; bấm riêng từng ô | Mặc định che, bấm để hiện/ẩn đúng ô; không gửi form hoặc ảnh hưởng ô còn lại |
 | Bộ môn và hồ sơ | Admin tạo/sửa bộ môn, hồ sơ SV/GV; ngừng rồi bật lại bộ môn phụ | Hồ sơ gắn đúng tài khoản/vai trò; không trùng mã; bộ môn ngừng hoạt động không nhận gán GV mới |
 | Khóa/mở khóa | Tài khoản phụ đang đăng nhập ở trình duyệt khác; admin bấm Khóa; người đó tải lại trang | Phiên cũ kết thúc; tài khoản khóa không đăng nhập được; mở khóa thì đăng nhập được |
 | Đổi vai trò | Admin sửa vai trò tài khoản phụ; người đó tải lại rồi đăng nhập lại | Phiên cũ kết thúc, quyền mới có hiệu lực; không được bỏ vai trò SV/GV khi hồ sơ còn tồn tại |
 | Đổi mật khẩu cá nhân | Người dùng → Đổi mật khẩu → nhập mật khẩu cũ, mật khẩu mới, xác nhận | Phải đúng mật khẩu cũ; đổi xong đăng nhập bằng mật khẩu mới, mật khẩu cũ không dùng được |
-| Admin đặt lại mật khẩu | Admin → Quản lý tài khoản → Đặt lại mật khẩu của tài khoản phụ → nhập mới và xác nhận | Không cần mật khẩu cũ; mật khẩu mới đăng nhập được; các phiên cũ bị đăng xuất khi tải lại; không tự mở khóa tài khoản |
 | Xóa tài khoản | Tạo tài khoản phụ chưa có hồ sơ/dữ liệu → Xóa → xác nhận | Tài khoản biến mất và không đăng nhập được; hủy hộp xác nhận thì không xóa |
 | Chặn xóa tài khoản đã dùng | Thử xóa tài khoản có hồ sơ hoặc đã tạo đợt/thông báo | Có thông báo từ chối, dữ liệu giữ nguyên; dùng Khóa nếu muốn ngừng sử dụng |
 
 Admin không được tự khóa, tự xóa hoặc tự bỏ quyền ADMIN. Muốn đổi mật khẩu của chính admin, dùng **Đổi mật khẩu** và nhập mật khẩu hiện tại.
 
-Khi thử đổi/đặt lại mật khẩu, kiểm tra thêm: xác nhận không khớp, mật khẩu dưới 8 ký tự, quá 72 byte UTF-8 hoặc trùng mật khẩu hiện tại phải bị từ chối. Mật khẩu đúng vẫn phải dùng được sau các lần thử sai.
+Khi thử đổi mật khẩu cá nhân hoặc sửa mật khẩu trong màn hình admin, kiểm tra thêm: xác nhận không khớp, mật khẩu dưới 8 ký tự, quá 72 byte UTF-8 hoặc trùng mật khẩu hiện tại phải bị từ chối. Mật khẩu đúng vẫn phải dùng được sau các lần thử sai.
 
 ## 3. Test luồng Môn học từ đầu đến cuối
 
@@ -115,7 +118,7 @@ Chuẩn bị tài khoản và tệp xong mới đặt lịch. Nếu bắt đầu
 Đăng nhập `thu_gv1` → **Đề tài của tôi** → đề xuất đề tài:
 
 1. Chọn đúng đợt đang mở và bộ môn.
-2. Nhập mã, tên, nội dung và các thông tin bắt buộc.
+2. Nhập đủ mã, tên, nội dung, yêu cầu thực hiện và sản phẩm dự kiến. Thử để trống yêu cầu/sản phẩm trước: phải báo lỗi; nhập đủ rồi tiếp tục.
 3. Lưu nháp, thử sửa, rồi **Gửi duyệt**.
 
 Đề tài phải chuyển sang chờ duyệt. Làm bước này trong hạn GV đăng ký.
@@ -131,7 +134,7 @@ Chuẩn bị tài khoản và tệp xong mới đặt lịch. Nếu bắt đầu
 
 Trong thời gian SV đăng ký:
 
-1. Đăng nhập SV1 → **Nhóm và đăng ký** → tạo nhóm A. SV1 trở thành nhóm trưởng.
+1. Đăng nhập SV1 → **Nhóm và đăng ký** → tạo nhóm A, nhập cả mã và tên nhóm. Thử thiếu tên/chỉ dấu cách: phải báo lỗi. Nhập đúng thì SV1 trở thành nhóm trưởng.
 2. SV1 mời SV2 và SV3.
 3. Đăng nhập SV2, vào phần lời mời và đồng ý; làm tương tự với SV3.
 4. Quay lại SV1, kiểm tra nhóm đủ **3 SV và đúng một trưởng**. Lời mời chưa được đồng ý chưa tính là thành viên.
@@ -284,7 +287,7 @@ Làm trên nhóm/đợt phụ. Một thao tác bị từ chối đúng quy tắc
 | Đợt | Nhập lịch đầu >= cuối, GV/SV chồng nhau; thiếu hoặc nhập thêm hạn/ngày không áp dụng | Báo lỗi; cán bộ khoa không tạo được đợt thay trưởng khoa |
 | Đề tài | SV xem đề tài chưa công bố; trưởng bộ môn khác bộ môn thử duyệt/phân công | Không được xem/xử lý trái quyền |
 | GVHD | Thử 0 hoặc 3 GVHD; công bố khi chưa phân công | Bị chặn; danh sách 1–2 GV hợp lệ được chấp nhận |
-| Nhóm | Đăng ký khi chỉ 1–2 SV; thêm người thứ 6; vào hai nhóm cùng đợt | Bị chặn; nhóm 3–5 người đăng ký được |
+| Nhóm | Tạo/đổi tên nhóm thành rỗng hoặc chỉ dấu cách phải bị chặn; đăng ký khi chỉ 1–2 SV; thêm người thứ 6; vào hai nhóm cùng đợt | Bị chặn; nhóm 3–5 người đăng ký được |
 | Lời mời | Từ chối/thu hồi; gửi trùng lời mời; mời SV đã có nhóm cùng đợt | Không tự thêm thành viên; không nhận lời mời đã thu hồi |
 | Sửa nhóm | Đổi trưởng, rời nhóm, sửa thành viên trước duyệt khi còn hạn; thử lại sau chấp thuận | Trước đủ điều kiện được làm, sau duyệt bị khóa |
 | Đăng ký | Thành viên thường chọn đề tài; đổi sang đề tài đã được giữ | Bị chặn; đổi thất bại phải giữ nguyên đăng ký cũ |

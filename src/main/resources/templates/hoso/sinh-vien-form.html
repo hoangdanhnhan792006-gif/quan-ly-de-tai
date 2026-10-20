@@ -5,7 +5,8 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Hồ sơ sinh viên · Quản lý đề tài</title>
         <link rel="stylesheet" th:href="@{/css/app.css}">
-    </head>
+    <script th:src="@{/js/form.js}" defer></script>
+</head>
     <body>
         <nav th:replace="~{fragments/dieu-huong :: menu}">
         </nav>
@@ -30,10 +31,12 @@
                 </select>
                 <label for="maSv">Mã sinh viên</label>
                 <input id="maSv" type="text" th:field="*{maSv}" required maxlength="20">
-                <label for="lop">Lớp hành chính</label>
-                <input id="lop" type="text" th:field="*{lop}" maxlength="30">
-                <label for="khoaHoc">Khóa học</label>
-                <input id="khoaHoc" type="text" th:field="*{khoaHoc}" maxlength="30">
+                <label for="lop">Lớp hành chính *</label>
+                <input id="lop" type="text" th:field="*{lop}" maxlength="30" required>
+<p class="field-error" th:errors="*{lop}"></p>
+                <label for="khoaHoc">Khóa học *</label>
+                <input id="khoaHoc" type="text" th:field="*{khoaHoc}" maxlength="30" required>
+<p class="field-error" th:errors="*{khoaHoc}"></p>
                 <button class="button" type="submit">Lưu</button>
             </form>
         </main>

@@ -1,6 +1,9 @@
 package com.khoacntt.quanlydetai.account.integration;
 
-import com.khoacntt.quanlydetai.account.form.DatLaiMatKhauForm;
+import com.khoacntt.quanlydetai.account.form.SuaTaiKhoanForm;
+import com.khoacntt.quanlydetai.account.model.VaiTro;
+import com.khoacntt.quanlydetai.account.model.TrangThaiTaiKhoan;
+import java.util.Set;
 import com.khoacntt.quanlydetai.account.service.TaiKhoanService;
 import com.khoacntt.quanlydetai.common.exception.NghiepVuException;
 import org.junit.jupiter.api.*;
@@ -39,6 +42,9 @@ class TaiKhoanMySqlTest {
     @Autowired TaiKhoanService service;
     @Autowired PasswordEncoder encoder;
     @Autowired MockMvc mvc;
+    @Autowired com.khoacntt.quanlydetai.hoso.service.HoSoService hoSo;
+    @Autowired com.khoacntt.quanlydetai.nhom.service.NhomService nhoms;
+    @Autowired com.khoacntt.quanlydetai.detai.service.DeTaiService deTais;
     int adminId;
     int targetId;
     String adminName;
@@ -88,8 +94,10 @@ class TaiKhoanMySqlTest {
                 .andExpect(authenticated().withUsername(name)).andReturn().getRequest().getSession(false);
     }
 
-    DatLaiMatKhauForm newPassword() {
-        var form = new DatLaiMatKhauForm();
+    SuaTaiKhoanForm newPassword() {
+        var form = new SuaTaiKhoanForm();
+        form.setTenDangNhap(targetName); form.setHoTen("Sinh viên"); form.setEmail(targetName+"@example.test");
+        form.setVaiTros(Set.of(VaiTro.SINH_VIEN)); form.setTrangThai(TrangThaiTaiKhoan.HOAT_DONG);
         form.setMatKhauMoi("NewPass123"); form.setXacNhanMatKhau("NewPass123"); return form;
     }
 
@@ -112,21 +120,23 @@ class TaiKhoanMySqlTest {
         jdbc.update("INSERT INTO sinh_vien(tai_khoan_id,ma_sv) VALUES(?,?)", targetId, targetName.toUpperCase());
         assertThatThrownBy(() -> service.xoa(targetId)).isInstanceOf(NghiepVuException.class);
         assertThatThrownBy(() -> service.xoa(adminId)).isInstanceOf(NghiepVuException.class);
-        assertThatThrownBy(() -> service.datLaiMatKhau(adminId, newPassword())).isInstanceOf(NghiepVuException.class);
+        assertThatThrownBy(() -> service.sua(adminId, newPassword())).isInstanceOf(NghiepVuException.class);
     }
 
     @Test void methodSecurityChanNguoiKhongPhaiAdmin() {
         loginContext(targetName, "SINH_VIEN");
         assertThatThrownBy(() -> service.xoa(adminId)).isInstanceOf(AccessDeniedException.class);
-        assertThatThrownBy(() -> service.datLaiMatKhau(adminId, newPassword())).isInstanceOf(AccessDeniedException.class);
+        assertThatThrownBy(() -> service.sua(adminId, newPassword())).isInstanceOf(AccessDeniedException.class);
     }
 
     @Test void datLaiMatKhauDoiDangNhapVaKetThucTatCaPhienCu() throws Exception {
         MockHttpSession first = webLogin(targetName);
         MockHttpSession second = webLogin(targetName);
         MockHttpSession admin = webLogin(adminName);
-        mvc.perform(post("/admin/tai-khoan/" + targetId + "/dat-lai-mat-khau").session(admin).with(csrf())
-                .param("matKhauMoi", "NewPass123").param("xacNhanMatKhau", "NewPass123"))
+        mvc.perform(post("/admin/tai-khoan/" + targetId + "/sua").session(admin).with(csrf())
+                .param("matKhauMoi", "NewPass123").param("xacNhanMatKhau", "NewPass123")
+                .param("tenDangNhap",targetName).param("hoTen","Sinh viên").param("email",targetName+"@example.test")
+                .param("vaiTros","SINH_VIEN").param("trangThai","HOAT_DONG"))
                 .andExpect(redirectedUrl("/admin/tai-khoan"));
         String stored = jdbc.queryForObject("SELECT mat_khau_bam FROM tai_khoan WHERE id=?", String.class, targetId);
         assertThat(stored).isNotEqualTo("NewPass123");
@@ -146,5 +156,97 @@ class TaiKhoanMySqlTest {
                 .andExpect(redirectedUrl("/admin/tai-khoan"));
         mvc.perform(get("/dashboard").session(target)).andExpect(redirectedUrl("/login?sessionChanged"));
         mvc.perform(formLogin().user(targetName).password("OldPass123")).andExpect(unauthenticated());
+    }
+
+    @Test void doiTenDangNhapGiuIdHoSoVaThuHoiPhienCu() throws Exception {
+        jdbc.update("INSERT INTO sinh_vien(tai_khoan_id,ma_sv,lop,khoa_hoc) VALUES(?,?,'CNTT1','2024')", targetId, targetName.toUpperCase());
+        MockHttpSession old = webLogin(targetName);
+        loginContext(adminName, "ADMIN");
+        var f = newPassword(); f.setTenDangNhap(targetName + "moi");
+        f.setMatKhauMoi(""); f.setXacNhanMatKhau("");
+        String hash = jdbc.queryForObject("SELECT mat_khau_bam FROM tai_khoan WHERE id=?", String.class, targetId);
+        service.sua(targetId, f);
+        assertThat(jdbc.queryForObject("SELECT id FROM tai_khoan WHERE ten_dang_nhap=?", Integer.class, f.getTenDangNhap())).isEqualTo(targetId);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM sinh_vien WHERE tai_khoan_id=?", Integer.class, targetId)).isEqualTo(1);
+        assertThat(jdbc.queryForObject("SELECT mat_khau_bam FROM tai_khoan WHERE id=?", String.class, targetId)).isEqualTo(hash);
+        SecurityContextHolder.clearContext();
+        mvc.perform(get("/dashboard").session(old)).andExpect(redirectedUrl("/login?sessionChanged"));
+        mvc.perform(formLogin().user(targetName).password("OldPass123")).andExpect(unauthenticated());
+        mvc.perform(formLogin().user(f.getTenDangNhap()).password("OldPass123")).andExpect(authenticated().withUsername(f.getTenDangNhap()));
+    }
+
+    @Test void doiThongTinVaMatKhauSaiKhongLuuMotPhan() {
+        var f = newPassword(); f.setTenDangNhap(targetName + "moi"); f.setHoTen("Tên khác");
+        f.setEmail(targetName+"moi@example.test"); f.setTrangThai(TrangThaiTaiKhoan.BI_KHOA);
+        f.setXacNhanMatKhau("KhongKhop123");
+        assertThatThrownBy(() -> service.sua(targetId, f)).isInstanceOf(NghiepVuException.class);
+        assertThat(jdbc.queryForObject("SELECT ten_dang_nhap FROM tai_khoan WHERE id=?", String.class, targetId)).isEqualTo(targetName);
+        assertThat(jdbc.queryForObject("SELECT ho_ten FROM tai_khoan WHERE id=?", String.class, targetId)).isEqualTo(targetName);
+        assertThat(jdbc.queryForObject("SELECT email FROM tai_khoan WHERE id=?", String.class, targetId)).isEqualTo(targetName+"@example.test");
+        assertThat(jdbc.queryForObject("SELECT trang_thai FROM tai_khoan WHERE id=?", String.class, targetId)).isEqualTo("HOAT_DONG");
+        assertThat(encoder.matches("OldPass123", jdbc.queryForObject("SELECT mat_khau_bam FROM tai_khoan WHERE id=?",String.class,targetId))).isTrue();
+    }
+
+    @Test void khongDoiTenSangTaiKhoanKhacHoacEmailTrung() {
+        var f = newPassword(); f.setTenDangNhap(adminName);
+        assertThatThrownBy(() -> service.sua(targetId, f)).isInstanceOf(NghiepVuException.class).hasMessageContaining("Tên đăng nhập");
+        f.setTenDangNhap(targetName + "moi"); f.setEmail(adminName+"@example.test");
+        assertThatThrownBy(() -> service.sua(targetId, f)).isInstanceOf(NghiepVuException.class).hasMessageContaining("Email");
+        assertThat(jdbc.queryForObject("SELECT ten_dang_nhap FROM tai_khoan WHERE id=?",String.class,targetId)).isEqualTo(targetName);
+    }
+
+    @Test void suaDongThoiTenMatKhauVaiTroVaTrangThai() {
+        var f = newPassword(); f.setTenDangNhap(targetName + "moi");
+        f.setVaiTros(Set.of(VaiTro.SINH_VIEN, VaiTro.CAN_BO_KHOA)); f.setTrangThai(TrangThaiTaiKhoan.BI_KHOA);
+        service.sua(targetId,f);
+        assertThat(jdbc.queryForObject("SELECT ten_dang_nhap FROM tai_khoan WHERE id=?",String.class,targetId)).isEqualTo(f.getTenDangNhap());
+        assertThat(jdbc.queryForObject("SELECT trang_thai FROM tai_khoan WHERE id=?",String.class,targetId)).isEqualTo("BI_KHOA");
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM tai_khoan_vai_tro WHERE tai_khoan_id=?",Integer.class,targetId)).isEqualTo(2);
+        assertThat(encoder.matches("NewPass123",jdbc.queryForObject("SELECT mat_khau_bam FROM tai_khoan WHERE id=?",String.class,targetId))).isTrue();
+    }
+
+    @Test void adminTuDoiTenDangNhapPhaiDangNhapLai() throws Exception {
+        MockHttpSession admin = webLogin(adminName);
+        mvc.perform(post("/admin/tai-khoan/"+adminId+"/sua").session(admin).with(csrf())
+                .param("tenDangNhap",adminName+"moi").param("hoTen","Admin")
+                .param("email",adminName+"@example.test").param("vaiTros","ADMIN").param("trangThai","HOAT_DONG")
+                .param("matKhauMoi", "").param("xacNhanMatKhau", ""))
+                .andExpect(redirectedUrl("/admin/tai-khoan"));
+        mvc.perform(get("/admin/tai-khoan").session(admin)).andExpect(redirectedUrl("/login?sessionChanged"));
+        mvc.perform(formLogin().user(adminName+"moi").password("OldPass123")).andExpect(authenticated());
+    }
+
+    @Test void tuKhoaVaTuDoiMatKhauBoQuaMatKhauCuBiChan() {
+        var f = newPassword(); f.setTenDangNhap(adminName); f.setVaiTros(Set.of(VaiTro.ADMIN));
+        f.setEmail(adminName+"@example.test"); f.setTrangThai(TrangThaiTaiKhoan.BI_KHOA);
+        assertThatThrownBy(() -> service.sua(adminId,f)).isInstanceOf(NghiepVuException.class).hasMessageContaining("tự khóa");
+        f.setTrangThai(TrangThaiTaiKhoan.HOAT_DONG);
+        assertThatThrownBy(() -> service.sua(adminId,f)).isInstanceOf(NghiepVuException.class).hasMessageContaining("Đổi mật khẩu");
+    }
+
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(strings={"", "   "})
+    void backendChanHoSoSinhVienThieuLopKhoaHoc(String blank) {
+        var f = new com.khoacntt.quanlydetai.hoso.form.SinhVienForm();
+        f.setTaiKhoanId(targetId); f.setMaSv(targetName); f.setLop(blank); f.setKhoaHoc(blank);
+        assertThatThrownBy(() -> hoSo.taoSinhVien(f)).isInstanceOf(jakarta.validation.ConstraintViolationException.class);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM sinh_vien WHERE tai_khoan_id=?",Integer.class,targetId)).isZero();
+    }
+
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(strings={"", "   "})
+    void backendChanTaoVaDoiTenNhomTrong(String blank) {
+        loginContext(targetName,"SINH_VIEN");
+        var f = new com.khoacntt.quanlydetai.nhom.form.NhomForm(); f.setDotId(1); f.setMaNhom("N1"); f.setTenNhom(blank);
+        var doi = new com.khoacntt.quanlydetai.nhom.form.DoiTenNhomForm(); doi.setTenNhom(blank);
+        assertThatThrownBy(() -> nhoms.tao(f)).isInstanceOf(jakarta.validation.ConstraintViolationException.class);
+        assertThatThrownBy(() -> nhoms.doiTen(1,doi)).isInstanceOf(jakarta.validation.ConstraintViolationException.class);
+    }
+
+    @Test void backendChanDeTaiThieuYeuCauSanPham() {
+        loginContext(targetName,"GIANG_VIEN");
+        var f = new com.khoacntt.quanlydetai.detai.form.DeTaiForm(); f.setDotId(1); f.setBoMonId(1);
+        f.setMaDeTai("DT1"); f.setTenDeTai("Đề tài"); f.setNoiDung("Nội dung"); f.setYeuCau("   "); f.setSanPhamDuKien("");
+        assertThatThrownBy(() -> deTais.tao(f)).isInstanceOf(jakarta.validation.ConstraintViolationException.class);
     }
 }

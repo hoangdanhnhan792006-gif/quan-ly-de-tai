@@ -18,9 +18,11 @@ public class DeTaiForm {
     @NotBlank(message = "Nhập nội dung đề tài") @Size(max = 10000)
     private String noiDung;
 
+    @NotBlank(message = "Nhập yêu cầu thực hiện")
     @Size(max = 10000)
     private String yeuCau;
 
+    @NotBlank(message = "Nhập sản phẩm dự kiến")
     @Size(max = 10000)
     private String sanPhamDuKien;
 

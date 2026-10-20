@@ -5,7 +5,7 @@
 
 ## 1. Kiến trúc thống nhất
 
-**Bổ sung quản lý tài khoản 18/10/2026:** Admin được xóa tài khoản khác chưa có hồ sơ/dữ liệu liên quan và đặt lại mật khẩu tài khoản khác. Nghiệp vụ ở `TaiKhoanService`, form mới `DatLaiMatKhauForm`, giao diện `account/dat-lai-mat-khau.html`. Không tự xóa; muốn đổi mật khẩu chính mình phải nhập mật khẩu cũ ở chức năng cá nhân. FK RESTRICT bảo vệ dữ liệu, không sửa V1/V2. Phiên đăng nhập có dấu kiểm tra mật khẩu để bị kết thúc khi mật khẩu đã đổi; không lưu mật khẩu rõ trong phiên.
+**Cập nhật form 19/10/2026:** `SuaTaiKhoanForm` gộp tên đăng nhập, thông tin, trạng thái và hai ô mật khẩu mới tùy chọn; xử lý tại `TaiKhoanService.sua` trong một transaction. Bỏ form/trang đặt lại mật khẩu riêng; GET cũ chuyển tới Sửa. Không tự khóa, bỏ ADMIN hoặc đổi mật khẩu của mình qua form này; đổi mật khẩu cá nhân vẫn cần mật khẩu cũ. Khi đổi tên/mật khẩu/quyền, phiên cũ phải đăng nhập lại. Các trang mật khẩu dùng `static/js/form.js` và có nút hiện/ẩn. Hồ sơ SV bắt buộc lớp/khóa học; nhóm bắt buộc tên khi tạo/đổi; đề tài bắt buộc yêu cầu và sản phẩm dự kiến. Dữ liệu cũ thiếu vẫn đọc được, cần bổ sung khi sửa; không thay schema hoặc migration.
 
 Test MySQL phần tài khoản: đặt `TEST_ACCOUNT_DB_URL` theo mẫu `jdbc:mysql://127.0.0.1:3306/quan_ly_de_tai_thu_taikhoan_<ten_rieng>`, cùng `TEST_DB_USERNAME`/`TEST_DB_PASSWORD`. Phải tạo schema rỗng và cấp quyền cho tài khoản test trên đúng schema đó; không dùng database chính. Chạy `TaiKhoanMySqlTest` để kiểm tra xóa kèm vai trò, rollback khi FK chặn, phân quyền và đăng nhập/phiên cũ sau đặt lại mật khẩu. Bỏ biến môi trường thì lớp này được bỏ qua.
 

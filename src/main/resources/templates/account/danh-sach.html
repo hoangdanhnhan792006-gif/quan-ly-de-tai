@@ -44,8 +44,6 @@
                             </td>
                             <td>
                                 <a th:href="@{/admin/tai-khoan/{id}/sua(id=${tk.id})}">Sửa</a>
-                                <a th:if="${tk.tenDangNhap != tenDangNhapHienTai}"
-                                   th:href="@{/admin/tai-khoan/{id}/dat-lai-mat-khau(id=${tk.id})}">Đặt lại mật khẩu</a>
                                 <form th:action="@{/admin/tai-khoan/{id}/trang-thai(id=${tk.id})}" method="post">
                                     <input type="hidden" name="trangThai" th:value="${tk.trangThai.name() == 'HOAT_DONG' ? 'BI_KHOA' : 'HOAT_DONG'}">
                                     <button class="button secondary" type="submit" th:text="${tk.trangThai.name() == 'HOAT_DONG' ? 'Khóa' : 'Mở khóa'}">

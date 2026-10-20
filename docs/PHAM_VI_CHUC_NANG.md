@@ -45,10 +45,13 @@ Project không phải hệ thống đăng ký tín chỉ. Không có môn tiên 
 - Quản trị viên tạo tài khoản; người dùng không tự đăng ký.
 - Khóa hoặc mở khóa tài khoản.
 - Admin xóa tài khoản khác chưa có hồ sơ SV/GV hoặc dữ liệu liên quan; không tự xóa. Tài khoản đã sử dụng dùng khóa để giữ lịch sử.
-- Admin đặt lại mật khẩu tài khoản khác khi người dùng quên mật khẩu; nhập mật khẩu mới và xác nhận, không cần mật khẩu cũ. Người dùng đổi mật khẩu của mình tại mục Đổi mật khẩu, có kiểm tra mật khẩu hiện tại.
-- Khi xóa hoặc thay đổi mật khẩu, các phiên cũ bị kết thúc ở lần truy cập tiếp theo. Đặt lại mật khẩu không tự mở khóa tài khoản.
+- Admin sửa tên đăng nhập, họ tên, email, vai trò, trạng thái và mật khẩu trong cùng màn hình Sửa tài khoản. Để trống cả hai ô mật khẩu thì giữ mật khẩu cũ; nhập mới thì phải xác nhận và hợp lệ. Toàn bộ thay đổi lưu trong một transaction.
+- Tên đăng nhập/email không trùng. Đổi tên vẫn giữ nguyên ID và hồ sơ liên quan; phiên cũ cần đăng nhập lại. Admin không tự khóa hoặc bỏ quyền ADMIN.
+- Người dùng đổi mật khẩu của chính mình ở mục Đổi mật khẩu, có kiểm tra mật khẩu hiện tại; không dùng màn hình admin để bỏ qua bước này.
+- Các ô mật khẩu mặc định che và có nút con mắt hiện/ẩn riêng; không hiển thị lại mật khẩu đã lưu.
+- Khi xóa, đổi tên đăng nhập, mật khẩu hoặc quyền, các phiên cũ bị kết thúc ở lần truy cập tiếp theo. Trạng thái chỉ đổi khi admin chọn trạng thái mới; sửa mật khẩu không tự mở khóa.
 - Gán một hoặc nhiều vai trò cho tài khoản.
-- Quản lý bộ môn, hồ sơ sinh viên và hồ sơ giảng viên.
+- Quản lý bộ môn, hồ sơ sinh viên và hồ sơ giảng viên. Hồ sơ SV bắt buộc tài khoản, mã SV, lớp hành chính và khóa học; học vị GV được để trống.
 - Băm mật khẩu bằng BCrypt.
 - Chặn URL và thao tác trái quyền ở backend.
 
@@ -64,7 +67,7 @@ Project không phải hệ thống đăng ký tín chỉ. Không có môn tiên 
 ### 4.3. Đề tài và giảng viên hướng dẫn
 
 - Giảng viên đề xuất đề tài trong thời gian được phép.
-- Đề tài thuộc đúng một bộ môn.
+- Đề tài thuộc đúng một bộ môn. Khi tạo/sửa phải có mã, tên, nội dung, yêu cầu thực hiện và sản phẩm dự kiến.
 - Trưởng bộ môn duyệt/từ chối và phân công GVHD trong bộ môn của mình; khoa công bố đề tài.
 - Sinh viên chỉ được xem và chọn đề tài đã công bố.
 - Mỗi đề tài có từ một đến hai GVHD.
@@ -73,7 +76,7 @@ Project không phải hệ thống đăng ký tín chỉ. Không có môn tiên 
 
 ### 4.4. Nhóm sinh viên
 
-- Sinh viên tạo nhóm và mặc nhiên trở thành nhóm trưởng.
+- Sinh viên tạo nhóm và mặc nhiên trở thành nhóm trưởng. Mã nhóm và tên nhóm bắt buộc; tạo hoặc đổi tên không chấp nhận chỉ dấu cách.
 - Nhóm trưởng gửi lời mời; sinh viên được mời phải chấp nhận.
 - Nhóm có tối đa năm thành viên và đúng một nhóm trưởng. Nhóm đang lập được ít hơn ba; khi đăng ký và chấp thuận phải đủ 3–5 SV.
 - Một sinh viên chỉ thuộc một nhóm trong cùng một đợt.

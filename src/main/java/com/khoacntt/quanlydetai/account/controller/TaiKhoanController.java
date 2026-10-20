@@ -1,7 +1,6 @@
 package com.khoacntt.quanlydetai.account.controller;
 
 import com.khoacntt.quanlydetai.account.form.SuaTaiKhoanForm;
-import com.khoacntt.quanlydetai.account.form.DatLaiMatKhauForm;
 import com.khoacntt.quanlydetai.account.form.TaiKhoanForm;
 import com.khoacntt.quanlydetai.account.model.TrangThaiTaiKhoan;
 import com.khoacntt.quanlydetai.account.model.VaiTro;
@@ -32,6 +31,12 @@ public class TaiKhoanController {
     public VaiTro[] cacVaiTro() {
         return VaiTro.values();
     }
+
+    @ModelAttribute("cacTrangThai")
+    public TrangThaiTaiKhoan[] cacTrangThai() { return TrangThaiTaiKhoan.values(); }
+
+    @ModelAttribute("tenDangNhapHienTai")
+    public String tenDangNhapHienTai(Authentication authentication) { return authentication.getName(); }
 
     @GetMapping
     public String danhSach(Model model, Authentication authentication) {
@@ -66,6 +71,8 @@ public class TaiKhoanController {
     public String sua(@PathVariable Integer id, Model model) {
         var tk = service.chiTiet(id);
         var form = new SuaTaiKhoanForm();
+        form.setTenDangNhap(tk.tenDangNhap());
+        form.setTrangThai(tk.trangThai());
         form.setHoTen(tk.hoTen());
         form.setEmail(tk.email());
         form.setVaiTros(new HashSet<>(tk.vaiTros()));
@@ -78,17 +85,18 @@ public class TaiKhoanController {
     public String sua(@PathVariable Integer id, @Valid @ModelAttribute("form") SuaTaiKhoanForm form,
                       BindingResult errors, Model model, RedirectAttributes redirect) {
         model.addAttribute("taiKhoan", service.chiTiet(id));
-        if (errors.hasErrors()) {
-            return "account/sua";
+        if (!errors.hasErrors()) {
+            try {
+                service.sua(id, form);
+                redirect.addFlashAttribute("thanhCong", "Đã cập nhật tài khoản. Nếu đổi tên đăng nhập, mật khẩu hoặc quyền, người dùng cần đăng nhập lại.");
+                return "redirect:/admin/tai-khoan";
+            } catch (NghiepVuException ex) {
+                errors.reject("nghiepVu", ex.getMessage());
+            }
         }
-        try {
-            service.sua(id, form);
-        } catch (NghiepVuException ex) {
-            errors.reject("nghiepVu", ex.getMessage());
-            return "account/sua";
-        }
-        redirect.addFlashAttribute("thanhCong", "Đã cập nhật tài khoản");
-        return "redirect:/admin/tai-khoan";
+        form.setMatKhauMoi(null);
+        form.setXacNhanMatKhau(null);
+        return "account/sua";
     }
 
     @PostMapping("/{id}/xoa")
@@ -103,30 +111,8 @@ public class TaiKhoanController {
     }
 
     @GetMapping("/{id}/dat-lai-mat-khau")
-    public String datLaiMatKhau(@PathVariable Integer id, Model model) {
-        model.addAttribute("taiKhoan", service.chiTiet(id));
-        model.addAttribute("form", new DatLaiMatKhauForm());
-        return "account/dat-lai-mat-khau";
-    }
-
-    @PostMapping("/{id}/dat-lai-mat-khau")
-    public String datLaiMatKhau(@PathVariable Integer id,
-                              @Valid @ModelAttribute("form") DatLaiMatKhauForm form,
-                              BindingResult errors, Model model, RedirectAttributes redirect) {
-        model.addAttribute("taiKhoan", service.chiTiet(id));
-        if (!errors.hasErrors()) {
-            try {
-                service.datLaiMatKhau(id, form);
-                redirect.addFlashAttribute("thanhCong", "Đã đặt lại mật khẩu. Người dùng cần đăng nhập lại bằng mật khẩu mới.");
-                return "redirect:/admin/tai-khoan";
-            } catch (NghiepVuException ex) {
-                errors.reject("nghiepVu", ex.getMessage());
-            }
-        }
-        // Không đưa mật khẩu vừa nhập trở lại HTML khi form có lỗi.
-        form.setMatKhauMoi(null);
-        form.setXacNhanMatKhau(null);
-        return "account/dat-lai-mat-khau";
+    public String matKhauCu(@PathVariable Integer id) {
+        return "redirect:/admin/tai-khoan/" + id + "/sua";
     }
 
     @PostMapping("/{id}/trang-thai")

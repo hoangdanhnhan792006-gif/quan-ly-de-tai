@@ -99,6 +99,10 @@ public class TaiKhoan {
         this.vaiTros.addAll(vaiTros);
     }
 
+    public void doiTenDangNhap(String tenDangNhap) {
+        this.tenDangNhap = chuanHoaTenDangNhap(tenDangNhap);
+    }
+
     public void doiTrangThai(TrangThaiTaiKhoan trangThai) {
         this.trangThai = Objects.requireNonNull(trangThai);
     }

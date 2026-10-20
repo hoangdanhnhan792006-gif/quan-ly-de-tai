@@ -33,7 +33,7 @@ class HoSoServiceTest {
         var a=TaiKhoan.taoMoi("user"+id,"hash","Họ tên","u"+id+"@example.edu.vn",Set.of(role));
         ReflectionTestUtils.setField(a,"id",id);return a;
     }
-    SinhVienForm formSv() { var f=new SinhVienForm(); f.setTaiKhoanId(2); f.setMaSv("sv01"); f.setLop("CNTT1"); return f; }
+    SinhVienForm formSv() { var f=new SinhVienForm(); f.setTaiKhoanId(2); f.setMaSv("sv01"); f.setLop("CNTT1"); f.setKhoaHoc("2024"); return f; }
     GiangVienForm formGv() { var f=new GiangVienForm(); f.setTaiKhoanId(3); f.setMaGv("gv01"); f.setBoMonId(1); return f; }
     @Test void taoSinhVienVoiTaiKhoanDungVaiTro() {
         when(tk.timVaKhoa(2)).thenReturn(Optional.of(account(2,VaiTro.SINH_VIEN)));

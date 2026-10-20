@@ -94,8 +94,17 @@ class NhomWebTest {
     @Test @WithMockUser(roles = "SINH_VIEN")
     void taoHopLeChuyenVeNhom() throws Exception {
         when(nhomService.tao(any())).thenReturn(10);
-        mvc.perform(post("/sinh-vien/nhom/tao").with(csrf()).param("dotId", "1").param("maNhom", "N1"))
+        mvc.perform(post("/sinh-vien/nhom/tao").with(csrf()).param("dotId", "1").param("maNhom", "N1").param("tenNhom", "Nhóm 1"))
                 .andExpect(redirectedUrl("/sinh-vien/nhom/10"));
+    }
+
+    @Test @WithMockUser(roles="SINH_VIEN") void tenNhomTrongBiChanKhiTaoVaDoiTen() throws Exception {
+        mvc.perform(post("/sinh-vien/nhom/tao").with(csrf()).param("dotId","1").param("maNhom","N1").param("tenNhom","   "))
+                .andExpect(status().isOk()).andExpect(model().attributeHasFieldErrors("form","tenNhom"));
+        when(nhomService.chiTiet(10)).thenReturn(nhom(true,true));
+        mvc.perform(post("/sinh-vien/nhom/10/doi-ten").with(csrf()).param("tenNhom",""))
+                .andExpect(status().isOk()).andExpect(model().attributeHasFieldErrors("tenForm","tenNhom"));
+        verify(nhomService,never()).tao(any()); verify(nhomService,never()).doiTen(any(),any());
     }
     @Test @WithMockUser(roles = "CAN_BO_KHOA")
     void khoaXemNhomVaDuyetDuoc() throws Exception {

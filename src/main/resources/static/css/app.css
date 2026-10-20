@@ -144,3 +144,9 @@ dd { margin: 4px 0 0; }
 textarea { width: 100%; padding: 12px; border: 1px solid #bdc9da; border-radius: 9px; font: inherit; resize: vertical; }
 .multiline { white-space: pre-wrap; overflow-wrap: anywhere; }
 .actions { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; }
+.password-field { position: relative; }
+.password-field input { padding-right: 52px; }
+.password-toggle { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); display: grid; place-items: center; width: 40px; height: 36px; margin: 0; padding: 0; border: 0; border-radius: 6px; background: transparent; color: #2457c5; cursor: pointer; }
+.password-toggle:hover { background: #eaf0fb; }
+.password-toggle:focus-visible { outline: 2px solid #2457c5; outline-offset: 2px; }
+.field-error { color: #a51d2d; font-size: .9rem; margin-top: 4px; }
