@@ -1,5 +1,5 @@
-// Chống bấm nộp hai lần: mỗi lần gửi tạo một phiên bản báo cáo mới.
-// Sự kiện submit chỉ chạy khi trình duyệt đã cho gửi (đủ ô required), nên thiếu tệp thì nút không bị khóa.
+// Chống bấm gửi hai lần cho form có thuộc tính data-chong-gui-lai (nộp báo cáo, thêm tệp thông báo...).
+// Mỗi lần gửi tạo một bản ghi mới; sự kiện submit chỉ chạy khi trình duyệt đã cho gửi (đủ ô required), nên thiếu tệp thì nút không bị khóa.
 (function () {
     var form = document.querySelector('form[data-chong-gui-lai]');
     if (!form) {

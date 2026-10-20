@@ -1205,6 +1205,31 @@ form.filter-bar {
     border-bottom: 1px solid var(--color-border);
 }
 
+/* Thông báo: danh sách thẻ, đoạn trích nội dung */
+.notice-list {
+    display: grid;
+    gap: var(--space-3);
+}
+
+.notice h2 {
+    font-size: var(--text-lg);
+}
+
+.notice h2 a {
+    color: var(--color-text);
+    text-decoration: none;
+}
+
+.notice h2 a:hover {
+    color: var(--color-primary);
+    text-decoration: underline;
+}
+
+.excerpt {
+    color: var(--color-text-muted);
+    overflow-wrap: anywhere;
+}
+
 /* Thao tác không hoàn tác (kết thúc/hủy) */
 .danger-zone {
     border-color: var(--color-danger);
