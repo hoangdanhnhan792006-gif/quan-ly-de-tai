@@ -4,14 +4,14 @@
         <nav class="sidebar" th:fragment="menu" aria-label="Điều hướng chính">
             <!-- Chỉ hiện trên điện thoại; nút chỉ mở/đóng menu nên là type="button" -->
             <div class="mobile-bar">
-                <span class="mobile-bar-title">Quản lý đề tài</span>
+                <span class="mobile-bar-title"><img class="brand-logo" th:src="@{/images/logo.png}" alt="Logo FIT HCMUTE" width="36" height="36">Quản lý đề tài</span>
                 <button type="button" class="menu-toggle" aria-controls="sidebar-panel" aria-expanded="false">
                     <span aria-hidden="true">☰</span> Menu
                 </button>
             </div>
 
             <div class="sidebar-panel" id="sidebar-panel">
-                <a class="sidebar-brand" th:href="@{/dashboard}">Quản lý đề tài<small>Khoa Công nghệ Thông tin</small></a>
+                <a class="sidebar-brand" th:href="@{/dashboard}"><img class="brand-logo" th:src="@{/images/logo.png}" alt="Logo FIT HCMUTE" width="56" height="56"><span>Quản lý đề tài<small>Khoa Công nghệ Thông tin</small></span></a>
 
                 <div class="sidebar-group">
                     <a class="sidebar-link" th:href="@{/de-tai}">Đề tài</a>

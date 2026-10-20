@@ -247,13 +247,16 @@ code {
 }
 
 .auth-brand {
+    display: flex;
+    align-items: center;
+    gap: 16px;
     color: var(--sidebar-bg);
     font-size: var(--text-lg);
     font-weight: 700;
     line-height: 1.3;
 }
 
-.auth-brand span {
+.auth-brand small {
     display: block;
     color: var(--color-text-muted);
     font-size: var(--text-sm);
@@ -1274,7 +1277,9 @@ form.filter-bar {
 }
 
 .sidebar-brand {
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 12px;
     padding: 0 var(--space-5) var(--space-2);
     color: var(--sidebar-text-strong);
     font-size: 1rem;
@@ -1487,4 +1492,19 @@ form.filter-bar {
     * {
         transition: none !important;
     }
+}
+
+/* Logo khoa dùng chung; giữ đúng tỉ lệ ảnh gốc trên mọi kích thước màn hình. */
+.brand-logo {
+    display: block;
+    flex-shrink: 0;
+    object-fit: contain;
+}
+.mobile-bar-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.home-logo {
+    margin-bottom: var(--space-4);
 }

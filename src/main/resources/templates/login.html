@@ -5,7 +5,7 @@
 </head>
 <body class="auth-page">
 <main class="auth-shell">
-    <p class="auth-brand">Quản lý đề tài<span>Khoa Công nghệ Thông tin</span></p>
+    <div class="auth-brand"><img class="brand-logo" th:src="@{/images/logo.png}" alt="Logo FIT HCMUTE" width="72" height="72"><div>Quản lý đề tài<small>Khoa Công nghệ Thông tin</small></div></div>
     <section class="auth-card">
         <h1>Đăng nhập</h1>
         <p th:if="${param.passwordChanged}" class="message success">Đã đổi mật khẩu. Vui lòng đăng nhập lại.</p>
