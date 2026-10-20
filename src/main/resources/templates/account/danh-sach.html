@@ -18,7 +18,7 @@
             </p>
             <p class="message error" th:if="${loi}" th:text="${loi}"></p>
             <div class="table-wrap">
-                <table>
+                <table class="management-table account-table">
                     <thead>
                         <tr>
                             <th>Tên đăng nhập</th>
@@ -31,15 +31,14 @@
                     <tbody>
                         <tr th:each="tk : ${danhSach}">
                             <td>
-                                <span class="mono" th:text="${tk.tenDangNhap}"></span>
+                                <span class="account-login" th:text="${tk.tenDangNhap}"></span>
                                 <span class="self-tag" th:if="${tk.tenDangNhap == tenDangNhapHienTai}">(bạn)</span>
                             </td>
                             <td>
-                                <strong th:text="${tk.hoTen}">
-                                </strong>
-                                <br>
-                                <span class="muted" th:text="${tk.email}">
-                                </span>
+                                <div class="account-identity">
+                                    <strong th:text="${tk.hoTen}"></strong>
+                                    <span class="muted" th:text="${tk.email}"></span>
+                                </div>
                             </td>
                             <td>
                                 <span class="badge-list"><th:block th:each="v : ${tk.vaiTros}"><span class="badge info" th:insert="~{fragments/nhan :: vai-tro(${v})}">Vai trò</span></th:block></span>
@@ -48,17 +47,19 @@
                                 <span th:replace="~{fragments/nhan :: trang-thai-tai-khoan(${tk.trangThai})}"></span>
                             </td>
                             <td>
-                                <a class="button secondary" th:href="@{/admin/tai-khoan/{id}/sua(id=${tk.id})}">Sửa</a>
-                                <form th:action="@{/admin/tai-khoan/{id}/trang-thai(id=${tk.id})}" method="post">
-                                    <input type="hidden" name="trangThai" th:value="${tk.trangThai.name() == 'HOAT_DONG' ? 'BI_KHOA' : 'HOAT_DONG'}">
-                                    <button class="button secondary" type="submit" th:text="${tk.trangThai.name() == 'HOAT_DONG' ? 'Khóa' : 'Mở khóa'}">
-                                    </button>
-                                </form>
-                                <form th:if="${tk.tenDangNhap != tenDangNhapHienTai}"
-                                      th:action="@{/admin/tai-khoan/{id}/xoa(id=${tk.id})}" method="post"
-                                      onsubmit="return confirm('Xóa vĩnh viễn tài khoản này? Chỉ tài khoản chưa có dữ liệu liên quan mới xóa được.');">
-                                    <button class="button danger" type="submit">Xóa</button>
-                                </form>
+                                <div class="table-actions">
+                                    <a class="button secondary" th:href="@{/admin/tai-khoan/{id}/sua(id=${tk.id})}">Sửa</a>
+                                    <form th:action="@{/admin/tai-khoan/{id}/trang-thai(id=${tk.id})}" method="post">
+                                        <input type="hidden" name="trangThai" th:value="${tk.trangThai.name() == 'HOAT_DONG' ? 'BI_KHOA' : 'HOAT_DONG'}">
+                                        <button class="button secondary" type="submit" th:text="${tk.trangThai.name() == 'HOAT_DONG' ? 'Khóa' : 'Mở khóa'}">
+                                        </button>
+                                    </form>
+                                    <form th:if="${tk.tenDangNhap != tenDangNhapHienTai}"
+                                          th:action="@{/admin/tai-khoan/{id}/xoa(id=${tk.id})}" method="post"
+                                          onsubmit="return confirm('Xóa vĩnh viễn tài khoản này? Chỉ tài khoản chưa có dữ liệu liên quan mới xóa được.');">
+                                        <button class="button danger" type="submit">Xóa</button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                         <tr th:if="${#lists.isEmpty(danhSach)}">

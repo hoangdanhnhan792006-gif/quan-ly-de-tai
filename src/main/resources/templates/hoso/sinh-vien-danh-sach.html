@@ -18,7 +18,7 @@
             </p>
             <p class="message error" th:if="${loi}" th:text="${loi}"></p>
             <div class="table-wrap">
-                <table>
+                <table class="management-table">
                     <thead>
                         <tr>
                             <th>Mã</th>
@@ -42,8 +42,10 @@
                             <td th:text="${s.khoaHoc}">
                             </td>
                             <td>
-                                <a class="button secondary" th:href="@{/admin/sinh-vien/{id}/sua(id=${s.id})}">Sửa</a>
-                                <form th:action="@{/admin/sinh-vien/{id}/xoa(id=${s.id})}" method="post" onsubmit="return confirm('Xóa bản ghi chưa được sử dụng?')"><button type="submit" class="button danger">Xóa</button></form>
+                                <div class="table-actions">
+                                    <a class="button secondary" th:href="@{/admin/sinh-vien/{id}/sua(id=${s.id})}">Sửa</a>
+                                    <form th:action="@{/admin/sinh-vien/{id}/xoa(id=${s.id})}" method="post" onsubmit="return confirm('Xóa bản ghi chưa được sử dụng?')"><button type="submit" class="button danger">Xóa</button></form>
+                                </div>
                             </td>
                         </tr>
                         <tr th:if="${#lists.isEmpty(danhSach)}">

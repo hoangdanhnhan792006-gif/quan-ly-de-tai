@@ -171,7 +171,7 @@ code {
 .page-header {
     display: flex;
     flex-wrap: wrap;
-    align-items: flex-end;
+    align-items: center;
     justify-content: space-between;
     gap: var(--space-3) var(--space-5);
 }
@@ -306,8 +306,8 @@ button,
     align-items: center;
     justify-content: center;
     gap: var(--space-2);
-    min-height: 38px;
-    padding: 8px 16px;
+    min-height: var(--control-height);
+    padding: 9px 16px;
     border: 1px solid var(--color-primary);
     border-radius: var(--radius);
     background: var(--color-primary);
@@ -315,7 +315,9 @@ button,
     font: inherit;
     font-size: var(--text-base);
     font-weight: 600;
-    line-height: 1.2;
+    line-height: 1.25;
+    vertical-align: middle;
+    white-space: nowrap;
     text-decoration: none;
     cursor: pointer;
     transition: background-color var(--transition), border-color var(--transition), color var(--transition);
@@ -670,6 +672,99 @@ td .button {
 td textarea {
     min-height: 64px;
     min-width: 200px;
+}
+
+/* Bảng quản trị: chữ và nút căn giữa hàng, không trộn inline link với baseline của form. */
+.management-table th,
+.management-table td {
+    padding: 14px 16px;
+    vertical-align: middle;
+}
+
+.management-table th {
+    font-size: var(--text-table);
+    line-height: 1.4;
+}
+
+.management-table .mono,
+.account-login {
+    font-family: var(--font-sans);
+    font-size: var(--text-table);
+    font-weight: 500;
+}
+
+.management-table th:last-child,
+.management-table td:last-child {
+    width: 1%;
+    white-space: nowrap;
+}
+
+.account-identity {
+    display: grid;
+    gap: 4px;
+    line-height: 1.45;
+    min-width: 180px;
+    overflow-wrap: anywhere;
+}
+
+.account-identity strong {
+    font-weight: 600;
+}
+
+.account-identity .muted {
+    font-size: var(--text-sm);
+}
+
+.table-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 8px;
+}
+
+/* Ghi đè margin của form trong td ở mục 7; chỉ áp dụng nhóm nút không có ô nhập. */
+.management-table .table-actions > form {
+    display: flex;
+    align-items: center;
+    flex: 0 0 auto;
+    margin: 0;
+}
+
+.table-actions .button,
+.table-actions button {
+    height: 36px;
+    min-height: 36px;
+    min-width: 64px;
+    margin: 0;
+    padding: 0 12px;
+    font-size: var(--text-table);
+    font-weight: 500;
+    line-height: 1.25;
+}
+
+/* Khóa/Mở khóa dùng chung một cột để nút Xóa không xê dịch giữa các hàng. */
+.account-table .table-actions {
+    display: grid;
+    grid-template-columns: 64px 88px 64px;
+}
+
+.account-table .table-actions .button {
+    width: 100%;
+}
+
+.management-table .badge-list {
+    align-items: center;
+    gap: 6px;
+    min-width: 110px;
+    max-width: 240px;
+}
+
+.management-table .badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 26px;
+    padding: 3px 10px;
+    line-height: 1.4;
 }
 
 /* ---------- 11. Danh sách thông tin (dt/dd xen kẽ, không có thẻ bao) ---------- */
