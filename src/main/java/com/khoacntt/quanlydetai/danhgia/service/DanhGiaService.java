@@ -150,11 +150,15 @@ public class DanhGiaService {
             LocalDateTime start, LocalDateTime end, String place) {
         Set<Integer> hdIds = new HashSet<>();
         tvs.forEach(t -> hdIds.add(t.getGiangVien().getId()));
-        for (DanhGia other : danhGias.findAllByOrderByIdDesc()) {
-            if (other.getId().equals(dgId)
-                    || other.getDangKy().getNhom().getDot().getTrangThai() == TrangThaiDotDangKy.HUY)
-                continue;
-            var pcs = phanCongs.findByDanhGiaIdOrderByIdAsc(other.getId());
+        Set<Integer> lienQuan = new HashSet<>(hdIds);
+        lienQuan.add(pbId);
+        var lichs = danhGias.lichCoTheTrung(dgId, dotId, pb, start, end, lienQuan, place == null ? null : place.trim());
+        if (lichs.isEmpty()) return;
+        var phanCongTheoLich = phanCongs.findByDanhGiaIdInOrderByIdAsc(
+                lichs.stream().map(DanhGia::getId).toList()).stream()
+                .collect(java.util.stream.Collectors.groupingBy(p -> p.getDanhGia().getId()));
+        for (DanhGia other : lichs) {
+            var pcs = phanCongTheoLich.getOrDefault(other.getId(), List.of());
             Set<Integer> otherHd = new HashSet<>();
             pcs.stream().filter(PhanCongCham::isThanhVienHoiDong).forEach(p -> otherHd.add(p.getGiangVien().getId()));
             Integer otherPb = pcs.stream().filter(PhanCongCham::isPhanBien).map(p -> p.getGiangVien().getId())

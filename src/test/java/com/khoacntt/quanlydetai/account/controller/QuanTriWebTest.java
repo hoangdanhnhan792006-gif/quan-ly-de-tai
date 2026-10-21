@@ -217,4 +217,31 @@ class QuanTriWebTest {
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("action=\"/admin/tai-khoan/2/xoa\"")))
                 .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("action=\"/admin/tai-khoan/1/xoa\""))));
     }
+
+    @Test void menuHienDungTaiKhoanMoiRequestVaEscapeHoTen() throws Exception {
+        var roles = java.util.List.of(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"));
+        doReturn(new TaiKhoanUserDetails("demo_admin", "hash", true, roles, "Nguyễn Hoàng Minh"))
+                .when(userDetailsService).loadUserByUsername("demo_admin");
+        var first = mvc.perform(get("/dashboard").with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user("demo_admin").roles("ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("nguoiDangNhap", new com.khoacntt.quanlydetai.account.dto.NguoiDangNhapDto("Nguyễn Hoàng Minh", "demo_admin")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Nguyễn Hoàng Minh")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("@demo_admin")))
+                .andReturn().getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
+        var preview = java.nio.file.Path.of("target", "identity-preview");
+        java.nio.file.Files.createDirectories(preview);
+        java.nio.file.Files.writeString(preview.resolve("index.html"), first, java.nio.charset.StandardCharsets.UTF_8);
+        doReturn(new TaiKhoanUserDetails("demo_admin", "hash", true, roles, "Tên mới <script>alert(1)</script>"))
+                .when(userDetailsService).loadUserByUsername("demo_admin");
+        mvc.perform(get("/dashboard").with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user("demo_admin").roles("ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("nguoiDangNhap", new com.khoacntt.quanlydetai.account.dto.NguoiDangNhapDto("Tên mới <script>alert(1)</script>", "demo_admin")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("&lt;script&gt;")))
+                .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("<script>alert(1)</script>"))));
+        mvc.perform(get("/dashboard").with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user("demo_other").roles("ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("nguoiDangNhap", new com.khoacntt.quanlydetai.account.dto.NguoiDangNhapDto("demo_other", "demo_other")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("@demo_other")))
+                .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("Nguyễn Hoàng Minh"))));
+    }
 }

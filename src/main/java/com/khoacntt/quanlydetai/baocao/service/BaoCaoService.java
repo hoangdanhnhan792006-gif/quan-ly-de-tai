@@ -39,9 +39,19 @@ public class BaoCaoService {
         this.clock = clock;
     }
     public List<HoSoBaoCaoDto> danhSach() {
-        return dangKys.findAllByOrderByDangKyLucDesc().stream()
-                .filter(d -> d.getTrangThai() == TrangThaiDangKy.CHAP_THUAN).filter(quyen::duocXem)
-                .map(d -> dto(d, false)).toList();
+        var actor = quyen.nguoiDung();
+        var ds = dangKys.duocXemBaoCao(actor.getId(),
+                actor.coVaiTro(com.khoacntt.quanlydetai.account.model.VaiTro.TRUONG_KHOA)
+                        || actor.coVaiTro(com.khoacntt.quanlydetai.account.model.VaiTro.CAN_BO_KHOA),
+                actor.coVaiTro(com.khoacntt.quanlydetai.account.model.VaiTro.SINH_VIEN),
+                actor.coVaiTro(com.khoacntt.quanlydetai.account.model.VaiTro.GIANG_VIEN));
+        if (ds.isEmpty()) return List.of();
+        Set<Integer> duocNop = actor.coVaiTro(com.khoacntt.quanlydetai.account.model.VaiTro.SINH_VIEN)
+                ? dangKys.duocNopBaoCao(ds.stream().map(DangKy::getId).toList(), actor.getId(), ThoiGian.hienTai(clock))
+                : Set.of();
+        return ds.stream().map(d -> new HoSoBaoCaoDto(d.getId(), d.getNhom().getMaNhom(),
+                d.getDeTai().getTenDeTai(), ThoiGian.sangGioVietNam(d.getNhom().getDot().getHanNopBaoCao()),
+                duocNop.contains(d.getId()), List.of())).toList();
     }
     public HoSoBaoCaoDto chiTiet(Integer dkId) {
         DangKy dk = tim(dkId);
@@ -100,11 +110,15 @@ public class BaoCaoService {
             } catch (NghiepVuException | org.springframework.security.access.AccessDeniedException ignored) {
             }
         }
+        var cacBaoCao = dayDu ? baoCaos.findByDangKyIdOrderByPhienBanDesc(dk.getId()) : List.<BaoCao>of();
+        var tepTheoBaoCao = cacBaoCao.isEmpty() ? Map.<Integer, List<BaoCaoTep>>of()
+                : teps.findByBaoCaoIdInOrderByIdAsc(cacBaoCao.stream().map(BaoCao::getId).toList()).stream()
+                        .collect(java.util.stream.Collectors.groupingBy(t -> t.getBaoCao().getId()));
         List<BaoCaoDto> ds = dayDu
-                ? baoCaos.findByDangKyIdOrderByPhienBanDesc(dk.getId()).stream()
+                ? cacBaoCao.stream()
                         .map(b -> new BaoCaoDto(b.getId(), b.getPhienBan(), b.getGhiChu(),
                                 ThoiGian.sangGioVietNam(b.getNopLuc()),
-                                teps.findByBaoCaoIdOrderByIdAsc(b.getId()).stream()
+                                tepTheoBaoCao.getOrDefault(b.getId(), List.of()).stream()
                                         .map(t -> new BaoCaoDto.TepDto(t.getId(), t.getLoaiTaiLieu().getNhan(),
                                                 t.getTenTepGoc(), t.getKichThuocByte()))
                                         .toList()))

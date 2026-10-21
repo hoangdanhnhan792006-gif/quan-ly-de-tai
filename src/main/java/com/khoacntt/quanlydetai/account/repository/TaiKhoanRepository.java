@@ -24,4 +24,13 @@ public interface TaiKhoanRepository extends JpaRepository<TaiKhoan, Integer> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select t from TaiKhoan t where t.id = :id")
     Optional<TaiKhoan> timVaKhoa(@Param("id") Integer id);
+
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = "vaiTros")
+    @Query("select t from TaiKhoan t where :vaiTro member of t.vaiTros order by t.tenDangNhap")
+    java.util.List<TaiKhoan> theoVaiTro(@Param("vaiTro") com.khoacntt.quanlydetai.account.model.VaiTro vaiTro);
+
+    @Override
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = "vaiTros")
+    java.util.List<TaiKhoan> findAll(org.springframework.data.domain.Sort sort);
+
 }

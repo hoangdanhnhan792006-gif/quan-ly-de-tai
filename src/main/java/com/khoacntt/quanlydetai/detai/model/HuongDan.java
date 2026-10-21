@@ -29,6 +29,10 @@ public class HuongDan {
         this.phanCongLuc = now;
     }
 
+    public DeTai getDeTai() {
+        return deTai;
+    }
+
     public GiangVien getGiangVien() {
         return giangVien;
     }

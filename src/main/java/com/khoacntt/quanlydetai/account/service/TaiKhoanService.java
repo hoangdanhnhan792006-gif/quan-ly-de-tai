@@ -52,8 +52,7 @@ public class TaiKhoanService {
 
     @PreAuthorize("hasRole('ADMIN')")
     public List<TaiKhoanDto> theoVaiTro(VaiTro vaiTro) {
-        return taiKhoanRepository.findAll(Sort.by("tenDangNhap")).stream()
-                .filter(t -> t.coVaiTro(vaiTro)).map(TaiKhoanDto::tu).toList();
+        return taiKhoanRepository.theoVaiTro(vaiTro).stream().map(TaiKhoanDto::tu).toList();
     }
 
     @PreAuthorize("hasRole('ADMIN')")

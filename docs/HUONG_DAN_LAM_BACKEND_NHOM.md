@@ -156,3 +156,13 @@ Trước khi commit: `git status`, `git diff`, chọn file, `git diff --cached`.
 - Chạy được local, Flyway không lỗi checksum, không ghi database chính khi test tự động.
 - Cập nhật tài liệu nghiệp vụ nếu thay quy tắc; ghi rõ môi trường và giới hạn khi báo cáo.
 - Người nhận module phải giải thích được luồng, annotation và xử lý lỗi của phần mình trước khi bảo vệ.
+
+
+## 10. Quy tắc truy vấn danh sách (cập nhật 21/10/2026)
+
+- Đặt điều kiện vai trò, quyền xem, đợt/bộ môn và thời gian tại Repository bằng derived query/JPQL/SQL phù hợp. Không tải toàn bộ bảng rồi lọc quyền trong Service.
+- Kiểm tra lịch: lấy các lịch có khả năng xung đột tại DB, tải phân công của chúng trong một lô, rồi áp dụng quy tắc chính xác. Giữ nguyên khóa GV/đợt/đề tài và transaction; không bỏ khóa vì đã có query lọc.
+- Dữ liệu dùng cho DTO được lấy theo lô bằng danh sách ID và gom theo khóa; dùng fetch join/EntityGraph cho các quan hệ cần hiển thị. Không fetch nhiều collection tùy tiện gây nhân dòng; không dùng cache chung để giữ dữ liệu của người đang đăng nhập.
+- Bộ lọc đề tài và đợt của SV dùng projection mã/tên; không truy vấn lại cả tập entity chỉ để dựng danh sách lựa chọn. Các trang danh sách hồ sơ không nạp lựa chọn tài khoản của form tạo/sửa.
+- Test MySQL bổ sung kiểm tra quyền và biên thời gian, đồng thời đếm SQL thật bằng Hibernate Statistics để phát hiện N+1 khi tăng số dòng. Đo SQL không thay thế EXPLAIN/benchmark dữ liệu lớn.
+- Chưa bổ sung phân trang theo phạm vi hiện tại. Các danh sách quản trị cần hiển thị toàn bộ vẫn có thể dùng findAll; không nhầm với lấy toàn bộ để lọc nghiệp vụ trong RAM. Khi dữ liệu lớn hơn, phân trang là bước cải thiện riêng cần chỉnh cả Controller/view.

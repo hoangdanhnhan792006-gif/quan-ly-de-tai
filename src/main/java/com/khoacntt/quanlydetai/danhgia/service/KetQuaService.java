@@ -167,7 +167,7 @@ public class KetQuaService {
     }
     public List<KetQuaDto> cuaDanhGia(Integer dgId) {
         rules.kiemTraXem(rules.tim(dgId));
-        return ketQuas.findByDanhGiaIdOrderByPhienBanDesc(dgId).stream().map(this::dto).toList();
+        return danhSachDto(ketQuas.findByDanhGiaIdOrderByPhienBanDesc(dgId));
     }
     public Integer danhGiaCuaKetQua(Integer id) {
         Integer dg = ketQuas.timDanhGiaId(id).orElseThrow(() -> new KhongTimThayException("Không tìm thấy kết quả"));
@@ -178,31 +178,43 @@ public class KetQuaService {
     public List<KetQuaSinhVienDto> cuaSinhVien() {
         var sv = sinhViens.findByTaiKhoanId(rules.actor().getId())
                 .orElseThrow(() -> new NghiepVuException("Bạn cần có hồ sơ sinh viên"));
-        return dangKys.cuaSinhVien(sv.getId()).stream()
-                .map(d -> new KetQuaSinhVienDto(d.getId(), d.getNhom().getDot().getId(), d.getNhom().getDot().getTenDot(), d.getNhom().getMaNhom(), d.getDeTai().getTenDeTai(),
-                        danhGias.findByDangKyId(d.getId())
-                                .flatMap(g -> ketQuas.findFirstByDanhGiaIdAndTrangThaiOrderByPhienBanDesc(g.getId(),
-                                        TrangThaiKetQua.DA_CONG_BO))
-                                .map(this::dto).orElse(null)))
-                .toList();
+        return cuaSinhVien(sv.getId(), null);
+    }
+    private List<KetQuaSinhVienDto> cuaSinhVien(Integer svId, Integer dotId) {
+        var ds = dangKys.cuaSinhVienTrongDot(svId, dotId);
+        if (ds.isEmpty()) return List.of();
+        var congBo = ketQuas.congBoMoiNhat(ds.stream().map(d -> d.getId()).toList());
+        var dtos = danhSachDto(congBo).stream().collect(java.util.stream.Collectors.toMap(KetQuaDto::id, k -> k));
+        Map<Integer, KetQuaDto> theoDangKy = new HashMap<>();
+        congBo.forEach(k -> theoDangKy.put(k.getDanhGia().getDangKy().getId(), dtos.get(k.getId())));
+        return ds.stream().map(d -> new KetQuaSinhVienDto(d.getId(), d.getNhom().getDot().getId(),
+                d.getNhom().getDot().getTenDot(), d.getNhom().getMaNhom(), d.getDeTai().getTenDeTai(),
+                theoDangKy.get(d.getId()))).toList();
     }
     @PreAuthorize("hasRole('SINH_VIEN')")
     public Map<String, Object> traCuuSinhVien(Integer dotId) {
-        var ds = cuaSinhVien();
+        var sv = sinhViens.findByTaiKhoanId(rules.actor().getId())
+                .orElseThrow(() -> new NghiepVuException("Bạn cần có hồ sơ sinh viên"));
         Map<Integer, String> dots = new LinkedHashMap<>();
-        ds.forEach(d -> dots.put(d.dotId(), d.tenDot()));
+        dangKys.dotCuaSinhVien(sv.getId()).forEach(d -> dots.put(d.getId(), d.getTenDot()));
         if (dotId != null && !dots.containsKey(dotId))
             throw new AccessDeniedException("Bạn không có đăng ký được chấp thuận trong đợt này");
-        return Map.of("cacDot", dots, "danhSach", ds.stream()
-                .filter(d -> dotId == null || dotId.equals(d.dotId())).toList());
+        return Map.of("cacDot", dots, "danhSach", cuaSinhVien(sv.getId(), dotId));
     }
 
-    private KetQuaDto dto(KetQua k) {
-        boolean dieuChinh = !yeuCaus
-                .findByPhanCongChamDanhGiaIdAndTrangThaiIn(k.getDanhGia().getId(), QuyTacDanhGia.DANG_XU_LY).isEmpty();
+    private List<KetQuaDto> danhSachDto(List<KetQua> ds) {
+        if (ds.isEmpty()) return List.of();
+        var dangDieuChinh = yeuCaus.danhGiaDangDieuChinh(ds.stream().map(k -> k.getDanhGia().getId()).distinct().toList(),
+                QuyTacDanhGia.DANG_XU_LY);
+        var theoKetQua = chiTiets.findByKetQuaIdInOrderByPhanCongChamIdAsc(ds.stream().map(KetQua::getId).toList()).stream()
+                .collect(java.util.stream.Collectors.groupingBy(c -> c.getKetQua().getId()));
+        return ds.stream().map(k -> dto(k, dangDieuChinh.contains(k.getDanhGia().getId()),
+                theoKetQua.getOrDefault(k.getId(), List.of()))).toList();
+    }
+    private KetQuaDto dto(KetQua k, boolean dieuChinh, List<ChiTietKetQua> ds) {
         return new KetQuaDto(k.getId(), k.getPhienBan(), k.getDiemCuoi(), k.getDat() != null && k.getDat() == 1,
                 k.getNhanXetTongHop(), k.getTrangThai(), dieuChinh,
-                chiTiets.findByKetQuaIdOrderByPhanCongChamIdAsc(k.getId()).stream()
+                ds.stream()
                         .map(c -> new KetQuaDto.DiemDto(c.getPhanCongCham().getGiangVien().getTaiKhoan().getHoTen(),
                                 c.getPhieuCham().getPhienBan(), c.getPhieuCham().getDiem(),
                                 c.getPhieuCham().getNhanXet()))

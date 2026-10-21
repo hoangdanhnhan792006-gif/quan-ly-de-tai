@@ -1,6 +1,6 @@
 # Bối cảnh và đặc tả hiện hành — Hệ thống Quản lý Đề tài Sinh viên
 
-**Cập nhật 20/10/2026.** Có thể sao chép toàn bộ tài liệu này vào đầu chat mới để bàn giao bối cảnh. Đây là ảnh chụp trạng thái tại ngày cập nhật, không thay cho việc kiểm tra code/Git mới nhất.
+**Cập nhật 21/10/2026.** Có thể sao chép toàn bộ tài liệu này vào đầu chat mới để bàn giao bối cảnh. Đây là ảnh chụp trạng thái tại ngày cập nhật, không thay cho việc kiểm tra code/Git mới nhất.
 
 ## 1. Dự án và nguyên tắc
 
@@ -120,6 +120,11 @@ Tên miền local qldt.nhom4qldt.id.vn đã cấp Let's Encrypt bằng DNS-01 ma
 Giới hạn đã thống nhất: Render upload là ổ tạm; online tắt mail và chưa xác nhận SMTP Internet. Nhóm chấp nhận local demo đầy đủ, online minh chứng deploy; không làm Supabase/Brevo/tunnel lúc này. Không mô tả bản online đã lưu tệp bền vững hoặc gửi email thật đầy đủ.
 
 ## 9. Kiểm thử và tiến trình đã làm
+
+- 21/10 tối ưu truy vấn, không thêm phân trang: kiểm tra lịch chỉ lấy ứng viên trùng thời gian/người/địa điểm từ Repository, lấy phân công theo lô; giữ khóa và quy tắc biên giờ cũ. Lọc vai trò, đợt/bộ môn, quyền xem và kỳ tra cứu SV tại DB. Bộ lọc đề tài chỉ lấy mã/tên thay vì tải lại entity. Batch dữ liệu GVHD, thành viên hội đồng, tệp, phiếu/yêu cầu sửa và snapshot kết quả; các form hồ sơ chỉ nạp lựa chọn khi cần.
+- Verify MySQL sau sửa 21/10: 218 ca, 217 đạt, 0 failure/error, 1 SMTP bỏ qua; ba schema thử và tài khoản thử đã dọn. Có test trùng lịch cùng người giữa hai đợt, trùng địa điểm trong đợt dù khác GV, biên đầu/cuối hội đồng, đợt hủy, phân quyền và các ca ghi đồng thời.
+- Đếm SQL thật bằng Hibernate Statistics trên MySQL: danh sách đề tài 1 dòng và 21 dòng cùng 4 SQL. Khi thêm bốn bộ dữ liệu có người chấm/người đăng khác nhau, số SQL của danh sách báo cáo/đánh giá/hội đồng/thông báo vẫn lần lượt 3/3/2/4. Đây là kiểm tra số truy vấn với dữ liệu thử, không phải benchmark hàng triệu bản ghi hoặc cam kết mọi truy vấn dùng index.
+- Bản sửa truy vấn này mới ở local, chưa tự commit/push/deploy. Không thay schema, giao diện hoặc quy tắc nghiệp vụ; chưa làm phân trang theo phạm vi người dùng chọn.
 
 - 20/10 sau ghép FE: verify liệt kê 209 ca; 208 đạt, 0 failure/error, 1 SMTP thật bỏ qua. Ba bộ MySQL chạy trên schema riêng và được dọn.
 - 18/10 Mailpit: đã nhận 3 email HTML riêng, nội dung UTF-8, gửi sau commit và không gửi rollback; đây là lần kiểm thử khác với mốc SMTP skipped nêu trên.

@@ -6,7 +6,7 @@ import jakarta.persistence.LockModeType;
 import java.util.*;
 import java.time.LocalDateTime;
 public interface HoiDongRepository extends JpaRepository<HoiDong, Integer> {
-    List<HoiDong> findAllByOrderByIdDesc();
+
     List<HoiDong> findByDotIdAndTrangThai(Integer id, TrangThaiHoiDong state);
     boolean existsByDotIdAndMaHoiDong(Integer dotId, String ma);
     @Query("select h.dot.id from HoiDong h where h.id=:id")
@@ -14,4 +14,8 @@ public interface HoiDongRepository extends JpaRepository<HoiDong, Integer> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select h from HoiDong h where h.id=:id")
     Optional<HoiDong> timVaKhoa(@Param("id") Integer id);
+
+    @EntityGraph(attributePaths = "dot")
+    List<HoiDong> findAllByOrderByIdDesc();
+
 }

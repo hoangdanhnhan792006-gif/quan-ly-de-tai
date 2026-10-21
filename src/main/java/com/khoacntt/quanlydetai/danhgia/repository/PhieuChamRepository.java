@@ -12,4 +12,7 @@ public interface PhieuChamRepository extends JpaRepository<PhieuCham, Integer> {
     boolean existsByPhanCongChamDanhGiaId(Integer id);
     @Query("select coalesce(max(p.phienBan),0) from PhieuCham p where p.phanCongCham.id=:id")
     int phienBanCuoi(@Param("id") Integer id);
+
+    List<PhieuCham> findByPhanCongChamIdInOrderByPhienBanDesc(Collection<Integer> ids);
+
 }

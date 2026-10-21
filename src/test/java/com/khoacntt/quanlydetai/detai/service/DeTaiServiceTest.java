@@ -247,7 +247,8 @@ class DeTaiServiceTest {
     @Test
     void dotDaHuyKhongConTrongDanhSachCongBo() {
         daDuyet(); deTai.congBo(taiKhoan, now); dot.chuyenTrangThai(TrangThaiDotDangKy.HUY);
-        when(repository.findByTrangThaiOrderByIdDesc(TrangThaiDeTai.DA_CONG_BO)).thenReturn(List.of(deTai));
+        when(repository.daCongBo(null, null)).thenReturn(List.of());
         assertTrue(service.daCongBo(null, null).isEmpty());
+        verify(repository).daCongBo(null, null);
     }
 }

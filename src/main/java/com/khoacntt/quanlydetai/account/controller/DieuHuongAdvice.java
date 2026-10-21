@@ -1,10 +1,24 @@
 package com.khoacntt.quanlydetai.account.controller;
 
+import com.khoacntt.quanlydetai.account.dto.NguoiDangNhapDto;
+import com.khoacntt.quanlydetai.account.security.TaiKhoanUserDetails;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 @ControllerAdvice
 public class DieuHuongAdvice {
+    @ModelAttribute("nguoiDangNhap")
+    public NguoiDangNhapDto nguoiDangNhap(Authentication authentication, HttpServletRequest request) {
+        if (authentication == null || !authentication.isAuthenticated()
+                || authentication instanceof AnonymousAuthenticationToken) return null;
+        if (request.getAttribute("nguoiDangNhap") instanceof NguoiDangNhapDto dto) return dto;
+        String hoTen = authentication.getPrincipal() instanceof TaiKhoanUserDetails tk
+                ? tk.getHoTen() : authentication.getName();
+        return new NguoiDangNhapDto(hoTen, authentication.getName());
+    }
+
     @ModelAttribute("laQuanTriVien")
     public boolean laQuanTriVien(Authentication authentication) {
         return authentication != null && authentication.getAuthorities().stream()

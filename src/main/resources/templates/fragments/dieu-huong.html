@@ -41,6 +41,11 @@
                 </div>
 
                 <div class="sidebar-footer">
+                    <div class="sidebar-user" th:if="${nguoiDangNhap != null}">
+                        <span class="sidebar-user-label">Đang đăng nhập</span>
+                        <strong class="sidebar-user-name" th:text="${nguoiDangNhap.hoTen}">Họ tên</strong>
+                        <span class="sidebar-user-login" th:text="${'@' + nguoiDangNhap.tenDangNhap}">@taikhoan</span>
+                    </div>
                     <a class="sidebar-link" th:href="@{/ho-so}">Hồ sơ của tôi</a>
                     <a class="sidebar-link" th:href="@{/ho-so/doi-mat-khau}">Đổi mật khẩu</a>
                     <form class="sidebar-logout" th:action="@{/logout}" method="post">

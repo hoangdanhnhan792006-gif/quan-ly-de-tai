@@ -38,6 +38,6 @@ public class DatabaseUserDetailsService implements UserDetailsService {
                 .toList();
 
         return new TaiKhoanUserDetails(account.getTenDangNhap(), account.getMatKhauBam(),
-                account.getTrangThai() == TrangThaiTaiKhoan.HOAT_DONG, authorities);
+                account.getTrangThai() == TrangThaiTaiKhoan.HOAT_DONG, authorities, account.getHoTen());
     }
 }

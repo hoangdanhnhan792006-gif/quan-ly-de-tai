@@ -38,4 +38,9 @@ public class QuyenBaoCao {
         if (!duocXem(dk))
             throw new AccessDeniedException("Bạn không được xem báo cáo của nhóm này");
     }
+
+    public TaiKhoan nguoiDung() {
+        return actor.batBuoc();
+    }
+
 }

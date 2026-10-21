@@ -1448,6 +1448,33 @@ form.filter-bar {
     border-top: 1px solid var(--sidebar-active-bg);
 }
 
+.sidebar-user {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+    margin-bottom: var(--space-2);
+    padding: 0 var(--space-5) var(--space-2);
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+
+.sidebar-user-label {
+    color: var(--sidebar-text-muted);
+    font-size: var(--text-xs);
+}
+
+.sidebar-user-name {
+    color: var(--sidebar-text-strong);
+    font-size: var(--text-table);
+    font-weight: 600;
+}
+
+.sidebar-user-login {
+    color: var(--sidebar-text);
+    font-size: var(--text-xs);
+}
+
 .sidebar-logout {
     padding: var(--space-2) var(--space-5) 0;
 }

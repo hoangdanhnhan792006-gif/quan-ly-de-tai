@@ -44,8 +44,7 @@ public class DotDangKyService {
     @PreAuthorize("hasRole('GIANG_VIEN')")
     public List<DotDangKyDto> dangMoDeXuat() {
         var now = ThoiGian.hienTai(clock);
-        return repository.findByTrangThaiOrderByIdDesc(TrangThaiDotDangKy.TRIEN_KHAI).stream()
-                .filter(d -> d.dangMoDeXuat(now)).map(DotDangKyDto::tu).toList();
+        return repository.dangMoDeXuat(now).stream().map(DotDangKyDto::tu).toList();
     }
 
     @Transactional

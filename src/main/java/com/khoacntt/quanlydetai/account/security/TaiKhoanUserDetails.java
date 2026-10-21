@@ -13,11 +13,22 @@ import java.util.HexFormat;
 public class TaiKhoanUserDetails extends User {
     private static final long serialVersionUID = 1L;
     private final String dauKiemTraMatKhau;
+    private final String hoTen;
 
     public TaiKhoanUserDetails(String username, String password, boolean enabled,
                               Collection<? extends GrantedAuthority> authorities) {
+        this(username, password, enabled, authorities, username);
+    }
+
+    public TaiKhoanUserDetails(String username, String password, boolean enabled,
+                              Collection<? extends GrantedAuthority> authorities, String hoTen) {
         super(username, password, enabled, true, true, true, authorities);
         this.dauKiemTraMatKhau = dauKiemTra(password);
+        this.hoTen = hoTen;
+    }
+
+    public String getHoTen() {
+        return hoTen == null || hoTen.isBlank() ? getUsername() : hoTen;
     }
 
     public boolean matKhauDaThayDoi(String matKhauBamHienTai) {

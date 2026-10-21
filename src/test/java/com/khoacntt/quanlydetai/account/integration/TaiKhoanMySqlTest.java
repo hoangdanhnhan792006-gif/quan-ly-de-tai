@@ -5,6 +5,8 @@ import com.khoacntt.quanlydetai.account.model.VaiTro;
 import com.khoacntt.quanlydetai.account.model.TrangThaiTaiKhoan;
 import java.util.Set;
 import com.khoacntt.quanlydetai.account.service.TaiKhoanService;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.khoacntt.quanlydetai.common.exception.NghiepVuException;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
@@ -248,5 +250,15 @@ class TaiKhoanMySqlTest {
         var f = new com.khoacntt.quanlydetai.detai.form.DeTaiForm(); f.setDotId(1); f.setBoMonId(1);
         f.setMaDeTai("DT1"); f.setTenDeTai("Đề tài"); f.setNoiDung("Nội dung"); f.setYeuCau("   "); f.setSanPhamDuKien("");
         assertThatThrownBy(() -> deTais.tao(f)).isInstanceOf(jakarta.validation.ConstraintViolationException.class);
+    }
+
+    @Test void locVaiTroTaiDatabaseKhongNhanBanTaiKhoanNhieuVaiTro() {
+        jdbc.update("INSERT INTO tai_khoan_vai_tro(tai_khoan_id,vai_tro) VALUES(?,'GIANG_VIEN')", targetId);
+        jdbc.update("UPDATE tai_khoan SET trang_thai='BI_KHOA' WHERE id=?", targetId);
+        var sinhViens = service.theoVaiTro(com.khoacntt.quanlydetai.account.model.VaiTro.SINH_VIEN);
+        assertEquals(1, sinhViens.stream().filter(t -> t.id() == targetId).count());
+        assertTrue(sinhViens.stream().noneMatch(t -> t.id() == adminId));
+        assertEquals(1, service.theoVaiTro(com.khoacntt.quanlydetai.account.model.VaiTro.GIANG_VIEN).stream()
+                .filter(t -> t.id() == targetId).count());
     }
 }

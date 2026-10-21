@@ -53,21 +53,15 @@ public class DeTaiService {
 
     public List<DeTaiDto> daCongBo(Integer dotId, Integer boMonId) {
         TaiKhoan actor = nguoiDung.batBuoc();
-        return deTaiRepository.findByTrangThaiOrderByIdDesc(TrangThaiDeTai.DA_CONG_BO).stream()
-                .filter(this::duocXemCongKhai)
-                .filter(d -> dotId == null || Objects.equals(d.getDot().getId(), dotId))
-                .filter(d -> boMonId == null || Objects.equals(d.getBoMon().getId(), boMonId))
-                .map(d -> dto(d, actor)).toList();
+        return danhSachDto(deTaiRepository.daCongBo(dotId, boMonId), actor);
     }
 
     public BoLocDeTaiDto boLocCongBo() {
         Map<Integer, String> cacDot = new LinkedHashMap<>();
         Map<Integer, String> cacBoMon = new LinkedHashMap<>();
-        for (DeTai d : deTaiRepository.findByTrangThaiOrderByIdDesc(TrangThaiDeTai.DA_CONG_BO)) {
-            if (duocXemCongKhai(d)) {
-                cacDot.put(d.getDot().getId(), d.getDot().getTenDot());
-                cacBoMon.put(d.getBoMon().getId(), d.getBoMon().getTenBoMon());
-            }
+        for (var d : deTaiRepository.boLocCongBo()) {
+            cacDot.put(d.getDotId(), d.getTenDot());
+            cacBoMon.put(d.getBoMonId(), d.getTenBoMon());
         }
         return new BoLocDeTaiDto(cacDot, cacBoMon);
     }
@@ -75,14 +69,14 @@ public class DeTaiService {
     @PreAuthorize("hasRole('GIANG_VIEN')")
     public List<DeTaiDto> cuaToi() {
         TaiKhoan actor = nguoiDung.batBuoc();
-        return deTaiRepository.cuaGiangVien(actor.getId()).stream().map(d -> dto(d, actor)).toList();
+        return danhSachDto(deTaiRepository.cuaGiangVien(actor.getId()), actor);
     }
 
     @PreAuthorize("hasAnyRole('TRUONG_BO_MON','TRUONG_KHOA','CAN_BO_KHOA')")
     public List<DeTaiDto> quanLy() {
         TaiKhoan actor = nguoiDung.batBuoc();
-        return deTaiRepository.findAll(Sort.by("id").descending()).stream()
-                .filter(d -> laKhoa(actor) || quanLyBoMon(d, actor)).map(d -> dto(d, actor)).toList();
+        Integer boMonId = boMonPhuTrach(actor);
+        return danhSachDto(deTaiRepository.quanLy(laKhoa(actor), boMonId), actor);
     }
 
     public DeTaiDto chiTiet(Integer id) {
@@ -112,14 +106,12 @@ public class DeTaiService {
 
     @PreAuthorize("hasRole('GIANG_VIEN')")
     public List<BoMonDto> boMonDeXuat() {
-        return boMonRepository.findAll(Sort.by("maBoMon")).stream()
-                .filter(b -> b.getDangHoatDong() == 1).map(BoMonDto::tu).toList();
+        return boMonRepository.findByDangHoatDongOrderByMaBoMonAsc((byte) 1).stream().map(BoMonDto::tu).toList();
     }
 
     @PreAuthorize("hasAnyRole('TRUONG_BO_MON','TRUONG_KHOA','CAN_BO_KHOA')")
     public List<GiangVienDto> giangVienHuongDan() {
-        return giangVienRepository.findAll(Sort.by("maGv")).stream()
-                .filter(this::gvHoatDong).map(GiangVienDto::tu).toList();
+        return giangVienRepository.dangHoatDong().stream().map(GiangVienDto::tu).toList();
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
@@ -316,12 +308,33 @@ public class DeTaiService {
                 && d.getDot().getTrangThai() != TrangThaiDotDangKy.NHAP;
     }
 
+    private Integer boMonPhuTrach(TaiKhoan actor) {
+        if (!actor.coVaiTro(VaiTro.TRUONG_BO_MON)) return null;
+        return giangVienRepository.findByTaiKhoanId(actor.getId()).map(g -> g.getBoMon().getId()).orElse(null);
+    }
+
+    private List<DeTaiDto> danhSachDto(List<DeTai> ds, TaiKhoan actor) {
+        if (ds.isEmpty()) return List.of();
+        var huongDanTheoDeTai = huongDanRepository.findByDeTaiIdInOrderByGiangVienMaGvAsc(
+                ds.stream().map(DeTai::getId).toList()).stream()
+                .collect(java.util.stream.Collectors.groupingBy(h -> h.getDeTai().getId()));
+        Integer boMonId = boMonPhuTrach(actor);
+        return ds.stream().map(d -> dto(d, actor, boMonId,
+                huongDanTheoDeTai.getOrDefault(d.getId(), List.of()))).toList();
+    }
+
     private DeTaiDto dto(DeTai d, TaiKhoan actor) {
+        return dto(d, actor, boMonPhuTrach(actor),
+                huongDanRepository.findByDeTaiIdOrderByGiangVienMaGvAsc(d.getId()));
+    }
+
+    private DeTaiDto dto(DeTai d, TaiKhoan actor, Integer boMonId, List<HuongDan> dsHuongDan) {
         boolean khoa = laKhoa(actor) && d.getDot().getTrangThai() == TrangThaiDotDangKy.TRIEN_KHAI;
-        boolean boMon = quanLyBoMon(d, actor) && d.getDot().getTrangThai() == TrangThaiDotDangKy.TRIEN_KHAI;
+        boolean boMon = boMonId != null && boMonId.equals(d.getBoMon().getId())
+                && d.getDot().getTrangThai() == TrangThaiDotDangKy.TRIEN_KHAI;
         boolean sua = laChuDeXuat(d, actor) && d.getDot().dangMoDeXuat(ThoiGian.hienTai(clock))
                 && (d.getTrangThai() == TrangThaiDeTai.NHAP || d.getTrangThai() == TrangThaiDeTai.TU_CHOI);
-        List<GiangVienDto> huongDans = huongDanRepository.findByDeTaiIdOrderByGiangVienMaGvAsc(d.getId()).stream()
+        List<GiangVienDto> huongDans = dsHuongDan.stream()
                 .map(h -> GiangVienDto.tu(h.getGiangVien())).toList();
         return new DeTaiDto(d.getId(), d.getDot().getId(), d.getDot().getTenDot(), d.getDot().getLoai(),
                 d.getBoMon().getId(), d.getBoMon().getTenBoMon(), d.getMaDeTai(), d.getTenDeTai(), d.getNoiDung(),

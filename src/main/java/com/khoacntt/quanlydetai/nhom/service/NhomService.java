@@ -51,8 +51,7 @@ public class NhomService {
         return nhomRepository.cuaSinhVien(svId).stream().map(n -> dto(n, svId)).toList();
     }
     public List<DotDangKyDto> cacDotDangMo() {
-        return dotRepository.findByTrangThaiOrderByIdDesc(TrangThaiDotDangKy.TRIEN_KHAI).stream()
-                .filter(quyTac::trongHan).map(DotDangKyDto::tu).toList();
+        return dotRepository.dangMoSinhVien(ThoiGian.hienTai(clock)).stream().map(DotDangKyDto::tu).toList();
     }
     public List<LoiMoiDto> loiMoiCuaToi() {
         return loiMoiRepository.findBySinhVienDuocMoiIdOrderByIdDesc(quyTac.sinhVienHienTai().getId())

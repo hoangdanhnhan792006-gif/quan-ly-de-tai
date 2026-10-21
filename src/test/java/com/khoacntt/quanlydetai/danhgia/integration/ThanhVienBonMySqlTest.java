@@ -685,4 +685,173 @@ class ThanhVienBonMySqlTest {
         f.setUyVienIds(Set.of());
         assertThrows(jakarta.validation.ConstraintViolationException.class,()->as(khoa,()->hoiDong.tao(f)));
     }
+
+    @Autowired jakarta.persistence.EntityManagerFactory entityManagerFactory;
+
+    // Đếm SQL thật trên MySQL, không chỉ kiểm tra Mockito gọi đúng tên hàm.
+    long demTruyVan(Runnable work) {
+        var stats = entityManagerFactory.unwrap(org.hibernate.SessionFactory.class).getStatistics();
+        boolean old = stats.isStatisticsEnabled();
+        stats.setStatisticsEnabled(true);
+        stats.clear();
+        try { work.run(); return stats.getPrepareStatementCount(); }
+        finally { stats.setStatisticsEnabled(old); }
+    }
+
+    int themDeTai(int boMon, Actor gv, String suffix) {
+        var now = LocalDateTime.ofInstant(START, ZoneOffset.UTC);
+        int id = insert("INSERT INTO de_tai(dot_id,bo_mon_id,ma_de_tai,ten_de_tai,noi_dung,gv_de_xuat_id,trang_thai,nguoi_duyet_id,duyet_luc,nguoi_cong_bo_id,cong_bo_luc) "
+                + "VALUES(?,?,?,?,'Nội dung',?,'DA_CONG_BO',?,?,?,?)", dot, boMon, prefix + suffix,
+                "Đề tài " + suffix, gv.profile(), khoa.account(), now.minusDays(4), khoa.account(), now.minusDays(4));
+        jdbc.update("INSERT INTO huong_dan(de_tai_id,giang_vien_id,nguoi_phan_cong_id) VALUES(?,?,?)", id, gv.profile(), khoa.account());
+        return id;
+    }
+
+    @Test void locDeTaiDungDotBoMonVaQuyenTruongBoMon() {
+        project("MON_HOC");
+        int otherBm = insert("INSERT INTO bo_mon(ma_bo_mon,ten_bo_mon) VALUES(?,?)", prefix + "X", "Bộ môn khác");
+        int other = themDeTai(otherBm, supervisor, "other");
+        assertEquals(Set.of(topic, other), as(leader, () -> deTai.daCongBo(dot, null)).stream()
+                .map(d -> d.id()).collect(java.util.stream.Collectors.toSet()));
+        assertEquals(List.of(topic), as(leader, () -> deTai.daCongBo(dot, bm)).stream().map(d -> d.id()).toList());
+        jdbc.update("INSERT INTO tai_khoan_vai_tro VALUES(?,'TRUONG_BO_MON')", supervisor.account());
+        var tbm = new Actor(supervisor.account(), supervisor.profile(), supervisor.login(), "TRUONG_BO_MON");
+        var ds = as(tbm, () -> deTai.quanLy());
+        assertFalse(ds.isEmpty());
+        assertTrue(ds.stream().allMatch(d -> d.boMonId() == bm));
+        assertTrue(as(leader, () -> deTai.boLocCongBo()).cacDot().containsKey(dot));
+        jdbc.update("UPDATE dot_dang_ky SET trang_thai='HUY' WHERE id=?", dot);
+        assertTrue(as(leader, () -> deTai.daCongBo(dot, null)).isEmpty());
+        assertFalse(as(leader, () -> deTai.boLocCongBo()).cacDot().containsKey(dot));
+    }
+
+    @Test void danhSachBaoCaoDanhGiaLocDungNguoiVaGiuQuyenNop() {
+        project("MON_HOC");
+        int dg = plan(null, examiner);
+        assertEquals(List.of(registration), as(leader, () -> baoCao.danhSach()).stream().map(d -> d.dangKyId()).toList());
+        assertTrue(as(leader, () -> baoCao.danhSach()).getFirst().coTheNop());
+        assertFalse(as(member, () -> baoCao.danhSach()).getFirst().coTheNop());
+        assertTrue(as(stranger, () -> baoCao.danhSach()).isEmpty());
+        assertTrue(as(otherTeacher, () -> baoCao.danhSach()).isEmpty());
+        assertEquals(1, as(supervisor, () -> baoCao.danhSach()).size());
+        assertTrue(as(supervisor, () -> truyVan.danhSach()).isEmpty());
+        assertEquals(List.of(dg), as(examiner, () -> truyVan.danhSach()).stream().map(d -> d.id()).toList());
+        assertTrue(as(otherTeacher, () -> truyVan.danhSach()).isEmpty());
+        report(); start(dg);
+        assertFalse(as(leader, () -> baoCao.danhSach()).getFirst().coTheNop());
+    }
+
+    @Test void danhSachDeTaiKhongTruyVanThemChoTungDong() {
+        project("MON_HOC");
+        long before = demTruyVan(() -> assertEquals(1, as(khoa, () -> deTai.daCongBo(dot, null)).size()));
+        for (int n = 0; n < 20; n++) themDeTai(bm, actor("GIANG_VIEN"), "batch" + n);
+        long after = demTruyVan(() -> assertEquals(21, as(khoa, () -> deTai.daCongBo(dot, null)).size()));
+        assertTrue(after <= before + 1, "SQL tăng theo dòng: " + before + " -> " + after);
+        System.out.println("DeTai SQL: 1 dòng=" + before + ", 21 dòng=" + after);
+    }
+
+    @Test void truyVanTrungLichBoQuaChinhNoVaDotHuy() {
+        project("MON_HOC");
+        int first = plan(null, examiner), firstDot = dot;
+        prefix += "B"; project("MON_HOC");
+        var f = planForm(null, examiner);
+        assertThrows(NghiepVuException.class, () -> as(khoa, () -> danhGia.lap(f)));
+        int second = plan(null, otherTeacher);
+        assertThrows(NghiepVuException.class, () -> run(khoa, () -> danhGia.sua(second, f)));
+        jdbc.update("UPDATE dot_dang_ky SET trang_thai='HUY' WHERE id=?", firstDot);
+        run(khoa, () -> danhGia.sua(second, f));
+        run(khoa, () -> danhGia.sua(second, f)); // Chính lần đánh giá đang sửa không tự xung đột.
+        assertNotEquals(first, second);
+    }
+
+    @Test void phanBienChamBienDauHoiDongBiChanNhungBienCuoiDuocPhep() {
+        project("NCKH");
+        var first = planForm(council(), examiner);
+        as(khoa, () -> danhGia.lap(first));
+        prefix += "B"; project("MON_HOC");
+        var f = planForm(null, chair);
+        f.setLichPhanBienLuc(first.getHoiDongBatDau());
+        assertThrows(NghiepVuException.class, () -> as(khoa, () -> danhGia.lap(f)));
+        f.setLichPhanBienLuc(first.getHoiDongKetThuc());
+        assertNotNull(as(khoa, () -> danhGia.lap(f)));
+    }
+
+    @Test void thongBaoLocNguoiDangVaKhongLoQuyenSauKhiDoiVaiTro() {
+        var f = new ThongBaoForm(); f.setTieuDe("Thông báo thử"); f.setNoiDung("Nội dung");
+        f.setDonViBanHanh(DonViBanHanh.KHOA_CNTT);
+        int id = as(khoa, () -> thongBao.tao(f));
+        run(khoa, () -> thongBao.congBo(id));
+        var other = actor("CAN_BO_KHOA");
+        assertTrue(as(other, () -> thongBao.quanLy()).isEmpty());
+        assertEquals(List.of(id), as(khoa, () -> thongBao.quanLy()).stream().map(t -> t.id()).toList());
+        jdbc.update("UPDATE tai_khoan_vai_tro SET vai_tro='SINH_VIEN' WHERE tai_khoan_id=?", khoa.account());
+        var former = new Actor(khoa.account(), 0, khoa.login(), "SINH_VIEN");
+        assertFalse(as(former, () -> thongBao.congKhai()).stream().filter(t -> t.id() == id).findFirst().orElseThrow().coTheSua());
+    }
+
+    Map<String, Long> demCacDanhSach() {
+        return Map.of(
+                "baoCao", demTruyVan(() -> as(khoa, () -> baoCao.danhSach())),
+                "danhGia", demTruyVan(() -> as(khoa, () -> truyVan.danhSach())),
+                "hoiDong", demTruyVan(() -> as(khoa, () -> hoiDong.danhSach())),
+                "thongBao", demTruyVan(() -> as(khoa, () -> thongBao.congKhai())));
+    }
+
+    void themBoDuLieuDanhSach() {
+        project("NCKH");
+        plan(council(), examiner);
+        var author = actor("CAN_BO_KHOA");
+        var f = new ThongBaoForm(); f.setTieuDe("Thông báo " + prefix); f.setNoiDung("Nội dung");
+        f.setDonViBanHanh(DonViBanHanh.KHOA_CNTT);
+        int id = as(author, () -> thongBao.tao(f));
+        run(author, () -> thongBao.congBo(id));
+    }
+
+    @Test void cacDanhSachBaoCaoDanhGiaHoiDongThongBaoKhongBiNPlusOne() {
+        themBoDuLieuDanhSach();
+        var before = demCacDanhSach();
+        for (int n = 0; n < 4; n++) {
+            prefix += "B";
+            examiner = actor("GIANG_VIEN"); chair = actor("GIANG_VIEN"); secretary = actor("GIANG_VIEN");
+            themBoDuLieuDanhSach();
+        }
+        var after = demCacDanhSach();
+        before.forEach((key, count) -> assertTrue(after.get(key) <= count + 1,
+                key + " SQL tăng theo dòng: " + count + " -> " + after.get(key)));
+        System.out.println("DanhSach SQL before=" + before + ", after=" + after);
+    }
+
+    @Test void trungDiaDiemHoiDongTrongDotDuKhacGiangVienVaChapNhanGioLienKe() {
+        project("NCKH");
+        var first = planForm(council(), examiner);
+        as(khoa, () -> danhGia.lap(first));
+        int secondTopic = themDeTai(bm, supervisor, "room");
+        int secondGroup = insert("INSERT INTO nhom(dot_id,ma_nhom,trang_thai,nguoi_tao_id) VALUES(?,?,'DANG_THUC_HIEN',?)",
+                dot, prefix + "room", stranger.profile());
+        jdbc.update("INSERT INTO thanh_vien_nhom(nhom_id,sinh_vien_id,dot_id,la_nhom_truong) VALUES(?,?,?,1)",
+                secondGroup, stranger.profile(), dot);
+        for (int n = 0; n < 2; n++) {
+            var sv = actor("SINH_VIEN");
+            jdbc.update("INSERT INTO thanh_vien_nhom(nhom_id,sinh_vien_id,dot_id,la_nhom_truong) VALUES(?,?,?,0)",
+                    secondGroup, sv.profile(), dot);
+        }
+        int secondRegistration = insert("INSERT INTO dang_ky(nhom_id,de_tai_id,dot_id,nguoi_dang_ky_id,dang_ky_luc,trang_thai,nguoi_duyet_id,duyet_luc) "
+                + "VALUES(?,?,?,?,?,'CHAP_THUAN',?,?)", secondGroup, secondTopic, dot, stranger.profile(),
+                LocalDateTime.ofInstant(START, ZoneOffset.UTC).minusDays(3), khoa.account(),
+                LocalDateTime.ofInstant(START, ZoneOffset.UTC).minusDays(2));
+        var pb = actor("GIANG_VIEN"); var ct = actor("GIANG_VIEN"); var tk = actor("GIANG_VIEN");
+        var hdForm = councilForm(); hdForm.setMaHoiDong("HD2");
+        hdForm.setChuTichId(ct.profile()); hdForm.setThuKyId(tk.profile()); hdForm.setUyVienIds(Set.of(pb.profile()));
+        int hd = as(khoa, () -> hoiDong.tao(hdForm)); run(khoa, () -> hoiDong.chot(hd));
+        var second = planForm(hd, pb); second.setDangKyId(secondRegistration);
+        second.setDiaDiemHoiDong("\tP2\t");
+        assertThrows(NghiepVuException.class, () -> as(khoa, () -> danhGia.lap(second)));
+        second.setDiaDiemHoiDong("P3");
+        int dg = as(khoa, () -> danhGia.lap(second));
+        second.setDiaDiemHoiDong("P2");
+        assertThrows(NghiepVuException.class, () -> run(khoa, () -> danhGia.sua(dg, second)));
+        second.setHoiDongBatDau(first.getHoiDongKetThuc());
+        second.setHoiDongKetThuc(first.getHoiDongKetThuc().plusHours(1));
+        run(khoa, () -> danhGia.sua(dg, second));
+    }
 }

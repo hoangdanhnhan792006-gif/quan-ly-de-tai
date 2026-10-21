@@ -31,7 +31,15 @@ public class DanhGiaTruyVanService {
         this.clock = clock;
     }
     public List<DanhGiaDto> danhSach() {
-        return danhGias.findAllByOrderByIdDesc().stream().filter(rules::duocXem).map(d -> dto(d, false)).toList();
+        var actor = rules.actor();
+        boolean laKhoa = actor.coVaiTro(com.khoacntt.quanlydetai.account.model.VaiTro.TRUONG_KHOA)
+                || actor.coVaiTro(com.khoacntt.quanlydetai.account.model.VaiTro.CAN_BO_KHOA);
+        var ds = danhGias.duocXem(actor.getId(), laKhoa,
+                actor.coVaiTro(com.khoacntt.quanlydetai.account.model.VaiTro.GIANG_VIEN));
+        var chuTich = rules.hoiDongChuTich(ds.stream().filter(d -> d.getHoiDong() != null)
+                .map(d -> d.getHoiDong().getId()).distinct().toList(), actor);
+        return ds.stream().map(d -> dto(d, false, laKhoa,
+                d.getHoiDong() != null && chuTich.contains(d.getHoiDong().getId()))).toList();
     }
     public DanhGiaDto chiTiet(Integer id) {
         var d = rules.tim(id);
@@ -51,12 +59,24 @@ public class DanhGiaTruyVanService {
         return dg;
     }
     private DanhGiaDto dto(DanhGia d, boolean dayDu) {
+        return dto(d, dayDu, rules.laKhoa(), rules.laChuTich(d));
+    }
+    private DanhGiaDto dto(DanhGia d, boolean dayDu, boolean laKhoa, boolean laChuTich) {
         List<DanhGiaDto.PhanCongDto> pcs = new ArrayList<>();
+        var dsPhanCong = dayDu ? phanCongs.findByDanhGiaIdOrderByIdAsc(d.getId()) : List.<PhanCongCham>of();
+        var ids = dsPhanCong.stream().map(PhanCongCham::getId).toList();
+        var phieuTheoPhanCong = ids.isEmpty() ? Map.<Integer, List<PhieuCham>>of()
+                : phieus.findByPhanCongChamIdInOrderByPhienBanDesc(ids).stream()
+                        .collect(java.util.stream.Collectors.groupingBy(p -> p.getPhanCongCham().getId()));
+        var yeuCauTheoPhanCong = ids.isEmpty() ? Map.<Integer, List<YeuCauSuaDiem>>of()
+                : yeuCaus.findByPhanCongChamIdInOrderByIdDesc(ids).stream()
+                        .collect(java.util.stream.Collectors.groupingBy(y -> y.getPhanCongCham().getId()));
+        var actorId = dayDu ? rules.actor().getId() : null;
         if (dayDu)
-            for (var p : phanCongs.findByDanhGiaIdOrderByIdAsc(d.getId())) {
-                var phs = phieus.findByPhanCongChamIdOrderByPhienBanDesc(p.getId());
-                var ycs = yeuCaus.findByPhanCongChamIdOrderByIdDesc(p.getId());
-                boolean own = p.getGiangVien().getTaiKhoan().getId().equals(rules.actor().getId());
+            for (var p : dsPhanCong) {
+                var phs = phieuTheoPhanCong.getOrDefault(p.getId(), List.of());
+                var ycs = yeuCauTheoPhanCong.getOrDefault(p.getId(), List.of());
+                boolean own = p.getGiangVien().getTaiKhoan().getId().equals(actorId);
                 boolean nop = phs.stream().anyMatch(x -> x.getTrangThai() == TrangThaiPhieuCham.DA_NOP);
                 boolean approved = ycs.stream().anyMatch(y -> y.getTrangThai() == TrangThaiYeuCauSuaDiem.CHAP_THUAN);
                 boolean active = ycs.stream().anyMatch(y -> QuyTacDanhGia.DANG_XU_LY.contains(y.getTrangThai()));
@@ -86,6 +106,6 @@ public class DanhGiaTruyVanService {
                 ThoiGian.sangGioVietNam(d.getLichPhanBienLuc()), d.getDiaDiemPhanBien(),
                 ThoiGian.sangGioVietNam(d.getHoiDongBatDau()), ThoiGian.sangGioVietNam(d.getHoiDongKetThuc()),
                 d.getDiaDiemHoiDong(), d.getBaoCaoChot() == null ? null : d.getBaoCaoChot().getPhienBan(),
-                rules.laKhoa(), rules.laChuTich(d), pcs, dayDu ? ketQua.cuaDanhGia(d.getId()) : List.of());
+                laKhoa, laChuTich, pcs, dayDu ? ketQua.cuaDanhGia(d.getId()) : List.of());
     }
 }

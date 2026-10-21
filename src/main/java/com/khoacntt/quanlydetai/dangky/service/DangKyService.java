@@ -48,10 +48,11 @@ public class DangKyService {
         Nhom n = nhomRepository.findById(nhomId).orElseThrow(() -> new KhongTimThayException("Không tìm thấy nhóm"));
         quyTac.truongNhom(n);
         quyTac.kiemTraDuocSua(n);
-        return deTaiRepository.findByTrangThaiOrderByIdDesc(TrangThaiDeTai.DA_CONG_BO).stream()
-                .filter(d -> d.getDot().getId().equals(n.getDot().getId()))
-                .map(d -> new LuaChonDeTaiDto(d.getId(), d.getMaDeTai(), d.getTenDeTai(),
-                        repository.existsByDeTaiIdAndTrangThaiInAndNhomIdNot(d.getId(), GIU_CHO, nhomId))).toList();
+        var ds = deTaiRepository.luaChonTrongDot(n.getDot().getId());
+        if (ds.isEmpty()) return List.of();
+        Set<Integer> daGiuCho = repository.deTaiDaGiuCho(ds.stream().map(DeTai::getId).toList(), GIU_CHO, nhomId);
+        return ds.stream().map(d -> new LuaChonDeTaiDto(d.getId(), d.getMaDeTai(), d.getTenDeTai(),
+                daGiuCho.contains(d.getId()))).toList();
     }
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public void dangKy(Integer nhomId, @Valid DangKyForm f) {

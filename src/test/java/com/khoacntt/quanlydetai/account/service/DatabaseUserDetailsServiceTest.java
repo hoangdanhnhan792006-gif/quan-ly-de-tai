@@ -40,6 +40,8 @@ class DatabaseUserDetailsServiceTest {
         var userDetails = service.loadUserByUsername("  GV01 ");
 
         assertThat(userDetails.getUsername()).isEqualTo("gv01");
+        assertThat(((com.khoacntt.quanlydetai.account.security.TaiKhoanUserDetails) userDetails).getHoTen())
+                .isEqualTo("Giảng viên 01");
         assertThat(userDetails.isEnabled()).isTrue();
         assertThat(userDetails.getAuthorities())
                 .extracting("authority")

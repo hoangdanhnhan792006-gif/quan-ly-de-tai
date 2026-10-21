@@ -26,8 +26,7 @@ public class SinhVienController {
         this.taiKhoanService = taiKhoanService;
     }
 
-    @ModelAttribute
-    public void duLieuForm(Model model) {
+    private void duLieuForm(Model model) {
         model.addAttribute("taiKhoans", taiKhoanService.theoVaiTro(VaiTro.SINH_VIEN));
 
     }
@@ -40,19 +39,22 @@ public class SinhVienController {
 
     @GetMapping("/tao")
     public String tao(Model model) {
+        duLieuForm(model);
         model.addAttribute("form", new SinhVienForm());
         return "hoso/sinh-vien-form";
     }
 
     @PostMapping("/tao")
-    public String tao(@Valid @ModelAttribute("form") SinhVienForm form, BindingResult errors, RedirectAttributes redirect) {
+    public String tao(@Valid @ModelAttribute("form") SinhVienForm form, BindingResult errors, Model model, RedirectAttributes redirect) {
         if (errors.hasErrors()) {
+            duLieuForm(model);
             return "hoso/sinh-vien-form";
         }
         try {
             service.taoSinhVien(form);
         } catch (NghiepVuException ex) {
             errors.reject("nghiepVu", ex.getMessage());
+            duLieuForm(model);
             return "hoso/sinh-vien-form";
         }
         redirect.addFlashAttribute("thanhCong", "Đã tạo hồ sơ");
@@ -61,6 +63,7 @@ public class SinhVienController {
 
     @GetMapping("/{id}/sua")
     public String sua(@PathVariable Integer id, Model model) {
+        duLieuForm(model);
         model.addAttribute("id", id);
         var hs = service.sinhVien(id);
         var f = new SinhVienForm();
@@ -77,12 +80,14 @@ public class SinhVienController {
                       BindingResult errors, Model model, RedirectAttributes redirect) {
         model.addAttribute("id", id);
         if (errors.hasErrors()) {
+            duLieuForm(model);
             return "hoso/sinh-vien-form";
         }
         try {
             service.suaSinhVien(id, form);
         } catch (NghiepVuException ex) {
             errors.reject("nghiepVu", ex.getMessage());
+            duLieuForm(model);
             return "hoso/sinh-vien-form";
         }
         redirect.addFlashAttribute("thanhCong", "Đã cập nhật hồ sơ");

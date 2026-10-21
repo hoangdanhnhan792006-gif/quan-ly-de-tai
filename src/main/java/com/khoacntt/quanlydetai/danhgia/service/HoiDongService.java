@@ -30,7 +30,11 @@ public class HoiDongService {
         this.nhom = nhom;
     }
     public List<HoiDongDto> danhSach() {
-        return hoiDongs.findAllByOrderByIdDesc().stream().map(this::dto).toList();
+        var ds = hoiDongs.findAllByOrderByIdDesc();
+        if (ds.isEmpty()) return List.of();
+        var thanhVienTheoHoiDong = thanhViens.findByHoiDongIdInOrderByGiangVienMaGvAsc(ds.stream().map(HoiDong::getId).toList()).stream()
+                .collect(java.util.stream.Collectors.groupingBy(t -> t.getHoiDong().getId()));
+        return ds.stream().map(h -> dto(h, thanhVienTheoHoiDong.getOrDefault(h.getId(), List.of()))).toList();
     }
     public HoiDongDto chiTiet(Integer id) {
         return dto(hoiDongs.findById(id).orElseThrow(() -> new KhongTimThayException("Không tìm thấy hội đồng")));
@@ -105,9 +109,11 @@ public class HoiDongService {
         thanhViens.flush();
     }
     private HoiDongDto dto(HoiDong h) {
+        return dto(h, thanhViens.findByHoiDongIdOrderByGiangVienMaGvAsc(h.getId()));
+    }
+    private HoiDongDto dto(HoiDong h, List<ThanhVienHoiDong> ds) {
         return new HoiDongDto(h.getId(), h.getDot().getId(), h.getDot().getTenDot(), h.getMaHoiDong(),
-                h.getTenHoiDong(), h.getTrangThai(), thanhViens.findByHoiDongIdOrderByGiangVienMaGvAsc(h.getId())
-                        .stream().map(t -> new HoiDongDto.ThanhVienDto(t.getGiangVien().getId(),
+                h.getTenHoiDong(), h.getTrangThai(), ds.stream().map(t -> new HoiDongDto.ThanhVienDto(t.getGiangVien().getId(),
                                 t.getGiangVien().getMaGv(), t.getGiangVien().getTaiKhoan().getHoTen(), t.getVaiTro()))
                         .toList());
     }

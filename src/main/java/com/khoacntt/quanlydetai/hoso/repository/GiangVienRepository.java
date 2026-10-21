@@ -12,4 +12,17 @@ public interface GiangVienRepository extends JpaRepository<GiangVien, Integer> {
     boolean existsByTaiKhoanId(Integer taiKhoanId);
     boolean existsByMaGv(String ma);
     boolean existsByMaGvAndIdNot(String ma, Integer id);
+
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"taiKhoan", "taiKhoan.vaiTros", "boMon"})
+    @org.springframework.data.jpa.repository.Query("select distinct g from GiangVien g join fetch g.boMon "
+            + "join fetch g.taiKhoan tk left join fetch tk.vaiTros where g.taiKhoan.trangThai = "
+            + "com.khoacntt.quanlydetai.account.model.TrangThaiTaiKhoan.HOAT_DONG and "
+            + "com.khoacntt.quanlydetai.account.model.VaiTro.GIANG_VIEN member of g.taiKhoan.vaiTros order by g.maGv")
+    java.util.List<GiangVien> dangHoatDong();
+
+    @Override
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"taiKhoan.vaiTros", "boMon"})
+    @org.springframework.data.jpa.repository.Query("select distinct g from GiangVien g join fetch g.boMon join fetch g.taiKhoan tk left join fetch tk.vaiTros")
+    java.util.List<GiangVien> findAll(org.springframework.data.domain.Sort sort);
+
 }

@@ -7,4 +7,7 @@ import java.util.*;
 import java.time.LocalDateTime;
 public interface ThongBaoTepRepository extends JpaRepository<ThongBaoTep, Integer> {
     List<ThongBaoTep> findByThongBaoIdOrderByIdAsc(Integer id);
+
+    List<ThongBaoTep> findByThongBaoIdInOrderByIdAsc(Collection<Integer> ids);
+
 }

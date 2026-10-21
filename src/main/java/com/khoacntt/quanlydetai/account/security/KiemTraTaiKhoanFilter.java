@@ -1,5 +1,6 @@
 package com.khoacntt.quanlydetai.account.security;
 
+import com.khoacntt.quanlydetai.account.dto.NguoiDangNhapDto;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import org.springframework.security.core.Authentication;
@@ -33,6 +34,10 @@ public class KiemTraTaiKhoanFilter extends OncePerRequestFilter {
                     ketThucPhien(request, response, auth);
                     return;
                 }
+                // Tận dụng tài khoản vừa kiểm tra: tên mới có hiệu lực ở request kế tiếp,
+                // không truy vấn DB thêm chỉ để hiển thị menu.
+                String hoTen = user instanceof TaiKhoanUserDetails tk ? tk.getHoTen() : user.getUsername();
+                request.setAttribute("nguoiDangNhap", new NguoiDangNhapDto(hoTen, user.getUsername()));
             } catch (UsernameNotFoundException ex) {
                 ketThucPhien(request, response, auth);
                 return;

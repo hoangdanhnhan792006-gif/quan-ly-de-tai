@@ -102,4 +102,10 @@ public class QuyTacDanhGia {
         if (state == TrangThaiDotDangKy.HUY || state == TrangThaiDotDangKy.NHAP)
             throw new NghiepVuException("Đợt không cho phép xử lý điểm");
     }
+
+    public Set<Integer> hoiDongChuTich(Collection<Integer> ids, TaiKhoan tk) {
+        if (ids.isEmpty() || !tk.coVaiTro(VaiTro.GIANG_VIEN)) return Set.of();
+        return thanhViens.hoiDongChuTich(ids, tk.getId());
+    }
+
 }

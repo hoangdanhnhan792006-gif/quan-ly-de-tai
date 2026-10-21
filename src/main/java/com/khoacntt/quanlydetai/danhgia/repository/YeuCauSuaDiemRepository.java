@@ -13,4 +13,12 @@ public interface YeuCauSuaDiemRepository extends JpaRepository<YeuCauSuaDiem, In
             Collection<TrangThaiYeuCauSuaDiem> states);
     @Query("select y.phanCongCham.danhGia.id from YeuCauSuaDiem y where y.id=:id")
     Optional<Integer> timDanhGiaId(@Param("id") Integer id);
+
+    List<YeuCauSuaDiem> findByPhanCongChamIdInOrderByIdDesc(Collection<Integer> ids);
+
+    @Query("select distinct y.phanCongCham.danhGia.id from YeuCauSuaDiem y "
+            + "where y.phanCongCham.danhGia.id in :ids and y.trangThai in :states")
+    Set<Integer> danhGiaDangDieuChinh(@Param("ids") Collection<Integer> ids,
+            @Param("states") Collection<TrangThaiYeuCauSuaDiem> states);
+
 }

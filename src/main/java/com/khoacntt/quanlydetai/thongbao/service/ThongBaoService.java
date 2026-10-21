@@ -33,12 +33,12 @@ public class ThongBaoService {
         this.clock = clock;
     }
     public List<ThongBaoDto> congKhai() {
-        return thongBaos.findByTrangThaiOrderByCongBoLucDesc(TrangThaiThongBao.DA_CONG_BO).stream().map(this::dto)
-                .toList();
+        return danhSachDto(thongBaos.findByTrangThaiOrderByCongBoLucDesc(TrangThaiThongBao.DA_CONG_BO));
     }
     @PreAuthorize("hasAnyRole('ADMIN','TRUONG_KHOA','CAN_BO_KHOA')")
     public List<ThongBaoDto> quanLy() {
-        return thongBaos.findAllByOrderByIdDesc().stream().filter(this::coQuyen).map(this::dto).toList();
+        var tk = actor.batBuoc();
+        return danhSachDto(thongBaos.quanLy(tk.coVaiTro(VaiTro.ADMIN), tk.getId()));
     }
     public ThongBaoDto chiTiet(Integer id) {
         var t = tim(id);
@@ -137,10 +137,23 @@ public class ThongBaoService {
     private ThongBao khoa(Integer id) {
         return thongBaos.timVaKhoa(id).orElseThrow(() -> new KhongTimThayException("Không tìm thấy thông báo"));
     }
+    private List<ThongBaoDto> danhSachDto(List<ThongBao> ds) {
+        if (ds.isEmpty()) return List.of();
+        var tk = actor.batBuoc();
+        var tepTheoThongBao = teps.findByThongBaoIdInOrderByIdAsc(ds.stream().map(ThongBao::getId).toList()).stream()
+                .collect(java.util.stream.Collectors.groupingBy(t -> t.getThongBao().getId()));
+        return ds.stream().map(t -> dto(t, tk.coVaiTro(VaiTro.ADMIN)
+                || ((tk.coVaiTro(VaiTro.TRUONG_KHOA) || tk.coVaiTro(VaiTro.CAN_BO_KHOA))
+                    && tk.getId().equals(t.getNguoiDang().getId())),
+                tepTheoThongBao.getOrDefault(t.getId(), List.of()))).toList();
+    }
     private ThongBaoDto dto(ThongBao t) {
+        return dto(t, coQuyen(t), teps.findByThongBaoIdOrderByIdAsc(t.getId()));
+    }
+    private ThongBaoDto dto(ThongBao t, boolean coQuyen, List<ThongBaoTep> files) {
         return new ThongBaoDto(t.getId(), t.getTieuDe(), t.getNoiDung(), t.getDonViBanHanh(),
-                t.getNguoiDang().getHoTen(), t.getTrangThai(), ThoiGian.sangGioVietNam(t.getCongBoLuc()), coQuyen(t),
-                teps.findByThongBaoIdOrderByIdAsc(t.getId()).stream()
+                t.getNguoiDang().getHoTen(), t.getTrangThai(), ThoiGian.sangGioVietNam(t.getCongBoLuc()), coQuyen,
+                files.stream()
                         .map(f -> new ThongBaoDto.TepDto(f.getId(), f.getTenTepGoc(), f.getKichThuocByte())).toList());
     }
 }

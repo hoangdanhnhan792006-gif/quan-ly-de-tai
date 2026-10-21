@@ -29,8 +29,7 @@ public class GiangVienController {
         this.boMonService = boMonService;
     }
 
-    @ModelAttribute
-    public void duLieuForm(Model model) {
+    private void duLieuForm(Model model) {
         model.addAttribute("taiKhoans", taiKhoanService.theoVaiTro(VaiTro.GIANG_VIEN));
         model.addAttribute("boMons", boMonService.danhSach());
     }
@@ -43,19 +42,22 @@ public class GiangVienController {
 
     @GetMapping("/tao")
     public String tao(Model model) {
+        duLieuForm(model);
         model.addAttribute("form", new GiangVienForm());
         return "hoso/giang-vien-form";
     }
 
     @PostMapping("/tao")
-    public String tao(@Valid @ModelAttribute("form") GiangVienForm form, BindingResult errors, RedirectAttributes redirect) {
+    public String tao(@Valid @ModelAttribute("form") GiangVienForm form, BindingResult errors, Model model, RedirectAttributes redirect) {
         if (errors.hasErrors()) {
+            duLieuForm(model);
             return "hoso/giang-vien-form";
         }
         try {
             service.taoGiangVien(form);
         } catch (NghiepVuException ex) {
             errors.reject("nghiepVu", ex.getMessage());
+            duLieuForm(model);
             return "hoso/giang-vien-form";
         }
         redirect.addFlashAttribute("thanhCong", "Đã tạo hồ sơ");
@@ -64,6 +66,7 @@ public class GiangVienController {
 
     @GetMapping("/{id}/sua")
     public String sua(@PathVariable Integer id, Model model) {
+        duLieuForm(model);
         model.addAttribute("id", id);
         var hs = service.giangVien(id);
         var f = new GiangVienForm();
@@ -80,12 +83,14 @@ public class GiangVienController {
                       BindingResult errors, Model model, RedirectAttributes redirect) {
         model.addAttribute("id", id);
         if (errors.hasErrors()) {
+            duLieuForm(model);
             return "hoso/giang-vien-form";
         }
         try {
             service.suaGiangVien(id, form);
         } catch (NghiepVuException ex) {
             errors.reject("nghiepVu", ex.getMessage());
+            duLieuForm(model);
             return "hoso/giang-vien-form";
         }
         redirect.addFlashAttribute("thanhCong", "Đã cập nhật hồ sơ");
